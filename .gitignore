@@ -78,6 +78,18 @@ secrets/
 /.emacs.desktop.lock
 *.elc
 
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.lzma
+*.tar.lz
+*.tar.lz4
+*.tar.zst
+*.tar.zstd
+*.rar
 # Sublime Text
 *.sublime-project
 *.sublime-workspace
