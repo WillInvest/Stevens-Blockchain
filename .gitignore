@@ -1,0 +1,170 @@
+# ============================================
+# Foundry Build Artifacts
+# ============================================
+# Compiled contracts and build info
+out/
+artifacts/
+cache/
+broadcast/
+
+# Foundry cache files
+cache_forge/
+*.solc-select/
+
+# ============================================
+# Node.js / Frontend
+# ============================================
+# Dependencies
+node_modules/
+sbc-frontend/node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Frontend build artifacts
+frontend.zip
+
+# Package manager locks (keep pnpm-lock.yaml, but ignore npm/yarn locks if switching)
+# pnpm-lock.yaml  # Keep this - it's important for reproducible builds
+# package-lock.json  # Uncomment if you want to ignore npm locks
+# yarn.lock  # Uncomment if you want to ignore yarn locks
+
+# ============================================
+# Environment & Secrets
+# ============================================
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# IntelliJ / WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# OS Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+.coverage_artifacts
+.coverage_cache
+.coverage_contracts
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*.orig
+.cache/
+
+# ============================================
+# Deployment & Scripts
+# ============================================
+# Deployment artifacts (keep scripts, ignore outputs)
+# broadcast/ is already covered above
+
+# ============================================
+# Misc
+# ============================================
+# Python (if any scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Rust (if any)
+target/
+Cargo.lock
+
+# Certora verification
+.certora*
+.last_confs
+certora_*
+.zip-output-url.txt
+
