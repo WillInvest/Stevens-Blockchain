@@ -12,7 +12,7 @@ pkill anvil || true
 sleep 1
 
 echo "=== Starting new silent Anvil on 0.0.0.0:8545 ==="
-anvil --host 0.0.0.0 --port 8545 --chain-id 31337 >> /tmp/anvil.log 2>&1 &
+anvil --host 0.0.0.0 --port 8545 --chain-id 31337 >> "$PROJECT_ROOT/logs/anvil.log" 2>&1 &
 
 sleep 3
 echo "Anvil started."
