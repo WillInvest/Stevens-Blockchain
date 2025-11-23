@@ -581,9 +581,21 @@ export default function App() {
         <div style={{ 
           fontSize: 24, 
           fontWeight: 700,
-          letterSpacing: "1px"
+          letterSpacing: "1px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px"
         }}>
-          🍌 STEVENS BANANA COIN
+          <img 
+            src="/SBC logo.png" 
+            alt="SBC Logo" 
+            style={{
+              height: "32px",
+              width: "auto",
+              objectFit: "contain"
+            }}
+          />
+          STEVENS BANANA COIN
         </div>
         <div style={{ 
           fontSize: 14, 
@@ -606,7 +618,9 @@ export default function App() {
           overflow: "hidden",
           zIndex: 1,
           margin: 0,
-          padding: 0
+          padding: 0,
+          border: "none",
+          outline: "none"
         }}>
           <video
             autoPlay
@@ -614,14 +628,18 @@ export default function App() {
             muted
             playsInline
             style={{
-              width: "100vw",
-              height: "100vh",
+              width: "100%",
+              height: "100%",
               objectFit: "cover",
               position: "absolute",
               top: 0,
               left: 0,
+              minWidth: "100%",
+              minHeight: "100%",
               margin: 0,
               padding: 0,
+              border: "none",
+              outline: "none",
               display: "block"
             }}
           >
@@ -637,7 +655,8 @@ export default function App() {
             background: "rgba(0, 0, 0, 0.4)",
             zIndex: 2,
             margin: 0,
-            padding: 0
+            padding: 0,
+            border: "none"
           }} />
         </div>
       )}
@@ -666,14 +685,30 @@ export default function App() {
           }}>
             <h1 style={{
               color: "white",
-              fontSize: "56px",
-              fontWeight: 700,
+              fontSize: "64px",
+              fontWeight: 900,
               marginBottom: "24px",
               textShadow: "3px 3px 6px rgba(0, 0, 0, 0.7)",
-              letterSpacing: "2px",
-              lineHeight: "1.2"
+              letterSpacing: "3px",
+              lineHeight: "1",
+              fontFamily: "'Arial Black', 'Arial Bold', Arial, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "20px",
+              whiteSpace: "nowrap"
             }}>
-              🍌 STEVENS BANANA COIN
+              <img 
+                src="/SBC logo.png" 
+                alt="SBC Logo" 
+                style={{
+                  height: "70px",
+                  width: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.7))"
+                }}
+              />
+              STEVENS BANANA COIN
             </h1>
             <p style={{
               color: "white",
