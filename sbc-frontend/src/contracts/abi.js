@@ -164,7 +164,9 @@ export const SBC_ABI = [
     "inputs": [
       { "internalType": "address", "name": "wallet", "type": "address" },
       { "internalType": "string", "name": "name", "type": "string" },
-      { "internalType": "uint256", "name": "studentId", "type": "uint256" }
+      { "internalType": "uint256", "name": "studentId", "type": "uint256" },
+      { "internalType": "uint256", "name": "priority", "type": "uint256" },
+      { "internalType": "uint256", "name": "total_amount_outstanding", "type": "uint256" }
     ],
     "name": "addStudent",
     "outputs": [],
@@ -187,7 +189,9 @@ export const SBC_ABI = [
           { "internalType": "string", "name": "name", "type": "string" },
           { "internalType": "uint256", "name": "studentId", "type": "uint256" },
           { "internalType": "bool", "name": "isWhitelisted", "type": "bool" },
-          { "internalType": "address", "name": "wallet", "type": "address" }
+          { "internalType": "address", "name": "wallet", "type": "address" },
+          { "internalType": "uint256", "name": "priority", "type": "uint256" },
+          { "internalType": "uint256", "name": "total_amount_outstanding", "type": "uint256" }
         ],
         "internalType": "struct StevensBananaCoin.Student",
         "name": "",
@@ -206,7 +210,9 @@ export const SBC_ABI = [
           { "internalType": "string", "name": "name", "type": "string" },
           { "internalType": "uint256", "name": "studentId", "type": "uint256" },
           { "internalType": "bool", "name": "isWhitelisted", "type": "bool" },
-          { "internalType": "address", "name": "wallet", "type": "address" }
+          { "internalType": "address", "name": "wallet", "type": "address" },
+          { "internalType": "uint256", "name": "priority", "type": "uint256" },
+          { "internalType": "uint256", "name": "total_amount_outstanding", "type": "uint256" }
         ],
         "internalType": "struct StevensBananaCoin.Student[]",
         "name": "",
@@ -235,6 +241,16 @@ export const SBC_ABI = [
       { "internalType": "uint256", "name": "amount", "type": "uint256" }
     ],
     "name": "burn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  // --- distribute ---
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "totalAmount", "type": "uint256" }
+    ],
+    "name": "distribute",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

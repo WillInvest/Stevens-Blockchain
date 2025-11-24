@@ -11,7 +11,9 @@ export default function App() {
   const [newStudent, setNewStudent] = useState({
     wallet: "",
     name: "",
-    id: ""
+    id: "",
+    priority: "",
+    total_amount_outstanding: ""
   });
 
   const [studentInfo, setStudentInfo] = useState(null);
@@ -36,29 +38,44 @@ export default function App() {
   // ---------------- ADD STUDENT ----------------
   async function addStudent() {
     if (!ethers.isAddress(newStudent.wallet)) return alert("Invalid wallet address");
-    if (!newStudent.name || !newStudent.id) return alert("Please fill all fields");
+    if (!newStudent.name || !newStudent.id || !newStudent.priority || !newStudent.total_amount_outstanding) return alert("Please fill all fields");
 
     try {
       const studentId = BigInt(newStudent.id);
+      const priority = BigInt(newStudent.priority);
+      const total_amount_outstanding = ethers.parseEther(newStudent.total_amount_outstanding || "0");
+      
       const existing = await contract.getStudentById(studentId);
       if (existing.wallet !== ethers.ZeroAddress) {
-        const ok = confirm(
-          `⚠️ Student exists:\nName: ${existing.name}\nWallet: ${existing.wallet}\n\nOverwrite?`
-        );
-        if (!ok) return;
+        // Only ask for confirmation if the wallet address is different
+        if (existing.wallet.toLowerCase() !== newStudent.wallet.toLowerCase()) {
+          const ok = confirm(
+            `⚠️ Student ID ${newStudent.id} already exists:\nName: ${existing.name}\nCurrent Wallet: ${existing.wallet}\nNew Wallet: ${newStudent.wallet}\n\nUpdate with new wallet address?`
+          );
+          if (!ok) return;
+        }
+        // If same wallet, just update without confirmation
       }
 
     const tx = await contract.addStudent(
       newStudent.wallet,
       newStudent.name,
-        studentId
+      studentId,
+      priority,
+      total_amount_outstanding
     );
-    await tx.wait();
+    const receipt = await tx.wait();
+    
+    // Verify the student was added correctly
+    const added = await contract.getStudentById(studentId);
+    const savedPriority = added.priority ? added.priority.toString() : "0";
+    const savedOutstanding = added.total_amount_outstanding ? ethers.formatEther(added.total_amount_outstanding) : "0.0";
 
-    alert("✅ Student added!");
-    setNewStudent({ wallet: "", name: "", id: "" });
+    alert(`✅ Student added!\nPriority: ${savedPriority}\nAmount Outstanding: ${savedOutstanding} SBC`);
+    setNewStudent({ wallet: "", name: "", id: "", priority: "", total_amount_outstanding: "" });
     } catch (err) {
-      alert("❌ Failed to add student: " + (err.message || "Unknown error"));
+      console.error("Add student error:", err);
+      alert("❌ Failed to add student: " + (err.message || err.reason || "Unknown error"));
     }
   }
 
@@ -100,7 +117,9 @@ export default function App() {
         studentId: info.studentId.toString(),
         wallet: info.wallet,
         isWhitelisted: info.isWhitelisted,
-        balance: ethers.formatEther(balance)
+        balance: ethers.formatEther(balance),
+        priority: info.priority ? info.priority.toString() : "0",
+        total_amount_outstanding: info.total_amount_outstanding ? ethers.formatEther(info.total_amount_outstanding) : "0.0"
       });
     } catch (err) {
       alert("❌ Student not found: " + (err.message || "Invalid student ID"));
@@ -109,34 +128,50 @@ export default function App() {
 
   // ---------------- LOAD ALL STUDENTS ----------------
   async function loadAllStudents() {
-    const list = await contract.getAllStudents();
+    try {
+      const list = await contract.getAllStudents();
 
-    // Filter out students with zero address
-    const validStudents = list.filter(s => 
-      s.wallet && s.wallet !== ethers.ZeroAddress && s.wallet !== "0x0000000000000000000000000000000000000000"
-    );
+      // Filter out students with zero address
+      const validStudents = list.filter(s => 
+        s.wallet && s.wallet !== ethers.ZeroAddress && s.wallet !== "0x0000000000000000000000000000000000000000"
+      );
 
-    // Remove duplicates based on student ID (keep first occurrence)
-    const seenIds = new Set();
-    const uniqueStudents = validStudents.filter(s => {
-      const studentId = s.studentId.toString();
-      if (seenIds.has(studentId)) {
-        return false;
-      }
-      seenIds.add(studentId);
-      return true;
-    });
+      // Remove duplicates based on student ID (keep first occurrence)
+      const seenIds = new Set();
+      const uniqueStudents = validStudents.filter(s => {
+        const studentId = s.studentId.toString();
+        if (seenIds.has(studentId)) {
+          return false;
+        }
+        seenIds.add(studentId);
+        return true;
+      });
 
-    const enriched = await Promise.all(
-      uniqueStudents.map(async (s) => ({
-        name: s.name,
-        id: s.studentId.toString(),
-        wallet: s.wallet,
-        balance: ethers.formatEther(await contract.balanceOf(s.wallet))
-      }))
-    );
+      const enriched = await Promise.all(
+        uniqueStudents.map(async (s) => {
+          // Access priority and total_amount_outstanding directly from the struct
+          // If they're undefined, they'll be 0 (default uint256 value)
+          const priority = s.priority !== undefined ? s.priority.toString() : "0";
+          const totalOutstanding = s.total_amount_outstanding !== undefined && s.total_amount_outstanding !== null 
+            ? ethers.formatEther(s.total_amount_outstanding) 
+            : "0.0";
+          
+          return {
+            name: s.name,
+            id: s.studentId.toString(),
+            wallet: s.wallet,
+            balance: ethers.formatEther(await contract.balanceOf(s.wallet)),
+            priority: priority,
+            total_amount_outstanding: totalOutstanding
+          };
+        })
+      );
 
-    setStudentList(enriched);
+      setStudentList(enriched);
+    } catch (err) {
+      alert("❌ Failed to load students: " + (err.message || "Unknown error"));
+      console.error("Error loading students:", err);
+    }
   }
 
   // ---------------- AVAILABLE ADDRESSES ----------------
@@ -227,6 +262,25 @@ export default function App() {
       alert(`🔥 Burned ${amount} SBC from ${from}`);
     } catch (err) {
       alert("❌ Burn failed: " + (err.message || "Insufficient balance"));
+    }
+  }
+
+  // ---------------- DISTRIBUTE ----------------
+  async function distributeTokens() {
+    const amount = prompt("Total amount to distribute:");
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      return alert("Invalid amount");
+    }
+
+    const ok = confirm(`⚠️ Distribute ${amount} SBC to all students based on priority and outstanding amounts?\n\nThis will:\n- Sort students by priority (lower number = higher priority)\n- Pay off outstanding amounts first\n- Distribute remaining amount to next students in priority order`);
+    if (!ok) return;
+
+    try {
+      const tx = await contract.distribute(ethers.parseEther(amount));
+      await tx.wait();
+      alert(`✅ Distributed ${amount} SBC to students based on priority and outstanding amounts!\n\nPlease reload the student list to see updated outstanding amounts.`);
+    } catch (err) {
+      alert("❌ Distribution failed: " + (err.message || err.reason || "Unknown error"));
     }
   }
 
@@ -827,6 +881,31 @@ export default function App() {
                 onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
               />
 
+              <input
+                placeholder="Priority (1, 2, 3...)"
+                type="number"
+                value={newStudent.priority}
+                onChange={(e) =>
+                  setNewStudent({ ...newStudent, priority: e.target.value })
+                }
+                style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = stevensRed}
+                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+              />
+
+              <input
+                placeholder="Total Amount Outstanding"
+                type="number"
+                step="0.01"
+                value={newStudent.total_amount_outstanding}
+                onChange={(e) =>
+                  setNewStudent({ ...newStudent, total_amount_outstanding: e.target.value })
+                }
+                style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = stevensRed}
+                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+              />
+
               <button 
                 onClick={addStudent} 
                 style={{
@@ -926,6 +1005,22 @@ export default function App() {
             }}
               >
                 🔥 Burn Tokens
+              </button>
+              <button 
+                onClick={distributeTokens} 
+                style={buttonStyle}
+                onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+              e.target.style.background = "#8B1E2E";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+              e.target.style.background = stevensRed;
+            }}
+              >
+                💰 Distribute Tokens
               </button>
               <button 
                 onClick={loadAllStudents} 
@@ -1133,6 +1228,8 @@ export default function App() {
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Priority</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount Outstanding</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1150,6 +1247,8 @@ export default function App() {
                           <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
                           <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.balance} SBC</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 600 }}>{s.priority}</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.total_amount_outstanding} SBC</td>
                     </tr>
                   ))}
                 </tbody>
