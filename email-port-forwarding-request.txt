@@ -1,0 +1,32 @@
+Subject: Request for Port Forwarding Configuration for Web Server
+
+To: support@stevens.edu
+
+Hello Stevens IT Support,
+
+I am running a web server on my machine for a development project and need port forwarding configured to access it from outside the Stevens network.
+
+Request Details:
+- External Port: 8080
+- Internal IP Address: 10.246.103.99
+- Internal Port: 8080
+- Protocol: TCP
+- Purpose: Web server for development/testing
+- Server Hostname: HFSL-HANLON2-33
+- Public IP: 155.246.151.34
+- Student ID: 20027138
+
+What I need:
+Port forwarding so external requests to http://155.246.151.34:8080 are forwarded to my server at 10.246.103.99:8080.
+
+Current situation:
+I cannot access the router admin panel (10.246.103.1), so I cannot configure this myself. I am currently using ngrok as a workaround, but a direct port forwarding setup would be preferable.
+
+Please let me know if you need any additional information or if there are any policies/restrictions I should be aware of.
+
+Thank you for your assistance.
+
+Best regards,
+Student ID: 20027138
+
+

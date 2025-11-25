@@ -11,9 +11,7 @@ export default function App() {
   const [newStudent, setNewStudent] = useState({
     wallet: "",
     name: "",
-    id: "",
-    priority: "",
-    total_amount_outstanding: ""
+    id: ""
   });
 
   const [studentInfo, setStudentInfo] = useState(null);
@@ -21,6 +19,9 @@ export default function App() {
   const [available, setAvailable] = useState([]);
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  const [activeTab, setActiveTab] = useState("admin");
+  const [showAddStudentForm, setShowAddStudentForm] = useState(false);
+  const [activeAdminSubTab, setActiveAdminSubTab] = useState("addUpdate");
 
   // ---------------- CONNECT WALLET ----------------
   async function connectWallet() {
@@ -38,44 +39,29 @@ export default function App() {
   // ---------------- ADD STUDENT ----------------
   async function addStudent() {
     if (!ethers.isAddress(newStudent.wallet)) return alert("Invalid wallet address");
-    if (!newStudent.name || !newStudent.id || !newStudent.priority || !newStudent.total_amount_outstanding) return alert("Please fill all fields");
+    if (!newStudent.name || !newStudent.id) return alert("Please fill all fields");
 
     try {
       const studentId = BigInt(newStudent.id);
-      const priority = BigInt(newStudent.priority);
-      const total_amount_outstanding = ethers.parseEther(newStudent.total_amount_outstanding || "0");
-      
       const existing = await contract.getStudentById(studentId);
       if (existing.wallet !== ethers.ZeroAddress) {
-        // Only ask for confirmation if the wallet address is different
-        if (existing.wallet.toLowerCase() !== newStudent.wallet.toLowerCase()) {
-          const ok = confirm(
-            `⚠️ Student ID ${newStudent.id} already exists:\nName: ${existing.name}\nCurrent Wallet: ${existing.wallet}\nNew Wallet: ${newStudent.wallet}\n\nUpdate with new wallet address?`
-          );
-          if (!ok) return;
-        }
-        // If same wallet, just update without confirmation
+        const ok = confirm(
+          `⚠️ Student exists:\nName: ${existing.name}\nWallet: ${existing.wallet}\n\nOverwrite?`
+        );
+        if (!ok) return;
       }
 
     const tx = await contract.addStudent(
       newStudent.wallet,
       newStudent.name,
-      studentId,
-      priority,
-      total_amount_outstanding
+        studentId
     );
-    const receipt = await tx.wait();
-    
-    // Verify the student was added correctly
-    const added = await contract.getStudentById(studentId);
-    const savedPriority = added.priority ? added.priority.toString() : "0";
-    const savedOutstanding = added.total_amount_outstanding ? ethers.formatEther(added.total_amount_outstanding) : "0.0";
+    await tx.wait();
 
-    alert(`✅ Student added!\nPriority: ${savedPriority}\nAmount Outstanding: ${savedOutstanding} SBC`);
-    setNewStudent({ wallet: "", name: "", id: "", priority: "", total_amount_outstanding: "" });
+    alert("✅ Student added!");
+    setNewStudent({ wallet: "", name: "", id: "" });
     } catch (err) {
-      console.error("Add student error:", err);
-      alert("❌ Failed to add student: " + (err.message || err.reason || "Unknown error"));
+      alert("❌ Failed to add student: " + (err.message || "Unknown error"));
     }
   }
 
@@ -117,9 +103,7 @@ export default function App() {
         studentId: info.studentId.toString(),
         wallet: info.wallet,
         isWhitelisted: info.isWhitelisted,
-        balance: ethers.formatEther(balance),
-        priority: info.priority ? info.priority.toString() : "0",
-        total_amount_outstanding: info.total_amount_outstanding ? ethers.formatEther(info.total_amount_outstanding) : "0.0"
+        balance: ethers.formatEther(balance)
       });
     } catch (err) {
       alert("❌ Student not found: " + (err.message || "Invalid student ID"));
@@ -128,50 +112,34 @@ export default function App() {
 
   // ---------------- LOAD ALL STUDENTS ----------------
   async function loadAllStudents() {
-    try {
-      const list = await contract.getAllStudents();
+    const list = await contract.getAllStudents();
 
-      // Filter out students with zero address
-      const validStudents = list.filter(s => 
-        s.wallet && s.wallet !== ethers.ZeroAddress && s.wallet !== "0x0000000000000000000000000000000000000000"
-      );
+    // Filter out students with zero address
+    const validStudents = list.filter(s => 
+      s.wallet && s.wallet !== ethers.ZeroAddress && s.wallet !== "0x0000000000000000000000000000000000000000"
+    );
 
-      // Remove duplicates based on student ID (keep first occurrence)
-      const seenIds = new Set();
-      const uniqueStudents = validStudents.filter(s => {
-        const studentId = s.studentId.toString();
-        if (seenIds.has(studentId)) {
-          return false;
-        }
-        seenIds.add(studentId);
-        return true;
-      });
+    // Remove duplicates based on student ID (keep first occurrence)
+    const seenIds = new Set();
+    const uniqueStudents = validStudents.filter(s => {
+      const studentId = s.studentId.toString();
+      if (seenIds.has(studentId)) {
+        return false;
+      }
+      seenIds.add(studentId);
+      return true;
+    });
 
-      const enriched = await Promise.all(
-        uniqueStudents.map(async (s) => {
-          // Access priority and total_amount_outstanding directly from the struct
-          // If they're undefined, they'll be 0 (default uint256 value)
-          const priority = s.priority !== undefined ? s.priority.toString() : "0";
-          const totalOutstanding = s.total_amount_outstanding !== undefined && s.total_amount_outstanding !== null 
-            ? ethers.formatEther(s.total_amount_outstanding) 
-            : "0.0";
-          
-          return {
-            name: s.name,
-            id: s.studentId.toString(),
-            wallet: s.wallet,
-            balance: ethers.formatEther(await contract.balanceOf(s.wallet)),
-            priority: priority,
-            total_amount_outstanding: totalOutstanding
-          };
-        })
-      );
+    const enriched = await Promise.all(
+      uniqueStudents.map(async (s) => ({
+        name: s.name,
+        id: s.studentId.toString(),
+        wallet: s.wallet,
+        balance: ethers.formatEther(await contract.balanceOf(s.wallet))
+      }))
+    );
 
-      setStudentList(enriched);
-    } catch (err) {
-      alert("❌ Failed to load students: " + (err.message || "Unknown error"));
-      console.error("Error loading students:", err);
-    }
+    setStudentList(enriched);
   }
 
   // ---------------- AVAILABLE ADDRESSES ----------------
@@ -262,25 +230,6 @@ export default function App() {
       alert(`🔥 Burned ${amount} SBC from ${from}`);
     } catch (err) {
       alert("❌ Burn failed: " + (err.message || "Insufficient balance"));
-    }
-  }
-
-  // ---------------- DISTRIBUTE ----------------
-  async function distributeTokens() {
-    const amount = prompt("Total amount to distribute:");
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      return alert("Invalid amount");
-    }
-
-    const ok = confirm(`⚠️ Distribute ${amount} SBC to all students based on priority and outstanding amounts?\n\nThis will:\n- Sort students by priority (lower number = higher priority)\n- Pay off outstanding amounts first\n- Distribute remaining amount to next students in priority order`);
-    if (!ok) return;
-
-    try {
-      const tx = await contract.distribute(ethers.parseEther(amount));
-      await tx.wait();
-      alert(`✅ Distributed ${amount} SBC to students based on priority and outstanding amounts!\n\nPlease reload the student list to see updated outstanding amounts.`);
-    } catch (err) {
-      alert("❌ Distribution failed: " + (err.message || err.reason || "Unknown error"));
     }
   }
 
@@ -649,7 +598,7 @@ export default function App() {
               objectFit: "contain"
             }}
           />
-          Maverick Coin
+          STEVENS BANANA COIN
         </div>
         <div style={{ 
           fontSize: 14, 
@@ -657,7 +606,7 @@ export default function App() {
           fontWeight: 500,
           marginLeft: "auto"
         }}>
-          Admin Panel
+          Beta Version 0.1.0 (Nov 24, 2025)
         </div>
       </div>
 
@@ -762,7 +711,7 @@ export default function App() {
                   filter: "drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.7))"
                 }}
               />
-              Maverick Coin
+              STEVENS BANANA COIN
             </h1>
             <p style={{
               color: "white",
@@ -834,484 +783,785 @@ export default function App() {
               </p>
             </div>
 
-            {/* ADD STUDENT */}
-            <div style={cardStyle}>
-              <h3 style={{ 
-                marginTop: 0, 
-                marginBottom: 20, 
-                color: stevensRed,
-                fontSize: 20,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.5px"
-              }}>
-                Add / Update Tranche
-              </h3>
-
-              <input
-                placeholder="Wallet Address"
-                value={newStudent.wallet}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, wallet: e.target.value })
-                }
-                style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = stevensRed}
-                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-              />
-
-              <input
-                placeholder="Tranche Name"
-                value={newStudent.name}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, name: e.target.value })
-                }
-                style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = stevensRed}
-                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-              />
-
-              <input
-                placeholder="Tranche ID"
-                value={newStudent.id}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, id: e.target.value })
-                }
-                style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = stevensRed}
-                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-              />
-
-              <input
-                placeholder="Priority (1, 2, 3...)"
-                type="number"
-                value={newStudent.priority}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, priority: e.target.value })
-                }
-                style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = stevensRed}
-                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-              />
-
-              <input
-                placeholder="Total Amount Outstanding"
-                type="number"
-                step="0.01"
-                value={newStudent.total_amount_outstanding}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, total_amount_outstanding: e.target.value })
-                }
-                style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = stevensRed}
-                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-              />
-
-              <button 
-                onClick={addStudent} 
-                style={{
-                  ...buttonStyle,
-                  marginTop: 8,
-                  marginRight: 0,
-                  width: "100%",
-                  background: stevensRed,
-                  color: "white"
-                }}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                Add KYC Compliant Address
-              </button>
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div style={{ 
-              marginBottom: 24,
+            {/* TAB NAVIGATION */}
+            <div style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: 10
+              gap: 8,
+              marginBottom: 24,
+              borderBottom: `2px solid ${stevensRed}`,
+              paddingBottom: 0
             }}>
-              <button 
-                onClick={searchById} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                🔍 Search Student
-              </button>
-              <button 
-                onClick={transferTokens} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                💸 Transfer Tokens
-              </button>
-              <button 
-                onClick={mintTokens} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                🪙 Mint Tokens
-              </button>
-              <button 
-                onClick={burnTokens} 
-                style={{
-                  ...buttonStyle,
-                  background: "#8B1E2E",
-                  color: "white"
-                }}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(139, 30, 46, 0.4)";
-              e.target.style.background = "#6B151F";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(139, 30, 46, 0.3)";
-              e.target.style.background = "#8B1E2E";
-            }}
-              >
-                🔥 Burn Tokens
-              </button>
-              <button 
-                onClick={distributeTokens} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                💰 Distribute Tokens
-              </button>
-              <button 
-                onClick={loadAllStudents} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                📋 Load All Students
-              </button>
-              <button 
-                onClick={deleteStudent} 
-                style={{
-                  ...buttonStyle,
-                  background: "#8B1E2E",
-                  color: "white"
-                }}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(139, 30, 46, 0.4)";
-              e.target.style.background = "#6B151F";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(139, 30, 46, 0.3)";
-              e.target.style.background = "#8B1E2E";
-            }}
-              >
-                🗑️ Delete Student
-              </button>
-              <button 
-                onClick={loadAvailableAddresses} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                📇 Show Available
-              </button>
-              <button 
-                onClick={loadTransactionHistory} 
-                style={buttonStyle}
-                disabled={isLoadingTransactions}
-                onMouseEnter={(e) => {
-              if (!isLoadingTransactions) {
-                e.target.style.transform = "translateY(-2px)";
-                e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-                e.target.style.background = "#8B1E2E";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoadingTransactions) {
-                e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-                e.target.style.background = stevensRed;
-              }
-            }}
-              >
-                {isLoadingTransactions ? "⏳ Loading..." : "📜 Transaction History"}
-              </button>
-              <button 
-                onClick={searchTransactionByHash} 
-                style={buttonStyle}
-                onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-              e.target.style.background = "#8B1E2E";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-              e.target.style.background = stevensRed;
-            }}
-              >
-                🔎 Search by Hash
-              </button>
+              {[
+                { id: "admin", label: "🛠️ Admin Tool", icon: "🛠️" },
+                { id: "studentInfo", label: "👥 Student Info", icon: "👥" },
+                { id: "transfer", label: "💸 Transfer Tokens", icon: "💸" },
+                { id: "available", label: "📇 Available Addresses", icon: "📇" },
+                { id: "transactionInfo", label: "📊 Transaction Info", icon: "📊" }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: "12px 20px",
+                    border: "none",
+                    background: activeTab === tab.id ? stevensRed : "transparent",
+                    color: activeTab === tab.id ? "white" : stevensRed,
+                    fontWeight: activeTab === tab.id ? 700 : 500,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    borderBottom: activeTab === tab.id ? `3px solid ${stevensRed}` : "3px solid transparent",
+                    marginBottom: "-2px",
+                    transition: "all 0.2s ease",
+                    borderRadius: "6px 6px 0 0"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.background = "#f5f5f5";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.background = "transparent";
+                    }
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {/* TRANSACTION HISTORY */}
-            {transactionHistory.length > 0 && (
-              <div style={cardStyle}>
-                <h3 style={{ marginTop: 0, marginBottom: 16, color: stevensRed, fontSize: 18, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  Transaction History ({transactionHistory.length})
-                </h3>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    background: "white",
-                    fontSize: 12
+            {/* TAB CONTENT */}
+            <div style={{ minHeight: "400px" }}>
+              {/* ADMIN TOOL TAB */}
+              {activeTab === "admin" && (
+                <div>
+                  {/* SUB-TAB NAVIGATION */}
+                  <div style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 24,
+                    borderBottom: `2px solid ${stevensRed}`,
+                    paddingBottom: 0
                   }}>
-                    <thead>
-                      <tr style={{ background: stevensRed }}>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Hash</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Block</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Time</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Function</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>From</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>To</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount</th>
-                        <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactionHistory.map((tx, i) => (
-                        <tr 
-                          key={i}
+                    {[
+                      { id: "addUpdate", label: "➕ Add/Update", icon: "➕" },
+                      { id: "delete", label: "🗑️ Delete", icon: "🗑️" },
+                      { id: "mint", label: "🪙 Mint", icon: "🪙" },
+                      { id: "burn", label: "🔥 Burn", icon: "🔥" }
+                    ].map(subTab => (
+                      <button
+                        key={subTab.id}
+                        onClick={() => setActiveAdminSubTab(subTab.id)}
+                        style={{
+                          padding: "10px 18px",
+                          border: "none",
+                          background: activeAdminSubTab === subTab.id ? stevensRed : "transparent",
+                          color: activeAdminSubTab === subTab.id ? "white" : stevensRed,
+                          fontWeight: activeAdminSubTab === subTab.id ? 700 : 500,
+                          fontSize: 12,
+                          cursor: "pointer",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          borderBottom: activeAdminSubTab === subTab.id ? `3px solid ${stevensRed}` : "3px solid transparent",
+                          marginBottom: "-2px",
+                          transition: "all 0.2s ease",
+                          borderRadius: "6px 6px 0 0"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeAdminSubTab !== subTab.id) {
+                            e.target.style.background = "#f5f5f5";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeAdminSubTab !== subTab.id) {
+                            e.target.style.background = "transparent";
+                          }
+                        }}
+                      >
+                        {subTab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* SUB-TAB CONTENT */}
+                  <div style={cardStyle}>
+                    {/* ADD/UPDATE SUB-TAB */}
+                    {activeAdminSubTab === "addUpdate" && (
+                      <>
+                        <h3 style={{ 
+                          marginTop: 0, 
+                          marginBottom: 20, 
+                          color: stevensRed,
+                          fontSize: 20,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px"
+                        }}>
+                          Add / Update Student
+                        </h3>
+
+                        <input
+                          placeholder="Wallet Address"
+                          value={newStudent.wallet}
+                          onChange={(e) =>
+                            setNewStudent({ ...newStudent, wallet: e.target.value })
+                          }
+                          style={inputStyle}
+                          onFocus={(e) => e.target.style.borderColor = stevensRed}
+                          onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+                        />
+
+                        <input
+                          placeholder="Student Name"
+                          value={newStudent.name}
+                          onChange={(e) =>
+                            setNewStudent({ ...newStudent, name: e.target.value })
+                          }
+                          style={inputStyle}
+                          onFocus={(e) => e.target.style.borderColor = stevensRed}
+                          onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+                        />
+
+                        <input
+                          placeholder="Student ID"
+                          value={newStudent.id}
+                          onChange={(e) =>
+                            setNewStudent({ ...newStudent, id: e.target.value })
+                          }
+                          style={inputStyle}
+                          onFocus={(e) => e.target.style.borderColor = stevensRed}
+                          onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+                        />
+
+                        <button 
+                          onClick={addStudent} 
                           style={{
-                            borderBottom: "1px solid #e9ecef"
+                            ...buttonStyle,
+                            marginTop: 8,
+                            marginRight: 0,
+                            width: "100%",
+                            background: stevensRed,
+                            color: "white"
                           }}
-                          onMouseEnter={(e) => e.target.style.background = "#fafafa"}
-                          onMouseLeave={(e) => e.target.style.background = "white"}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                            e.target.style.background = "#8B1E2E";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                            e.target.style.background = stevensRed;
+                          }}
                         >
-                          <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all", cursor: "pointer" }} title={tx.hash}>
-                            {tx.hash.substring(0, 10)}...{tx.hash.substring(tx.hash.length - 8)}
-                          </td>
-                          <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11 }}>{tx.blockNumber.toString()}</td>
-                          <td style={{ padding: 10, color: stevensTextGrey, fontSize: 10 }} title={tx.date}>
-                            {tx.date ? tx.date : "N/A"}
-                          </td>
-                          <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11, fontWeight: 600 }} title={tx.functionParams || ""}>
-                            {tx.functionName || tx.type || "Unknown"}
-                          </td>
-                          <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferFrom || tx.from}>
-                            {tx.transferFrom ? 
-                              `${tx.transferFrom.substring(0, 6)}...${tx.transferFrom.substring(tx.transferFrom.length - 4)}` :
-                              `${tx.from ? tx.from.substring(0, 6) + "..." + tx.from.substring(tx.from.length - 4) : "N/A"}`
-                            }
-                          </td>
-                          <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferTo || tx.to}>
-                            {tx.transferTo ? 
-                              `${tx.transferTo.substring(0, 6)}...${tx.transferTo.substring(tx.transferTo.length - 4)}` :
-                              `${tx.to ? tx.to.substring(0, 6) + "..." + tx.to.substring(tx.to.length - 4) : "N/A"}`
-                            }
-                          </td>
-                          <td style={{ padding: 10, color: stevensRed, fontWeight: 600, fontSize: 11 }}>
-                            {tx.transferAmount ? `${parseFloat(tx.transferAmount).toFixed(2)} SBC` : `${tx.value} ETH`}
-                          </td>
-                          <td style={{ padding: 10, fontSize: 11 }}>
-                            <span style={{
-                              color: tx.status === "Success" ? "#28a745" : "#dc3545",
-                              fontWeight: 600
-                            }}>
-                              {tx.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          Add Student
+                        </button>
+                      </>
+                    )}
+
+                    {/* DELETE SUB-TAB */}
+                    {activeAdminSubTab === "delete" && (
+                      <>
+                        <h3 style={{ 
+                          marginTop: 0, 
+                          marginBottom: 20, 
+                          color: stevensRed,
+                          fontSize: 20,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px"
+                        }}>
+                          🗑️ Delete Student
+                        </h3>
+                        <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                          Remove a student from the whitelist by their Student ID.
+                        </p>
+                        <button 
+                          onClick={deleteStudent} 
+                          style={{
+                            ...buttonStyle,
+                            width: "100%",
+                            background: "#8B1E2E",
+                            color: "white"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 8px rgba(139, 30, 46, 0.4)";
+                            e.target.style.background = "#6B151F";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 2px 4px rgba(139, 30, 46, 0.3)";
+                            e.target.style.background = "#8B1E2E";
+                          }}
+                        >
+                          Delete Student
+                        </button>
+                      </>
+                    )}
+
+                    {/* MINT SUB-TAB */}
+                    {activeAdminSubTab === "mint" && (
+                      <>
+                        <h3 style={{ 
+                          marginTop: 0, 
+                          marginBottom: 20, 
+                          color: stevensRed,
+                          fontSize: 20,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px"
+                        }}>
+                          🪙 Mint Tokens
+                        </h3>
+                        <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                          Create new SBC tokens and add them to a whitelisted student's wallet.
+                        </p>
+                        <button 
+                          onClick={mintTokens} 
+                          style={{
+                            ...buttonStyle,
+                            width: "100%",
+                            background: stevensRed,
+                            color: "white"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                            e.target.style.background = "#8B1E2E";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                            e.target.style.background = stevensRed;
+                          }}
+                        >
+                          Mint Tokens
+                        </button>
+                      </>
+                    )}
+
+                    {/* BURN SUB-TAB */}
+                    {activeAdminSubTab === "burn" && (
+                      <>
+                        <h3 style={{ 
+                          marginTop: 0, 
+                          marginBottom: 20, 
+                          color: stevensRed,
+                          fontSize: 20,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px"
+                        }}>
+                          🔥 Burn Tokens
+                        </h3>
+                        <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                          Permanently remove SBC tokens from a wallet address.
+                        </p>
+                        <button 
+                          onClick={burnTokens} 
+                          style={{
+                            ...buttonStyle,
+                            width: "100%",
+                            background: "#8B1E2E",
+                            color: "white"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = "translateY(-2px)";
+                            e.target.style.boxShadow = "0 4px 8px rgba(139, 30, 46, 0.4)";
+                            e.target.style.background = "#6B151F";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "0 2px 4px rgba(139, 30, 46, 0.3)";
+                            e.target.style.background = "#8B1E2E";
+                          }}
+                        >
+                          Burn Tokens
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* STUDENT DETAILS */}
-            {studentInfo && (
-              <div style={cardStyle}>
-                <h3 style={{ marginTop: 0, marginBottom: 16, color: stevensRed, fontSize: 18, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  Student Details
-                </h3>
-                <pre style={{ 
-                  background: "#f8f9fa", 
-                  padding: 20,
-                  borderRadius: 8,
-                  border: "1px solid #e9ecef",
-                  overflow: "auto",
-                  fontSize: 14,
-                  lineHeight: 1.6,
-                  color: "#495057"
-                }}>
-                {JSON.stringify(studentInfo, null, 2)}
-              </pre>
-              </div>
-            )}
-
-            {/* STUDENT TABLE */}
-            {studentList.length > 0 && (
-              <div style={cardStyle}>
-                <h3 style={{ marginTop: 0, marginBottom: 16, color: stevensRed, fontSize: 18, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  All Students ({studentList.length})
-                </h3>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    background: "white"
+              {/* STUDENT INFO TAB */}
+              {activeTab === "studentInfo" && (
+                <div style={cardStyle}>
+                  <h3 style={{ 
+                    marginTop: 0, 
+                    marginBottom: 20, 
+                    color: stevensRed,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
                   }}>
-                <thead>
-                      <tr style={{ background: stevensRed }}>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Priority</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount Outstanding</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentList.map((s, i) => (
-                        <tr 
-                          key={i}
-                          style={{
-                            borderBottom: "1px solid #e9ecef",
-                            transition: "background 0.2s ease"
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = "#fafafa"}
-                          onMouseLeave={(e) => e.target.style.background = "white"}
-                        >
-                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
-                          <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.balance} SBC</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 600 }}>{s.priority}</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.total_amount_outstanding} SBC</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-                </div>
-              </div>
-            )}
-
-            {/* AVAILABLE ADDRESSES PANEL */}
-            {available.length > 0 && (
-        <div style={{
-          background: "white",
-          padding: 20,
-          borderRadius: 8,
-          width: 380,
-          maxWidth: 380,
-          marginTop: 100,
-          alignSelf: "flex-start",
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-          border: "1px solid #e8e8e8"
-        }}>
-          <h3 style={{ 
-            color: stevensRed, 
-            marginTop: 0, 
-            marginBottom: 16,
-            fontSize: 16,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            Unused Wallet Addresses
-          </h3>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              background: "white"
-            }}>
-            <thead>
-                <tr style={{ background: stevensRed }}>
-                  <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>#</th>
-                  <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Address</th>
-              </tr>
-            </thead>
-            <tbody>
-              {available.map((addr, i) => (
-                  <tr 
-                    key={i}
+                    🔍 Search Student
+                  </h3>
+                  <button 
+                    onClick={searchById} 
                     style={{
-                      borderBottom: "1px solid #e9ecef"
+                      ...buttonStyle,
+                      width: "100%",
+                      background: stevensRed,
+                      color: "white"
                     }}
-                    onMouseEnter={(e) => e.target.style.background = "#fafafa"}
-                    onMouseLeave={(e) => e.target.style.background = "white"}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                      e.target.style.background = "#8B1E2E";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                      e.target.style.background = stevensRed;
+                    }}
                   >
-                    <td style={{ padding: 10, fontSize: 13, color: stevensDarkGrey, fontWeight: 500 }}>{i + 1}</td>
-                    <td style={{ padding: 10, fontSize: 11, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{addr}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        </div>
-      )}
+                    Search by Student ID
+                  </button>
+                  {studentInfo && (
+                    <div style={{ marginTop: 24 }}>
+                      <h4 style={{ color: stevensRed, marginBottom: 12 }}>Student Details</h4>
+                      <pre style={{ 
+                        background: "#f8f9fa", 
+                        padding: 20,
+                        borderRadius: 8,
+                        border: "1px solid #e9ecef",
+                        overflow: "auto",
+                        fontSize: 14,
+                        lineHeight: 1.6,
+                        color: "#495057"
+                      }}>
+                        {JSON.stringify(studentInfo, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: 32, paddingTop: 24, borderTop: "2px solid #e0e0e0" }}>
+                    <h3 style={{ 
+                      marginTop: 0, 
+                      marginBottom: 20, 
+                      color: stevensRed,
+                      fontSize: 20,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px"
+                    }}>
+                      📋 Load All Students
+                    </h3>
+                    <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                      Load and display all registered students from the blockchain.
+                    </p>
+                    <button 
+                      onClick={loadAllStudents} 
+                      style={{
+                        ...buttonStyle,
+                        width: "100%",
+                        background: stevensRed,
+                        color: "white"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = "translateY(-2px)";
+                        e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                        e.target.style.background = "#8B1E2E";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                        e.target.style.background = stevensRed;
+                      }}
+                    >
+                      Load All Students
+                    </button>
+                    {studentList.length > 0 && (
+                      <div style={{ marginTop: 24 }}>
+                        <h4 style={{ color: stevensRed, marginBottom: 16 }}>All Students ({studentList.length})</h4>
+                        <div style={{ overflowX: "auto" }}>
+                          <table style={{
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            background: "white"
+                          }}>
+                            <thead>
+                              <tr style={{ background: stevensRed }}>
+                                <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
+                                <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
+                                <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
+                                <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {studentList.map((s, i) => (
+                                <tr 
+                                  key={i}
+                                  style={{
+                                    borderBottom: "1px solid #e9ecef",
+                                    transition: "background 0.2s ease"
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = "#fafafa"}
+                                  onMouseLeave={(e) => e.target.style.background = "white"}
+                                >
+                                  <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
+                                  <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
+                                  <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
+                                  <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.balance} SBC</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TRANSFER TOKENS TAB */}
+              {activeTab === "transfer" && (
+                <div style={cardStyle}>
+                  <h3 style={{ 
+                    marginTop: 0, 
+                    marginBottom: 20, 
+                    color: stevensRed,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>
+                    💸 Transfer Tokens
+                  </h3>
+                  <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                    Transfer SBC tokens from your wallet to another whitelisted address.
+                  </p>
+                  <button 
+                    onClick={transferTokens} 
+                    style={{
+                      ...buttonStyle,
+                      width: "100%",
+                      background: stevensRed,
+                      color: "white"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                      e.target.style.background = "#8B1E2E";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                      e.target.style.background = stevensRed;
+                    }}
+                  >
+                    Transfer Tokens
+                  </button>
+                </div>
+              )}
+
+              {/* SHOW AVAILABLE TAB */}
+              {activeTab === "available" && (
+                <div style={cardStyle}>
+                  <h3 style={{ 
+                    marginTop: 0, 
+                    marginBottom: 20, 
+                    color: stevensRed,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>
+                    📇 Show Available Addresses
+                  </h3>
+                  <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                    Display wallet addresses that are available but not yet registered as students.
+                  </p>
+                  <button 
+                    onClick={loadAvailableAddresses} 
+                    style={{
+                      ...buttonStyle,
+                      width: "100%",
+                      background: stevensRed,
+                      color: "white"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                      e.target.style.background = "#8B1E2E";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                      e.target.style.background = stevensRed;
+                    }}
+                  >
+                    Load Available Addresses
+                  </button>
+                  {available.length > 0 && (
+                    <div style={{ marginTop: 24 }}>
+                      <h4 style={{ color: stevensRed, marginBottom: 16 }}>Unused Wallet Addresses</h4>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          background: "white"
+                        }}>
+                          <thead>
+                            <tr style={{ background: stevensRed }}>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>#</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Address</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {available.map((addr, i) => (
+                              <tr 
+                                key={i}
+                                style={{
+                                  borderBottom: "1px solid #e9ecef"
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = "#fafafa"}
+                                onMouseLeave={(e) => e.target.style.background = "white"}
+                              >
+                                <td style={{ padding: 10, fontSize: 13, color: stevensDarkGrey, fontWeight: 500 }}>{i + 1}</td>
+                                <td style={{ padding: 10, fontSize: 11, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{addr}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TRANSACTION INFO TAB */}
+              {activeTab === "transactionInfo" && (
+                <div style={cardStyle}>
+                  <h3 style={{ 
+                    marginTop: 0, 
+                    marginBottom: 20, 
+                    color: stevensRed,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>
+                    📜 Transaction History
+                  </h3>
+                  <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                    Load and view all recent transactions on the SBC contract.
+                  </p>
+                  <button 
+                    onClick={loadTransactionHistory} 
+                    style={{
+                      ...buttonStyle,
+                      width: "100%",
+                      background: stevensRed,
+                      color: "white",
+                      disabled: isLoadingTransactions
+                    }}
+                    disabled={isLoadingTransactions}
+                    onMouseEnter={(e) => {
+                      if (!isLoadingTransactions) {
+                        e.target.style.transform = "translateY(-2px)";
+                        e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                        e.target.style.background = "#8B1E2E";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isLoadingTransactions) {
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                        e.target.style.background = stevensRed;
+                      }
+                    }}
+                  >
+                    {isLoadingTransactions ? "⏳ Loading..." : "Load Transaction History"}
+                  </button>
+                  {transactionHistory.length > 0 && (
+                    <div style={{ marginTop: 24 }}>
+                      <h4 style={{ color: stevensRed, marginBottom: 16 }}>Transaction History ({transactionHistory.length})</h4>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          background: "white",
+                          fontSize: 12
+                        }}>
+                          <thead>
+                            <tr style={{ background: stevensRed }}>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Hash</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Block</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Time</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Function</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>From</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>To</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount</th>
+                              <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {transactionHistory.map((tx, i) => (
+                              <tr 
+                                key={i}
+                                style={{
+                                  borderBottom: "1px solid #e9ecef"
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = "#fafafa"}
+                                onMouseLeave={(e) => e.target.style.background = "white"}
+                              >
+                                <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all", cursor: "pointer" }} title={tx.hash}>
+                                  {tx.hash.substring(0, 10)}...{tx.hash.substring(tx.hash.length - 8)}
+                                </td>
+                                <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11 }}>{tx.blockNumber.toString()}</td>
+                                <td style={{ padding: 10, color: stevensTextGrey, fontSize: 10 }} title={tx.date}>
+                                  {tx.date ? tx.date : "N/A"}
+                                </td>
+                                <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11, fontWeight: 600 }} title={tx.functionParams || ""}>
+                                  {tx.functionName || tx.type || "Unknown"}
+                                </td>
+                                <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferFrom || tx.from}>
+                                  {tx.transferFrom ? 
+                                    `${tx.transferFrom.substring(0, 6)}...${tx.transferFrom.substring(tx.transferFrom.length - 4)}` :
+                                    `${tx.from ? tx.from.substring(0, 6) + "..." + tx.from.substring(tx.from.length - 4) : "N/A"}`
+                                  }
+                                </td>
+                                <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferTo || tx.to}>
+                                  {tx.transferTo ? 
+                                    `${tx.transferTo.substring(0, 6)}...${tx.transferTo.substring(tx.transferTo.length - 4)}` :
+                                    `${tx.to ? tx.to.substring(0, 6) + "..." + tx.to.substring(tx.to.length - 4) : "N/A"}`
+                                  }
+                                </td>
+                                <td style={{ padding: 10, color: stevensRed, fontWeight: 600, fontSize: 11 }}>
+                                  {tx.transferAmount ? `${parseFloat(tx.transferAmount).toFixed(2)} SBC` : `${tx.value} ETH`}
+                                </td>
+                                <td style={{ padding: 10, fontSize: 11 }}>
+                                  <span style={{
+                                    color: tx.status === "Success" ? "#28a745" : "#dc3545",
+                                    fontWeight: 600
+                                  }}>
+                                    {tx.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: 32, paddingTop: 24, borderTop: "2px solid #e0e0e0" }}>
+                    <h3 style={{ 
+                      marginTop: 0, 
+                      marginBottom: 20, 
+                      color: stevensRed,
+                      fontSize: 20,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px"
+                    }}>
+                      🔎 Search by Hash
+                    </h3>
+                    <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+                      Search for a specific transaction by its hash.
+                    </p>
+                    <button 
+                      onClick={searchTransactionByHash} 
+                      style={{
+                        ...buttonStyle,
+                        width: "100%",
+                        background: stevensRed,
+                        color: "white"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = "translateY(-2px)";
+                        e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                        e.target.style.background = "#8B1E2E";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                        e.target.style.background = stevensRed;
+                      }}
+                    >
+                      Search Transaction by Hash
+                    </button>
+                    {transactionHistory.length > 0 && (
+                      <div style={{ marginTop: 24 }}>
+                        <h4 style={{ color: stevensRed, marginBottom: 16 }}>Transaction Details</h4>
+                        <div style={{ overflowX: "auto" }}>
+                          <table style={{
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            background: "white",
+                            fontSize: 12
+                          }}>
+                            <thead>
+                              <tr style={{ background: stevensRed }}>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Hash</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Block</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Time</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>From</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>To</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Amount</th>
+                                <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {transactionHistory.map((tx, i) => (
+                                <tr 
+                                  key={i}
+                                  style={{
+                                    borderBottom: "1px solid #e9ecef"
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = "#fafafa"}
+                                  onMouseLeave={(e) => e.target.style.background = "white"}
+                                >
+                                  <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all", cursor: "pointer" }} title={tx.hash}>
+                                    {tx.hash.substring(0, 10)}...{tx.hash.substring(tx.hash.length - 8)}
+                                  </td>
+                                  <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11 }}>{tx.blockNumber.toString()}</td>
+                                  <td style={{ padding: 10, color: stevensTextGrey, fontSize: 10 }} title={tx.date}>
+                                    {tx.date ? tx.date : "N/A"}
+                                  </td>
+                                  <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferFrom || tx.from}>
+                                    {tx.transferFrom ? 
+                                      `${tx.transferFrom.substring(0, 6)}...${tx.transferFrom.substring(tx.transferFrom.length - 4)}` :
+                                      `${tx.from ? tx.from.substring(0, 6) + "..." + tx.from.substring(tx.from.length - 4) : "N/A"}`
+                                    }
+                                  </td>
+                                  <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all" }} title={tx.transferTo || tx.to}>
+                                    {tx.transferTo ? 
+                                      `${tx.transferTo.substring(0, 6)}...${tx.transferTo.substring(tx.transferTo.length - 4)}` :
+                                      `${tx.to ? tx.to.substring(0, 6) + "..." + tx.to.substring(tx.to.length - 4) : "N/A"}`
+                                    }
+                                  </td>
+                                  <td style={{ padding: 10, color: stevensRed, fontWeight: 600, fontSize: 11 }}>
+                                    {tx.transferAmount ? `${parseFloat(tx.transferAmount).toFixed(2)} SBC` : `${tx.value} ETH`}
+                                  </td>
+                                  <td style={{ padding: 10, fontSize: 11 }}>
+                                    <span style={{
+                                      color: tx.status === "Success" ? "#28a745" : "#dc3545",
+                                      fontWeight: 600
+                                    }}>
+                                      {tx.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
           </div>

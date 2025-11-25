@@ -12,7 +12,7 @@ contract SBCTest is Test {
     }
 
     function testWhitelistAndMint() public {
-        token.addStudent(student, "Alice", 12345, 1, 0);
+        token.addStudent(student, "Alice", 12345);
         token.mint(student, 100 * 1e18);
 
         assertEq(token.balanceOf(student), 100 * 1e18);
@@ -22,7 +22,7 @@ contract SBCTest is Test {
         address a = address(0x111);
         // address b = address(0x222);
 
-        token.addStudent(a, "A", 1, 1, 0);
+        token.addStudent(a, "A", 1);
         token.mint(a, 100);
 
         vm.prank(a);
