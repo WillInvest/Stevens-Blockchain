@@ -12,38 +12,38 @@ But a history of **real work done, stakes taken, and reputation earned** on-chai
 
 flowchart TD
 
-    A[StudentManagement.sol  
-    Whitelisting / Roles / Stevens IDs]
+A[StudentManagement.sol  
+Whitelisting / Roles / Stevens IDs]
 
-    P[Professors (whitelisted)]
-    S[Students (whitelisted)]
+P[Professors (whitelisted)]
+S[Students (whitelisted)]
 
-    POR[ProofOfReputation (ERC721 SBT)]
-    TM[TaskManager.sol  
-    Task Marketplace]
-    DC[DuckCoin (ERC20)  
-    Bidding / Liquidity]
+POR[ProofOfReputation (ERC721 SBT)]
+TM[TaskManager.sol  
+Task Marketplace]
+DC[DuckCoin (ERC20)  
+Bidding / Liquidity]
 
-    LP[LendingPool.sol  
-    Stake PoR -> Borrow DC]
-    LQ[Liquidity Layer  
-    AMM.sol (DEX) + SHIFT.sol (CEX)]
+LP[LendingPool.sol  
+Stake PoR -> Borrow DC]
+LQ[Liquidity Layer  
+AMM.sol (DEX) + SHIFT.sol (CEX)]
 
-    A --> P
-    A --> S
+A --> P
+A --> S
 
-    P --> TM
-    S --> TM
+P --> TM
+S --> TM
 
-    TM --> POR
-    TM --> DC
-    DC --> TM
+TM --> POR
+TM --> DC
+DC --> TM
 
-    POR --> LP
-    LP --> DC
+POR --> LP
+LP --> DC
 
-    DC --> LQ
-    LQ --> DC
+DC --> LQ
+LQ --> DC
 
 
 
