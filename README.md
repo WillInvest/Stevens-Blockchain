@@ -10,24 +10,25 @@ But a history of **real work done, stakes taken, and reputation earned** on-chai
 
 ---
 
-## Architecture Overview
 flowchart TD
 
-    %% ========= Identity Layer =========
-    A[StudentManagement.sol<br>Whitelisting / Roles / Stevens IDs]
+    A[StudentManagement.sol  
+    Whitelisting / Roles / Stevens IDs]
+
     P[Professors (whitelisted)]
     S[Students (whitelisted)]
 
-    %% ========= Core Layer =========
     POR[ProofOfReputation (ERC721 SBT)]
-    TM[TaskManager.sol<br>Task Marketplace]
-    DC[DuckCoin (ERC20)<br>Bidding / Liquidity]
+    TM[TaskManager.sol  
+    Task Marketplace]
+    DC[DuckCoin (ERC20)  
+    Bidding / Liquidity]
 
-    %% ========= Finance Layer =========
-    LP[LendingPool.sol<br>Stake PoR → Borrow DC]
-    LQ[Liquidity Layer<br>AMM.sol (DEX) + SHIFT.sol (CEX)]
+    LP[LendingPool.sol  
+    Stake PoR -> Borrow DC]
+    LQ[Liquidity Layer  
+    AMM.sol (DEX) + SHIFT.sol (CEX)]
 
-    %% ========= Connections =========
     A --> P
     A --> S
 
@@ -43,6 +44,7 @@ flowchart TD
 
     DC --> LQ
     LQ --> DC
+
 
 
 
