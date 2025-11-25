@@ -25,27 +25,53 @@ Stevens Blockchain aims to create a transparent, decentralized ecosystem where a
 
 ### 2.1 Core Components
 
-The Stevens Blockchain ecosystem consists of three primary smart contracts:
+The Stevens Blockchain ecosystem consists of multiple smart contracts working together:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│              StudentManagement.sol                           │
-│              (Central Coordinator)                           │
-│  - Student whitelist management                              │
-│  - Token operation coordination                             │
-│  - Role-based access control                                │
-└──────────────┬──────────────────────────────────────────────┘
-               │
-       ┌───────┴────────┐
-       │                │
-       ▼                ▼
-┌──────────────┐  ┌──────────────────┐
-│ DuckCoin.sol │  │ ProveOfReputation │
-│ (ERC20)      │  │ .sol (ERC721)      │
-│              │  │                   │
-│ Transferable │  │ Non-transferable  │
-│ Fungible     │  │ Performance Metric │
-└──────────────┘  └──────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    StudentManagement.sol                      │
+│                     (Central Coordinator)                     │
+│             - Handles student whitelist management            │
+│             - Coordinates token operations                    │
+│             - Role-based access control                       │
+└───────────────────────────┬────────────────────────────────────┘
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+                ▼                       ▼
+┌─────────────────────────┐   ┌──────────────────────────────┐
+│       DuckCoin.sol      │   │     ProofOfReputation.sol     │
+│         (ERC20)         │   │            (ERC721)           │
+│                         │   │                                │
+│     • Transferable      │   │   • Non-transferable (SBT)     │
+│     • Fungible Token    │   │   • Reputation / Performance   │
+│     • Mint/Burn via     │   │   • Mint/Burn via              │
+│       StudentManagement │   │     StudentManagement          │
+└─────────────────────────┘   └──────────────────────────────┘
+         │                              │
+         │                              │
+         └──────────┬───────────────────┘
+                    │
+        ┌───────────┼───────────┬──────────────┐
+        │           │           │              │
+        ▼           ▼           ▼              ▼
+┌─────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│ TaskManager │ │ Lending  │ │  AMM.sol │ │ SHIFT.sol│
+│    .sol     │ │ Pool.sol │ │   (DEX)  │ │   (CEX)  │
+│             │ │          │ │          │ │          │
+│ • Task      │ │ • P2P    │ │ • Token  │ │ • Order  │
+│   Creation  │ │   Lending│ │   Swaps  │ │   Book   │
+│ • Live      │ │ • PoR    │ │ • Liquidity│ │ • Central│
+│   Bidding   │ │   Collateral│ • AMM   │ │   Exchange│
+│ • DC Staking│ │ • Interest│ │   Formula│ │          │
+│ • PoR       │ │   Rates  │ │          │ │          │
+│   Rewards   │ │          │ │          │ │          │
+│             │ │          │ │          │ │          │
+│ Dependencies│ │ Dependencies│ Dependencies│ Dependencies│
+│ • StudentMgmt│ │ • StudentMgmt│ • StudentMgmt│ • StudentMgmt│
+│ • DuckCoin  │ │ • DuckCoin  │ • DuckCoin  │ • DuckCoin  │
+│ • PoR       │ │ • PoR       │ • PoR       │ • PoR       │
+└─────────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
 ### 2.2 Token Types
@@ -242,8 +268,15 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 
 The platform includes exchange functionality with two mechanisms:
 
-1. **AMM (Automated Market Maker)**: Decentralized exchange for token swaps
-2. **SHIFT**: Alternative exchange mechanism (to be implemented)
+1. **AMM (Automated Market Maker) - DEX**: Decentralized exchange for token swaps
+   - Automated liquidity provision
+   - Constant product formula (x * y = k)
+   - Permissionless trading
+
+2. **SHIFT - CEX**: Centralized exchange mechanism
+   - Order book-based trading
+   - Centralized matching engine
+   - Alternative to AMM for different trading preferences
 
 ---
 
@@ -306,31 +339,66 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Manages student whitelist
 - Coordinates token operations
 - Role-based access control (Professor/Student/Admin)
+- Delegates minting/burning to token contracts
 
 #### **DuckCoin.sol (ERC20)**
 - Standard ERC20 implementation
-- Minting: Admin-controlled
+- Minting: Admin-controlled via StudentManagement
 - Burning: Automatic on task completion
 - Transfer: Whitelist-enforced
+- Base token for all economic activities
 
 #### **ProveOfReputation.sol (ERC721)**
-- Standard ERC721 implementation
+- Standard ERC721 implementation (Soulbound Token - SBT)
 - Non-transferable (enforced in contract)
-- Minting: Task completion rewards
-- Burning: Dispute resolution slashing
+- Minting: Admin-controlled via StudentManagement
+- Burning: Admin-controlled via StudentManagement (dispute resolution)
+- Represents on-chain academic performance
+- Used by: TaskManager (rewards), LendingPool (collateral), AMM/SHIFT (trading)
 
-#### **TaskManager.sol** (Planned)
+#### **TaskManager.sol**
 - Task creation and management
-- Live bidding system
+- Live bidding system with Duck Coin
 - Task assignment and completion
-- Dispute handling
-- PoR transfer coordination
+- Dispute handling and resolution
+- PoR transfer coordination (via StudentManagement)
+- DC staking and burning on completion
+- **Dependencies**: 
+  - StudentManagement (whitelist checks, role verification)
+  - DuckCoin (bidding, staking, burning)
+  - ProveOfReputation (rewards, credit scores)
 
-#### **LendingPool.sol** (Planned)
-- Peer-to-peer lending
-- Dynamic interest rate calculation
-- PoR collateral management
-- Utilization tracking
+#### **LendingPool.sol**
+- Peer-to-peer lending platform
+- Dynamic interest rate calculation (utilization-based)
+- PoR collateral management for borrowers
+- Supply and borrow tracking
+- Utilization rate monitoring
+- **Dependencies**:
+  - StudentManagement (whitelist checks)
+  - DuckCoin (lending/borrowing asset)
+  - ProveOfReputation (collateral for borrowers)
+
+#### **AMM.sol (DEX - Decentralized Exchange)**
+- Automated Market Maker
+- Token swap functionality (DC ↔ PoR)
+- Liquidity pool management
+- Constant product formula (x * y = k)
+- Price discovery mechanism
+- **Dependencies**:
+  - StudentManagement (whitelist checks)
+  - DuckCoin (trading pair)
+  - ProveOfReputation (trading pair)
+
+#### **SHIFT.sol (CEX - Centralized Exchange)**
+- Centralized exchange mechanism
+- Order book management
+- Centralized matching engine
+- Alternative to AMM for trading
+- **Dependencies**:
+  - StudentManagement (whitelist checks)
+  - DuckCoin (trading pair)
+  - ProveOfReputation (trading pair)
 
 ### 6.2 Frontend Architecture
 
