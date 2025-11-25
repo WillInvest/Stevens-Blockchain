@@ -10,7 +10,7 @@ Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to 
 
 ### 1.1 Vision
 
-Stevens Blockchain aims to create a transparent, decentralized ecosystem where academic performance is quantified on-chain, task completion is incentivized through a competitive bidding system, and students can leverage their reputation to access financial services within the platform.
+Stevens Blockchain aims to create a transparent, decentralized ecosystem where academic performance is quantified on-chain, task completion is incentivized through a competitive bidding system, and students can leverage their reputation to create rewarded task publicly, i.e., research, tutoring, conference, survey, etc.
 
 ### 1.2 Core Principles
 
