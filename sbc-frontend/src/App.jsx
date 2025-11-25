@@ -649,7 +649,7 @@ export default function App() {
               objectFit: "contain"
             }}
           />
-          STEVENS BANANA COIN
+          Maverick Coin
         </div>
         <div style={{ 
           fontSize: 14, 
@@ -762,7 +762,7 @@ export default function App() {
                   filter: "drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.7))"
                 }}
               />
-              STEVENS BANANA COIN
+              Maverick Coin
             </h1>
             <p style={{
               color: "white",
@@ -845,7 +845,7 @@ export default function App() {
                 textTransform: "uppercase",
                 letterSpacing: "0.5px"
               }}>
-                Add / Update Student
+                Add / Update Tranche
               </h3>
 
               <input
@@ -860,7 +860,7 @@ export default function App() {
               />
 
               <input
-                placeholder="Student Name"
+                placeholder="Tranche Name"
                 value={newStudent.name}
                 onChange={(e) =>
                   setNewStudent({ ...newStudent, name: e.target.value })
@@ -871,7 +871,7 @@ export default function App() {
               />
 
               <input
-                placeholder="Student ID"
+                placeholder="Tranche ID"
                 value={newStudent.id}
                 onChange={(e) =>
                   setNewStudent({ ...newStudent, id: e.target.value })
@@ -927,7 +927,7 @@ export default function App() {
               e.target.style.background = stevensRed;
             }}
               >
-                Add Student
+                Add KYC Compliant Address
               </button>
             </div>
 
