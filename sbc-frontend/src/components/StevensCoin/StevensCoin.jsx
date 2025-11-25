@@ -1,11 +1,11 @@
 import { useState } from "react";
-import AdminTool from "./AdminTool";
-import TransferCoin from "./TransferCoin";
+import DuckCoin from "./DuckCoin";
+import ProveOfReputation from "./ProveOfReputation";
 import { stevensRed, stevensTextGrey } from "../../styles/constants";
 import { SBC_ADDRESS } from "../../contracts/config";
 
-export default function StevensCoin({ contract, wallet }) {
-  const [activeSubTab, setActiveSubTab] = useState("admin");
+export default function StevensCoin({ contract, duckCoinContract, nftContract, wallet }) {
+  const [activeSubTab, setActiveSubTab] = useState("duckCoin");
 
   return (
     <div>
@@ -19,8 +19,8 @@ export default function StevensCoin({ contract, wallet }) {
         paddingBottom: 0
       }}>
         {[
-          { id: "admin", label: "🛠️ Admin Tool", icon: "🛠️" },
-          { id: "transfer", label: "💸 Transfer Coin", icon: "💸" }
+          { id: "duckCoin", label: "🦆 Duck Coin", icon: "🦆" },
+          { id: "proveOfReputation", label: "🏆 Prove of Reputation", icon: "🏆" }
         ].map(subTab => (
           <button
             key={subTab.id}
@@ -56,7 +56,7 @@ export default function StevensCoin({ contract, wallet }) {
         ))}
       </div>
 
-      {/* Contract Address */}
+      {/* Contract Address
       <div style={{
         marginBottom: 16,
         padding: "12px 16px",
@@ -70,10 +70,21 @@ export default function StevensCoin({ contract, wallet }) {
         <span style={{ fontSize: 12, fontFamily: "monospace", color: stevensRed, fontWeight: 600 }}>
           {SBC_ADDRESS}
         </span>
-      </div>
+      </div> */}
 
-      {activeSubTab === "admin" && <AdminTool contract={contract} />}
-      {activeSubTab === "transfer" && <TransferCoin contract={contract} wallet={wallet} />}
+      {activeSubTab === "duckCoin" && (
+        <DuckCoin 
+          contract={contract} 
+          duckCoinContract={duckCoinContract}
+          wallet={wallet} 
+        />
+      )}
+      {activeSubTab === "proveOfReputation" && (
+        <ProveOfReputation 
+          contract={contract}
+          nftContract={nftContract}
+        />
+      )}
     </div>
   );
 }

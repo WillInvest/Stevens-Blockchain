@@ -44,27 +44,59 @@ echo "Waiting for Anvil to start..."
 sleep 5
 
 echo ""
-echo "=== Deploying SBC to Anvil ==="
-forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast
+echo "=== Deploying Contracts to Anvil ==="
+echo "Deploying new contracts (StudentManagement, DuckCoin, ProveOfReputation)..."
+forge script script/DeployNewContracts.s.sol:DeployNewContracts --rpc-url $RPC_URL --broadcast
 
 echo ""
-echo "=== Getting latest deployed SBC address ==="
-RUN_FILE="$PROJECT_ROOT/broadcast/Deploy.s.sol/31337/run-latest.json"
-SBC_ADDRESS=$(jq -r '.transactions[0].contractAddress' $RUN_FILE)
+echo "=== Getting latest deployed contract addresses ==="
+RUN_FILE="$PROJECT_ROOT/broadcast/DeployNewContracts.s.sol/31337/run-latest.json"
 
-if [ -z "$SBC_ADDRESS" ] || [ "$SBC_ADDRESS" = "null" ]; then
-    echo "ERROR: Could not extract SBC address!"
-    exit 1
+# Extract addresses from deployment by contract name
+DUCK_COIN_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "DuckCoin") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+PROVE_OF_REPUTATION_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "ProveOfReputation") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+STUDENT_MANAGEMENT_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "StudentManagement") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+
+# Fallback: try to extract from transaction order if contractName doesn't work
+# Order: DuckCoin (0), ProveOfReputation (1), StudentManagement (2), then linking calls
+if [ -z "$DUCK_COIN_ADDRESS" ] || [ "$DUCK_COIN_ADDRESS" = "null" ] || [ "$DUCK_COIN_ADDRESS" = "" ]; then
+    DUCK_COIN_ADDRESS=$(jq -r '.transactions[0].contractAddress' $RUN_FILE 2>/dev/null)
+fi
+if [ -z "$PROVE_OF_REPUTATION_ADDRESS" ] || [ "$PROVE_OF_REPUTATION_ADDRESS" = "null" ] || [ "$PROVE_OF_REPUTATION_ADDRESS" = "" ]; then
+    PROVE_OF_REPUTATION_ADDRESS=$(jq -r '.transactions[1].contractAddress' $RUN_FILE 2>/dev/null)
+fi
+if [ -z "$STUDENT_MANAGEMENT_ADDRESS" ] || [ "$STUDENT_MANAGEMENT_ADDRESS" = "null" ] || [ "$STUDENT_MANAGEMENT_ADDRESS" = "" ]; then
+    STUDENT_MANAGEMENT_ADDRESS=$(jq -r '.transactions[2].contractAddress' $RUN_FILE 2>/dev/null)
 fi
 
-echo "SBC deployed to: $SBC_ADDRESS"
+# Also deploy old SBC contract for backward compatibility
+echo ""
+echo "=== Deploying old SBC contract for backward compatibility ==="
+forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast
+OLD_RUN_FILE="$PROJECT_ROOT/broadcast/Deploy.s.sol/31337/run-latest.json"
+SBC_ADDRESS=$(jq -r '.transactions[0].contractAddress' $OLD_RUN_FILE)
+
+if [ -z "$SBC_ADDRESS" ] || [ "$SBC_ADDRESS" = "null" ]; then
+    echo "WARNING: Could not extract old SBC address!"
+    SBC_ADDRESS="0x0000000000000000000000000000000000000000"
+fi
+
+echo "DuckCoin deployed to: $DUCK_COIN_ADDRESS"
+echo "ProveOfReputation deployed to: $PROVE_OF_REPUTATION_ADDRESS"
+echo "StudentManagement deployed to: $STUDENT_MANAGEMENT_ADDRESS"
+echo "Old SBC deployed to: $SBC_ADDRESS"
 
 echo ""
-echo "=== Updating frontend config.js with new SBC address ==="
+echo "=== Updating frontend config.js with new contract addresses ==="
 cat > "$CONFIG_JS" <<EOF
 // IMPORTANT:
 // Automatically updated after every forge deploy
 export const SBC_ADDRESS = "$SBC_ADDRESS";
+
+// New contract addresses
+export const STUDENT_MANAGEMENT_ADDRESS = "$STUDENT_MANAGEMENT_ADDRESS";
+export const DUCK_COIN_ADDRESS = "$DUCK_COIN_ADDRESS";
+export const PROVE_OF_REPUTATION_ADDRESS = "$PROVE_OF_REPUTATION_ADDRESS";
 EOF
 
 echo "Updated $CONFIG_JS"

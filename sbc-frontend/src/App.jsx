@@ -9,7 +9,14 @@ import AvailableAddresses from "./components/Utils/AvailableAddresses";
 import { stevensRed, stevensDarkGrey, stevensLightGrey, buttonStyle } from "./styles/constants";
 
 export default function App() {
-  const { wallet, contract, connectWallet } = useContract();
+  const { 
+    wallet, 
+    contract, 
+    studentManagementContract, 
+    duckCoinContract, 
+    nftContract, 
+    connectWallet 
+  } = useContract();
   const [activeTab, setActiveTab] = useState("stevensCoin");
 
   return (
@@ -314,10 +321,23 @@ export default function App() {
 
                 {/* TAB CONTENT */}
                 <div style={{ minHeight: "400px" }}>
-                  {activeTab === "stevensCoin" && <StevensCoin contract={contract} wallet={wallet} />}
+                  {activeTab === "stevensCoin" && (
+                    <StevensCoin 
+                      contract={studentManagementContract || contract} 
+                      duckCoinContract={duckCoinContract}
+                      nftContract={nftContract}
+                      wallet={wallet} 
+                    />
+                  )}
                   {activeTab === "amm" && <AMM contract={contract} />}
                   {activeTab === "lending" && <Lending contract={contract} />}
-                  {activeTab === "studentInfo" && <StudentInfo contract={contract} />}
+                  {activeTab === "studentInfo" && (
+                    <StudentInfo 
+                      contract={studentManagementContract || contract}
+                      duckCoinContract={duckCoinContract}
+                      nftContract={nftContract}
+                    />
+                  )}
                   {activeTab === "transactionInfo" && <TransactionInfo contract={contract} />}
                   {activeTab === "available" && <AvailableAddresses contract={contract} />}
                 </div>

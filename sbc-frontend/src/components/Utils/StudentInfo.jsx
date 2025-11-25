@@ -2,10 +2,63 @@ import { useState } from "react";
 import { ethers } from "ethers";
 import { cardStyle, stevensRed, stevensTextGrey, stevensDarkGrey, buttonStyle, inputStyle } from "../../styles/constants";
 
-export default function StudentInfo({ contract }) {
+export default function StudentInfo({ contract, duckCoinContract, nftContract }) {
+  const [activeSubTab, setActiveSubTab] = useState("addUpdate");
+  const [newStudent, setNewStudent] = useState({
+    wallet: "",
+    name: "",
+    id: ""
+  });
+  const [deleteStudentId, setDeleteStudentId] = useState("");
   const [searchStudentId, setSearchStudentId] = useState("");
   const [studentInfo, setStudentInfo] = useState(null);
   const [studentList, setStudentList] = useState([]);
+
+  // ---------------- ADD STUDENT ----------------
+  async function addStudent() {
+    if (!ethers.isAddress(newStudent.wallet)) return alert("Invalid wallet address");
+    if (!newStudent.name || !newStudent.id) return alert("Please fill all fields");
+
+    try {
+      const studentId = BigInt(newStudent.id);
+      const existing = await contract.getStudentById(studentId);
+      if (existing.wallet !== ethers.ZeroAddress) {
+        const ok = confirm(
+          `⚠️ Student exists:\nName: ${existing.name}\nWallet: ${existing.wallet}\n\nOverwrite?`
+        );
+        if (!ok) return;
+      }
+
+      const tx = await contract.addStudent(
+        newStudent.wallet,
+        newStudent.name,
+        studentId
+      );
+      await tx.wait();
+
+      alert("✅ Student added!");
+      setNewStudent({ wallet: "", name: "", id: "" });
+    } catch (err) {
+      alert("❌ Failed to add student: " + (err.message || "Unknown error"));
+    }
+  }
+
+  // ---------------- DELETE STUDENT ----------------
+  async function deleteStudent() {
+    if (!deleteStudentId) return alert("Please enter a student ID");
+
+    const ok = confirm(`⚠️ Are you sure you want to delete student ID ${deleteStudentId}?`);
+    if (!ok) return;
+
+    try {
+      const tx = await contract.removeStudent(BigInt(deleteStudentId));
+      await tx.wait();
+      alert("🗑️ Student removed!");
+      setDeleteStudentId("");
+    } catch (err) {
+      alert("❌ Delete failed: " + (err.message || "Unknown error"));
+    }
+  }
 
   // ---------------- SEARCH BY ID ----------------
   async function searchById() {
@@ -21,14 +74,44 @@ export default function StudentInfo({ contract }) {
         return;
       }
 
-      const balance = await contract.balanceOf(info.wallet);
+      // Get Duck Coin balance (ERC20) - prioritize duckCoinContract
+      let duckCoinBalance = BigInt(0);
+      if (duckCoinContract) {
+        try {
+          duckCoinBalance = await duckCoinContract.balanceOf(info.wallet);
+        } catch (err) {
+          console.warn("Could not fetch DuckCoin balance:", err);
+          // Fallback to old contract
+          if (contract && contract.balanceOf) {
+            duckCoinBalance = await contract.balanceOf(info.wallet);
+          }
+        }
+      } else if (contract && contract.balanceOf) {
+        // Fallback to old contract
+        duckCoinBalance = await contract.balanceOf(info.wallet);
+      }
+      
+      // Get Prove of Reputation balance (ERC20 - fungible token)
+      let porBalance = BigInt(0);
+      if (nftContract) {
+        try {
+          porBalance = await nftContract.balanceOf(info.wallet);
+        } catch (err) {
+          console.warn("Could not fetch PoR balance:", err);
+        }
+      }
+
+      // Format balances to show reasonable decimals (max 6 decimal places)
+      const formattedDuckCoinBalance = parseFloat(ethers.formatEther(duckCoinBalance)).toFixed(6).replace(/\.?0+$/, '');
+      const formattedPorBalance = parseFloat(ethers.formatEther(porBalance)).toFixed(6).replace(/\.?0+$/, '');
 
       setStudentInfo({
         name: info.name,
         studentId: info.studentId.toString(),
         wallet: info.wallet,
         isWhitelisted: info.isWhitelisted,
-        balance: ethers.formatEther(balance)
+        duckCoinBalance: formattedDuckCoinBalance,
+        porBalance: formattedPorBalance
       });
       setSearchStudentId("");
     } catch (err) {
@@ -58,156 +141,379 @@ export default function StudentInfo({ contract }) {
     });
 
     const enriched = await Promise.all(
-      uniqueStudents.map(async (s) => ({
-        name: s.name,
-        id: s.studentId.toString(),
-        wallet: s.wallet,
-        balance: ethers.formatEther(await contract.balanceOf(s.wallet))
-      }))
+      uniqueStudents.map(async (s) => {
+        // Get Duck Coin balance (ERC20) - prioritize duckCoinContract
+        let duckCoinBalance = BigInt(0);
+        if (duckCoinContract) {
+          try {
+            duckCoinBalance = await duckCoinContract.balanceOf(s.wallet);
+          } catch (err) {
+            console.warn(`Could not fetch DuckCoin balance for ${s.wallet}:`, err);
+            // Fallback to old contract
+            if (contract && contract.balanceOf) {
+              duckCoinBalance = await contract.balanceOf(s.wallet);
+            }
+          }
+        } else if (contract && contract.balanceOf) {
+          // Fallback to old contract
+          duckCoinBalance = await contract.balanceOf(s.wallet);
+        }
+        
+        // Get Prove of Reputation balance (ERC20 - fungible token)
+        let porBalance = BigInt(0);
+        if (nftContract) {
+          try {
+            porBalance = await nftContract.balanceOf(s.wallet);
+          } catch (err) {
+            // If balanceOf fails, PoR contract might not be deployed or accessible
+            console.warn(`Could not fetch PoR balance for ${s.wallet}:`, err);
+          }
+        }
+
+        // Format balances to show reasonable decimals (max 6 decimal places)
+        const formattedDuckCoinBalance = parseFloat(ethers.formatEther(duckCoinBalance)).toFixed(6).replace(/\.?0+$/, '');
+        const formattedPorBalance = parseFloat(ethers.formatEther(porBalance)).toFixed(6).replace(/\.?0+$/, '');
+
+        return {
+          name: s.name,
+          id: s.studentId.toString(),
+          wallet: s.wallet,
+          duckCoinBalance: formattedDuckCoinBalance,
+          porBalance: formattedPorBalance
+        };
+      })
     );
 
     setStudentList(enriched);
   }
 
   return (
-    <div style={cardStyle}>
-      <h3 style={{ 
-        marginTop: 0, 
-        marginBottom: 20, 
-        color: stevensRed,
-        fontSize: 20,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.5px"
+    <div>
+      {/* STUDENT INFO SUB-TAB NAVIGATION */}
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 8,
+        marginBottom: 24,
+        borderBottom: `2px solid ${stevensRed}`,
+        paddingBottom: 0
       }}>
-        🔍 Search Student
-      </h3>
-      <input
-        placeholder="Student ID"
-        value={searchStudentId}
-        onChange={(e) => setSearchStudentId(e.target.value)}
-        style={inputStyle}
-        onFocus={(e) => e.target.style.borderColor = stevensRed}
-        onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
-      />
-      <button 
-        onClick={searchById} 
-        style={{
-          ...buttonStyle,
-          marginTop: 8,
-          width: "100%",
-          background: stevensRed,
-          color: "white"
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.transform = "translateY(-2px)";
-          e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-          e.target.style.background = "#8B1E2E";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.transform = "translateY(0)";
-          e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-          e.target.style.background = stevensRed;
-        }}
-      >
-        Search by Student ID
-      </button>
-      {studentInfo && (
-        <div style={{ marginTop: 24 }}>
-          <h4 style={{ color: stevensRed, marginBottom: 12 }}>Student Details</h4>
-          <pre style={{ 
-            background: "#f8f9fa", 
-            padding: 20,
-            borderRadius: 8,
-            border: "1px solid #e9ecef",
-            overflow: "auto",
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: "#495057"
-          }}>
-            {JSON.stringify(studentInfo, null, 2)}
-          </pre>
-        </div>
-      )}
+        {[
+          { id: "addUpdate", label: "➕ Add/Update", icon: "➕" },
+          { id: "delete", label: "🗑️ Delete", icon: "🗑️" },
+          { id: "search", label: "🔍 Search", icon: "🔍" },
+          { id: "showAll", label: "📋 Show All", icon: "📋" }
+        ].map(subTab => (
+          <button
+            key={subTab.id}
+            onClick={() => setActiveSubTab(subTab.id)}
+            style={{
+              padding: "10px 18px",
+              border: "none",
+              background: activeSubTab === subTab.id ? stevensRed : "transparent",
+              color: activeSubTab === subTab.id ? "white" : stevensRed,
+              fontWeight: activeSubTab === subTab.id ? 700 : 500,
+              fontSize: 12,
+              cursor: "pointer",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: activeSubTab === subTab.id ? `3px solid ${stevensRed}` : "3px solid transparent",
+              marginBottom: "-2px",
+              transition: "all 0.2s ease",
+              borderRadius: "6px 6px 0 0"
+            }}
+            onMouseEnter={(e) => {
+              if (activeSubTab !== subTab.id) {
+                e.target.style.background = "#f5f5f5";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeSubTab !== subTab.id) {
+                e.target.style.background = "transparent";
+              }
+            }}
+          >
+            {subTab.label}
+          </button>
+        ))}
+      </div>
 
-      <div style={{ marginTop: 32, paddingTop: 24, borderTop: "2px solid #e0e0e0" }}>
-        <h3 style={{ 
-          marginTop: 0, 
-          marginBottom: 20, 
-          color: stevensRed,
-          fontSize: 20,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.5px"
-        }}>
-          📋 Load All Students
-        </h3>
-        <p style={{ marginBottom: 20, color: stevensTextGrey }}>
-          Load and display all registered students from the blockchain.
-        </p>
-        <button 
-          onClick={loadAllStudents} 
-          style={{
-            ...buttonStyle,
-            width: "100%",
-            background: stevensRed,
-            color: "white"
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = "translateY(-2px)";
-            e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-            e.target.style.background = "#8B1E2E";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "translateY(0)";
-            e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-            e.target.style.background = stevensRed;
-          }}
-        >
-          Load All Students
-        </button>
-        {studentList.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <h4 style={{ color: stevensRed, marginBottom: 16 }}>All Students ({studentList.length})</h4>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{
+      {/* SUB-TAB CONTENT */}
+      <div style={cardStyle}>
+        {/* ADD/UPDATE SUB-TAB */}
+        {activeSubTab === "addUpdate" && (
+          <>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: 20, 
+              color: stevensRed,
+              fontSize: 20,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}>
+              Add / Update Student
+            </h3>
+
+            <input
+              placeholder="Wallet Address"
+              value={newStudent.wallet}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, wallet: e.target.value })
+              }
+              style={inputStyle}
+              onFocus={(e) => e.target.style.borderColor = stevensRed}
+              onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+            />
+
+            <input
+              placeholder="Student Name"
+              value={newStudent.name}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, name: e.target.value })
+              }
+              style={inputStyle}
+              onFocus={(e) => e.target.style.borderColor = stevensRed}
+              onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+            />
+
+            <input
+              placeholder="Student ID"
+              value={newStudent.id}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, id: e.target.value })
+              }
+              style={inputStyle}
+              onFocus={(e) => e.target.style.borderColor = stevensRed}
+              onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+            />
+
+            <button 
+              onClick={addStudent} 
+              style={{
+                ...buttonStyle,
+                marginTop: 8,
+                marginRight: 0,
                 width: "100%",
-                borderCollapse: "collapse",
-                background: "white"
-              }}>
-                <thead>
-                  <tr style={{ background: stevensRed }}>
-                    <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
-                    <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
-                    <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
-                    <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentList.map((s, i) => (
-                    <tr 
-                      key={i}
-                      style={{
-                        borderBottom: "1px solid #e9ecef",
-                        transition: "background 0.2s ease"
-                      }}
-                      onMouseEnter={(e) => e.target.style.background = "#fafafa"}
-                      onMouseLeave={(e) => e.target.style.background = "white"}
-                    >
-                      <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
-                      <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
-                      <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
-                      <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.balance} SBC</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                background: stevensRed,
+                color: "white"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                e.target.style.background = "#8B1E2E";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                e.target.style.background = stevensRed;
+              }}
+            >
+              Add Student
+            </button>
+          </>
+        )}
+
+        {/* DELETE SUB-TAB */}
+        {activeSubTab === "delete" && (
+          <>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: 20, 
+              color: stevensRed,
+              fontSize: 20,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}>
+              🗑️ Delete Student
+            </h3>
+            <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+              Remove a student from the whitelist by their Student ID.
+            </p>
+            <input
+              placeholder="Student ID"
+              value={deleteStudentId}
+              onChange={(e) => setDeleteStudentId(e.target.value)}
+              style={inputStyle}
+              onFocus={(e) => e.target.style.borderColor = stevensRed}
+              onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+            />
+            <button 
+              onClick={deleteStudent} 
+              style={{
+                ...buttonStyle,
+                marginTop: 8,
+                width: "100%",
+                background: "#8B1E2E",
+                color: "white"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 4px 8px rgba(139, 30, 46, 0.4)";
+                e.target.style.background = "#6B151F";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 4px rgba(139, 30, 46, 0.3)";
+                e.target.style.background = "#8B1E2E";
+              }}
+            >
+              Delete Student
+            </button>
+          </>
+        )}
+
+        {/* SEARCH SUB-TAB */}
+        {activeSubTab === "search" && (
+          <>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: 20, 
+              color: stevensRed,
+              fontSize: 20,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}>
+              🔍 Search Student
+            </h3>
+            <input
+              placeholder="Student ID"
+              value={searchStudentId}
+              onChange={(e) => setSearchStudentId(e.target.value)}
+              style={inputStyle}
+              onFocus={(e) => e.target.style.borderColor = stevensRed}
+              onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
+            />
+            <button 
+              onClick={searchById} 
+              style={{
+                ...buttonStyle,
+                marginTop: 8,
+                width: "100%",
+                background: stevensRed,
+                color: "white"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                e.target.style.background = "#8B1E2E";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                e.target.style.background = stevensRed;
+              }}
+            >
+              Search by Student ID
+            </button>
+            {studentInfo && (
+              <div style={{ marginTop: 24 }}>
+                <h4 style={{ color: stevensRed, marginBottom: 12 }}>Student Details</h4>
+                <pre style={{ 
+                  background: "#f8f9fa", 
+                  padding: 20,
+                  borderRadius: 8,
+                  border: "1px solid #e9ecef",
+                  overflow: "auto",
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  color: "#495057"
+                }}>
+                  {JSON.stringify(studentInfo, null, 2)}
+                </pre>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* SHOW ALL SUB-TAB */}
+        {activeSubTab === "showAll" && (
+          <>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: 20, 
+              color: stevensRed,
+              fontSize: 20,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px"
+            }}>
+              📋 Load All Students
+            </h3>
+            <p style={{ marginBottom: 20, color: stevensTextGrey }}>
+              Load and display all registered students from the blockchain.
+            </p>
+            <button 
+              onClick={loadAllStudents} 
+              style={{
+                ...buttonStyle,
+                width: "100%",
+                background: stevensRed,
+                color: "white"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+                e.target.style.background = "#8B1E2E";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+                e.target.style.background = stevensRed;
+              }}
+            >
+              Load All Students
+            </button>
+            {studentList.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <h4 style={{ color: stevensRed, marginBottom: 16 }}>All Students ({studentList.length})</h4>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    background: "white"
+                  }}>
+                    <thead>
+                      <tr style={{ background: stevensRed }}>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Duck Coin Balance</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Prove of Reputation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentList.map((s, i) => (
+                        <tr 
+                          key={i}
+                          style={{
+                            borderBottom: "1px solid #e9ecef",
+                            transition: "background 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#fafafa"}
+                          onMouseLeave={(e) => e.target.style.background = "white"}
+                        >
+                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
+                          <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.duckCoinBalance} DC</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.porBalance} PoR</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
+
+
 
 
