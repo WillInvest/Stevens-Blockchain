@@ -3,6 +3,7 @@ import { useContract } from "./hooks/useContract";
 import StevensCoin from "./components/StevensCoin/StevensCoin";
 import AMM from "./components/AMM/AMM";
 import Lending from "./components/Lending/Lending";
+import TaskList from "./components/TaskList/TaskList";
 import StudentInfo from "./components/Utils/StudentInfo";
 import TransactionInfo from "./components/Utils/TransactionInfo";
 import AvailableAddresses from "./components/Utils/AvailableAddresses";
@@ -281,6 +282,7 @@ export default function App() {
                     { id: "stevensCoin", label: "🪙 Stevens Coin", icon: "🪙" },
                     { id: "amm", label: "🔄 AMM", icon: "🔄" },
                     { id: "lending", label: "💰 Lending", icon: "💰" },
+                    { id: "taskList", label: "📋 Task List", icon: "📋" },
                     { id: "studentInfo", label: "👥 Student Info", icon: "👥" },
                     { id: "transactionInfo", label: "📊 Transaction Info", icon: "📊" },
                     { id: "available", label: "📇 Available Addresses", icon: "📇" }
@@ -331,6 +333,15 @@ export default function App() {
                   )}
                   {activeTab === "amm" && <AMM contract={contract} />}
                   {activeTab === "lending" && <Lending contract={contract} />}
+                  {activeTab === "taskList" && (
+                    <TaskList
+                      wallet={wallet}
+                      taskManagerContract={null}
+                      studentManagementContract={studentManagementContract || contract}
+                      duckCoinContract={duckCoinContract}
+                      nftContract={nftContract}
+                    />
+                  )}
                   {activeTab === "studentInfo" && (
                     <StudentInfo 
                       contract={studentManagementContract || contract}
