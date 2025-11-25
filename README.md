@@ -12,46 +12,29 @@ But a history of **real work done, stakes taken, and reputation earned** on-chai
 
 ## Architecture Overview
 
-```text
-                  +===============================================+
-                  ||   Onchain Performance Metric System (OPMS)  ||
-                  ||   Stevens on-chain work & reputation layer  ||
-                  +==================+============================+
-                                     |
-                      Whitelisting, Roles, Stevens IDs
-                           StudentManagement.sol
-                                     |
-               +---------------------+----------------------+
-               |                                            |
-        +------v--------+                          +--------v----------------+
-        | DuckCoin.sol  |                          | ProofOfReputation.sol   |
-        |   (ERC20 DC)  |                          |   (ERC721 Soulbound)    |
-        +------+--------+                          +-----------+-------------+
-               |                                               ^
-               | DC bids (burned on submit)                    |
-               v                                               |
-        +------+-----------------------------------------------+--------+
-        |                        TaskManager.sol                        |
-        |  • Professors & students create tasks                         |
-        |  • Students bid in DuckCoin (DC is burned, win or lose)      |
-        |  • Winning students earn PoR (awarded by professors)         |
-        |  • Main venue where reputation and tokens actually move      |
-        +------+--------------------------+----------------------------+
-               |                          |
-       borrow DC using PoR        swap / trade DC for other assets
-               |                          |
-        +------v--------+        +--------v-----------------------------+
-        | LendingPool   |        | Liquidity Layer                      |
-        |   .sol        |        |  • AMM.sol   (DEX, on-chain swaps)   |
-        |  PoR staked   |        |  • SHIFT.sol (CEX, order book)       |
-        +---------------+        +--------------------------------------+
+```mermaid
+flowchart TD
+    A[StudentManagement.sol<br>Whitelisting / Roles / Stevens IDs]
+    P[Professors (whitelisted)]
+    S[Students (whitelisted)]
+    POR[ProofOfReputation (ERC721 SBT)]
+    TM[TaskManager.sol]
+    DC[DuckCoin (ERC20)]
+    LP[LendingPool.sol]
+    LQ[Liquidity Layer<br>AMM.sol + SHIFT.sol]
 
-Professors:
-  • Authority to mint / allocate PoR
-Students:
-  • Use DC to bid on tasks, earn PoR, build on-chain performance history
-  • Benefit from high PoR in jobs, research, and personal reputation
-```
+    A --> P
+    A --> S
+    P --> TM
+    S --> TM
+    TM --> POR
+    TM --> DC
+    DC --> TM
+    POR --> LP
+    LP --> DC
+    DC --> LQ
+    LQ --> DC
+
 
 ---
 
