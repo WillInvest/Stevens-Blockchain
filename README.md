@@ -10,42 +10,47 @@ But a history of **real work done, stakes taken, and reputation earned** on-chai
 
 ---
 
-flowchart TD
+                   +===============================================+
+                   ||   Onchain Performance Metric System (OPMS)  ||
+                   ||   Stevens on-chain work & reputation layer  ||
+                   +===============================================+
+                                      |
+                       Whitelisting, Roles, Stevens IDs
+                            StudentManagement.sol
+                                      |
+                 +--------------------+--------------------+
+                 |                                         |
+          Professors (whitelisted)               Students (whitelisted)
+                 +--------------------+--------------------+
+                                      |
+                                      v
 
-A[StudentManagement.sol  
-Whitelisting / Roles / Stevens IDs]
+    +-----------------------+   +------------------------+   +----------------------+
+    |  ProofOfReputation    |   |     TaskManager.sol    |   |     DuckCoin.sol     |
+    |     (ERC721 SBT)      |<->|  Core Work Marketplace |<->|      (ERC20 DC)      |
+    |  On-chain reputation  |   |                        |   |  Bidding / liquidity |
+    +-----------+-----------+   |  • Create & manage     |   +-----------+----------+
+                ^               |    tasks               |               |
+                |               |  • Students bid in DC  |               |
+                |               |  • DC burned on bid    |               |
+                |               |  • Winners earn PoR    |               |
+                |               +------------------------+               |
+                |                                                    DC used to:
+                |                                                    • bid on tasks
+                |                                                    • trade / borrow
+                |                                                    • repay loans
+                |                                                        
+                |                                                        
+                |                                                        
+                v                                                         v
 
-P[Professors (whitelisted)]
-S[Students (whitelisted)]
-
-POR[ProofOfReputation (ERC721 SBT)]
-TM[TaskManager.sol  
-Task Marketplace]
-DC[DuckCoin (ERC20)  
-Bidding / Liquidity]
-
-LP[LendingPool.sol  
-Stake PoR -> Borrow DC]
-LQ[Liquidity Layer  
-AMM.sol (DEX) + SHIFT.sol (CEX)]
-
-A --> P
-A --> S
-
-P --> TM
-S --> TM
-
-TM --> POR
-TM --> DC
-DC --> TM
-
-POR --> LP
-LP --> DC
-
-DC --> LQ
-LQ --> DC
-
-
+    +-----------------------+                                   +----------------------+
+    |    LendingPool.sol    |                                   |   Liquidity Layer    |
+    |  • Stake PoR as       |                                   |  • AMM.sol  (DEX)    |
+    |    collateral         |<---------------------------------->|  • SHIFT.sol (CEX)   |
+    |  • Borrow DC to       |           DC for bidding /        |  Swap / trade DC     |
+    |    bid on tasks       |           liquidity / repayment   +----------------------+
+    +-----------------------+
 
 
 ---
