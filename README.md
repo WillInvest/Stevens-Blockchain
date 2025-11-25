@@ -11,29 +11,39 @@ But a history of **real work done, stakes taken, and reputation earned** on-chai
 ---
 
 ## Architecture Overview
-
-```mermaid
 flowchart TD
+
+    %% ========= Identity Layer =========
     A[StudentManagement.sol<br>Whitelisting / Roles / Stevens IDs]
     P[Professors (whitelisted)]
     S[Students (whitelisted)]
-    POR[ProofOfReputation (ERC721 SBT)]
-    TM[TaskManager.sol]
-    DC[DuckCoin (ERC20)]
-    LP[LendingPool.sol]
-    LQ[Liquidity Layer<br>AMM.sol + SHIFT.sol]
 
+    %% ========= Core Layer =========
+    POR[ProofOfReputation (ERC721 SBT)]
+    TM[TaskManager.sol<br>Task Marketplace]
+    DC[DuckCoin (ERC20)<br>Bidding / Liquidity]
+
+    %% ========= Finance Layer =========
+    LP[LendingPool.sol<br>Stake PoR → Borrow DC]
+    LQ[Liquidity Layer<br>AMM.sol (DEX) + SHIFT.sol (CEX)]
+
+    %% ========= Connections =========
     A --> P
     A --> S
+
     P --> TM
     S --> TM
+
     TM --> POR
     TM --> DC
     DC --> TM
+
     POR --> LP
     LP --> DC
+
     DC --> LQ
     LQ --> DC
+
 
 
 ---
