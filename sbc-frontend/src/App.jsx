@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useContract } from "./hooks/useContract";
 import StevensCoin from "./components/StevensCoin/StevensCoin";
-import AMM from "./components/AMM/AMM";
+import Exchange from "./components/Exchange/Exchange";
 import Lending from "./components/Lending/Lending";
 import TaskList from "./components/TaskList/TaskList";
 import StudentInfo from "./components/Utils/StudentInfo";
@@ -280,7 +280,7 @@ export default function App() {
                 }}>
                   {[
                     { id: "stevensCoin", label: "🪙 Stevens Coin", icon: "🪙" },
-                    { id: "amm", label: "🔄 AMM", icon: "🔄" },
+                    { id: "exchange", label: "🔄 Exchange", icon: "🔄" },
                     { id: "lending", label: "💰 Lending", icon: "💰" },
                     { id: "taskList", label: "📋 Task List", icon: "📋" },
                     { id: "studentInfo", label: "👥 Student Info", icon: "👥" },
@@ -331,8 +331,22 @@ export default function App() {
                       wallet={wallet} 
                     />
                   )}
-                  {activeTab === "amm" && <AMM contract={contract} />}
-                  {activeTab === "lending" && <Lending contract={contract} />}
+                  {activeTab === "exchange" && (
+                    <Exchange
+                      contract={contract}
+                      duckCoinContract={duckCoinContract}
+                      nftContract={nftContract}
+                    />
+                  )}
+                  {activeTab === "lending" && (
+                    <Lending
+                      wallet={wallet}
+                      contract={contract}
+                      duckCoinContract={duckCoinContract}
+                      nftContract={nftContract}
+                      studentManagementContract={studentManagementContract || contract}
+                    />
+                  )}
                   {activeTab === "taskList" && (
                     <TaskList
                       wallet={wallet}

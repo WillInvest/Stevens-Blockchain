@@ -1,42 +1,100 @@
-import { cardStyle, stevensRed, stevensTextGrey } from "../../styles/constants";
-import { SBC_ADDRESS } from "../../contracts/config";
+import { useState } from "react";
+import LendingDashboard from "./LendingDashboard";
+import SupplyTab from "./SupplyTab";
+import BorrowTab from "./BorrowTab";
+import MarketTab from "./MarketTab";
+import { stevensRed } from "../../styles/constants";
 
-export default function Lending({ contract }) {
+export default function Lending({ 
+  wallet, 
+  contract, 
+  duckCoinContract, 
+  nftContract,
+  studentManagementContract 
+}) {
+  const [activeTab, setActiveTab] = useState("supply");
+
   return (
     <div>
-      {/* Contract Address */}
+      {/* Dashboard Metrics */}
+      <LendingDashboard
+        wallet={wallet}
+        duckCoinContract={duckCoinContract}
+        nftContract={nftContract}
+      />
+
+      {/* Tabs Navigation */}
       <div style={{
-        marginBottom: 16,
-        padding: "12px 16px",
-        background: "#f8f9fa",
-        borderRadius: 6,
-        border: "1px solid #e9ecef"
+        display: "flex",
+        gap: 8,
+        marginTop: 32,
+        marginBottom: 24,
+        borderBottom: `2px solid ${stevensRed}`,
+        paddingBottom: 0
       }}>
-        <span style={{ fontSize: 12, color: stevensTextGrey, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-          Contract Address:{" "}
-        </span>
-        <span style={{ fontSize: 12, fontFamily: "monospace", color: stevensRed, fontWeight: 600 }}>
-          {SBC_ADDRESS}
-        </span>
+        {[
+          { id: "supply", label: "💚 Supply (Lend)", icon: "💚" },
+          { id: "borrow", label: "🟠 Borrow", icon: "🟠" },
+          { id: "market", label: "📊 Market", icon: "📊" }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: "12px 24px",
+              border: "none",
+              background: activeTab === tab.id ? stevensRed : "transparent",
+              color: activeTab === tab.id ? "white" : stevensRed,
+              fontWeight: activeTab === tab.id ? 700 : 500,
+              fontSize: 14,
+              cursor: "pointer",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              borderBottom: activeTab === tab.id ? `3px solid ${stevensRed}` : "3px solid transparent",
+              marginBottom: "-2px",
+              transition: "all 0.2s ease",
+              borderRadius: "6px 6px 0 0"
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab.id) {
+                e.target.style.background = "#f5f5f5";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab.id) {
+                e.target.style.background = "transparent";
+              }
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div style={cardStyle}>
-        <h3 style={{ 
-          marginTop: 0, 
-          marginBottom: 20, 
-          color: stevensRed,
-          fontSize: 20,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.5px"
-        }}>
-          💰 Lending
-        </h3>
-        <p style={{ marginBottom: 20, color: stevensTextGrey }}>
-          Coming soon...
-        </p>
+      {/* Tab Content */}
+      <div>
+        {activeTab === "supply" && (
+          <SupplyTab
+            wallet={wallet}
+            duckCoinContract={duckCoinContract}
+            nftContract={nftContract}
+          />
+        )}
+        {activeTab === "borrow" && (
+          <BorrowTab
+            wallet={wallet}
+            duckCoinContract={duckCoinContract}
+            nftContract={nftContract}
+          />
+        )}
+        {activeTab === "market" && (
+          <MarketTab
+            wallet={wallet}
+            duckCoinContract={duckCoinContract}
+            nftContract={nftContract}
+          />
+        )}
       </div>
     </div>
   );
 }
-
