@@ -20,7 +20,7 @@ module.exports = {
       name: 'sbc-frontend',
       script: 'pnpm',
       args: 'run dev --host 0.0.0.0 --port 5173',
-      cwd: process.env.FRONTEND_DIR || './frontend/sbc-frontend',
+      cwd: process.env.FRONTEND_DIR || './frontend',
       error_file: '../logs/frontend-error.log',
       out_file: '../logs/frontend.log',
       log_file: '../logs/frontend-combined.log',

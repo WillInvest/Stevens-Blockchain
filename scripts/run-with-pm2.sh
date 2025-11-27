@@ -8,7 +8,17 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Project root is the parent directory of scripts/
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-FRONTEND_DIR="$PROJECT_ROOT/frontend/sbc-frontend"
+
+# Detect frontend directory (could be frontend/ or frontend/sbc-frontend/)
+if [ -d "$PROJECT_ROOT/frontend" ] && [ -f "$PROJECT_ROOT/frontend/package.json" ]; then
+    FRONTEND_DIR="$PROJECT_ROOT/frontend"
+elif [ -d "$PROJECT_ROOT/frontend/sbc-frontend" ] && [ -f "$PROJECT_ROOT/frontend/sbc-frontend/package.json" ]; then
+    FRONTEND_DIR="$PROJECT_ROOT/frontend/sbc-frontend"
+else
+    echo "WARNING: Frontend directory not found. Trying default location..."
+    FRONTEND_DIR="$PROJECT_ROOT/frontend"
+fi
+
 CONFIG_JS="$FRONTEND_DIR/src/contracts/config.js"
 RPC_URL="http://localhost:8545"
 
@@ -100,6 +110,17 @@ echo "StudentManagement deployed to: $STUDENT_MANAGEMENT_ADDRESS"
 
 echo ""
 echo "=== Updating frontend config.js with new contract addresses ==="
+# Ensure the directory exists
+CONFIG_DIR="$(dirname "$CONFIG_JS")"
+if [ ! -d "$CONFIG_DIR" ]; then
+    echo "Creating directory: $CONFIG_DIR"
+    mkdir -p "$CONFIG_DIR"
+fi
+
+if [ ! -f "$CONFIG_JS" ]; then
+    echo "Creating config.js file: $CONFIG_JS"
+fi
+
 cat > "$CONFIG_JS" <<EOF
 // IMPORTANT:
 // Automatically updated after every forge deploy
@@ -115,10 +136,16 @@ export const DUCK_COIN_ADDRESS = "$DUCK_COIN_ADDRESS";
 export const PROVE_OF_REPUTATION_ADDRESS = "$PROVE_OF_REPUTATION_ADDRESS";
 EOF
 
-echo "Updated $CONFIG_JS"
+echo "✓ Updated $CONFIG_JS"
 
 echo ""
 echo "=== Installing frontend dependencies ==="
+if [ ! -d "$FRONTEND_DIR" ]; then
+    echo "ERROR: Frontend directory not found at: $FRONTEND_DIR"
+    echo "Please ensure the frontend is set up correctly."
+    exit 1
+fi
+
 cd "$FRONTEND_DIR"
 if [ -f "package.json" ]; then
     if command -v pnpm &> /dev/null; then

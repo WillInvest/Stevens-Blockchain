@@ -224,32 +224,32 @@ contract StudentManagement is Ownable {
      * @dev Legacy function names for backward compatibility
      */
     function mintPoR(address to, uint256 amount) external onlyOwner {
-        mintSRPC(to, amount);
+        this.mintSRPC(to, amount);
     }
 
     function burnPoR(address from, uint256 amount) external onlyOwner {
-        burnSRPC(from, amount);
+        this.burnSRPC(from, amount);
     }
 
     function mintNFT(address to, uint256 amount) external onlyOwner {
-        mintSRPC(to, amount);
+        this.mintSRPC(to, amount);
     }
 
     function burnNFT(address from, uint256 amount) external onlyOwner {
-        burnSRPC(from, amount);
+        this.burnSRPC(from, amount);
     }
 
     // Legacy DuckCoin functions for backward compatibility
     function mintDuckCoin(address to, uint256 amount) external onlyOwner {
-        mintSBC(to, amount);
+        this.mintSBC(to, amount);
     }
 
     function burnDuckCoin(address from, uint256 amount) external onlyOwner {
-        burnSBC(from, amount);
+        this.burnSBC(from, amount);
     }
 
     function transferDuckCoin(address from, address to, uint256 amount) external onlyOwner {
-        transferSBC(from, to, amount);
+        this.transferSBC(from, to, amount);
     }
 
     /**
