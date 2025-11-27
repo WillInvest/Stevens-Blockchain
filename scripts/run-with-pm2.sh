@@ -4,12 +4,16 @@
 
 set -e
 
-PROJECT_ROOT="/home/stevensbc/SBC-Project-Full"
-FRONTEND_DIR="$PROJECT_ROOT/sbc-frontend"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Project root is the parent directory of scripts/
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FRONTEND_DIR="$PROJECT_ROOT/frontend/sbc-frontend"
 CONFIG_JS="$FRONTEND_DIR/src/contracts/config.js"
 RPC_URL="http://localhost:8545"
 
 echo "=== SBC Application Startup with PM2 ==="
+echo "Project root: $PROJECT_ROOT"
 echo ""
 
 # Check if pm2 is installed
@@ -32,11 +36,14 @@ sleep 1
 # Build and deploy contracts
 echo ""
 echo "=== Building Solidity Contracts ==="
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT/contracts"
 forge build
 
 echo ""
 echo "=== Starting Anvil with PM2 ==="
+cd "$PROJECT_ROOT"
+export PROJECT_ROOT="$PROJECT_ROOT"
+export FRONTEND_DIR="$FRONTEND_DIR"
 pm2 start ecosystem.config.js --only anvil
 
 # Wait for Anvil to be ready
@@ -45,46 +52,51 @@ sleep 5
 
 echo ""
 echo "=== Deploying Contracts to Anvil ==="
-echo "Deploying new contracts (StudentManagement, DuckCoin, ProveOfReputation)..."
+echo "Deploying new contracts (StudentManagement, SBC, SDC, SRPC)..."
+cd "$PROJECT_ROOT/contracts"
 forge script script/DeployNewContracts.s.sol:DeployNewContracts --rpc-url $RPC_URL --broadcast
 
 echo ""
 echo "=== Getting latest deployed contract addresses ==="
-RUN_FILE="$PROJECT_ROOT/broadcast/DeployNewContracts.s.sol/31337/run-latest.json"
+RUN_FILE="$PROJECT_ROOT/contracts/broadcast/DeployNewContracts.s.sol/31337/run-latest.json"
 
 # Extract addresses from deployment by contract name
-DUCK_COIN_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "DuckCoin") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
-PROVE_OF_REPUTATION_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "ProveOfReputation") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+SBC_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "StevensBananaCoin") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+SDC_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "StevensDuckCoin") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
+SRPC_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "StevensReputationProofCoin") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
 STUDENT_MANAGEMENT_ADDRESS=$(jq -r '.transactions[] | select(.contractName == "StudentManagement") | .contractAddress' $RUN_FILE 2>/dev/null | head -1)
 
 # Fallback: try to extract from transaction order if contractName doesn't work
-# Order: DuckCoin (0), ProveOfReputation (1), StudentManagement (2), then linking calls
-if [ -z "$DUCK_COIN_ADDRESS" ] || [ "$DUCK_COIN_ADDRESS" = "null" ] || [ "$DUCK_COIN_ADDRESS" = "" ]; then
-    DUCK_COIN_ADDRESS=$(jq -r '.transactions[0].contractAddress' $RUN_FILE 2>/dev/null)
+# Order: SBC (0), SDC (1), SRPC (2), StudentManagement (3), then linking calls
+if [ -z "$SBC_ADDRESS" ] || [ "$SBC_ADDRESS" = "null" ] || [ "$SBC_ADDRESS" = "" ]; then
+    SBC_ADDRESS=$(jq -r '.transactions[0].contractAddress' $RUN_FILE 2>/dev/null)
 fi
-if [ -z "$PROVE_OF_REPUTATION_ADDRESS" ] || [ "$PROVE_OF_REPUTATION_ADDRESS" = "null" ] || [ "$PROVE_OF_REPUTATION_ADDRESS" = "" ]; then
-    PROVE_OF_REPUTATION_ADDRESS=$(jq -r '.transactions[1].contractAddress' $RUN_FILE 2>/dev/null)
+if [ -z "$SDC_ADDRESS" ] || [ "$SDC_ADDRESS" = "null" ] || [ "$SDC_ADDRESS" = "" ]; then
+    SDC_ADDRESS=$(jq -r '.transactions[1].contractAddress' $RUN_FILE 2>/dev/null)
+fi
+if [ -z "$SRPC_ADDRESS" ] || [ "$SRPC_ADDRESS" = "null" ] || [ "$SRPC_ADDRESS" = "" ]; then
+    SRPC_ADDRESS=$(jq -r '.transactions[2].contractAddress' $RUN_FILE 2>/dev/null)
 fi
 if [ -z "$STUDENT_MANAGEMENT_ADDRESS" ] || [ "$STUDENT_MANAGEMENT_ADDRESS" = "null" ] || [ "$STUDENT_MANAGEMENT_ADDRESS" = "" ]; then
-    STUDENT_MANAGEMENT_ADDRESS=$(jq -r '.transactions[2].contractAddress' $RUN_FILE 2>/dev/null)
+    STUDENT_MANAGEMENT_ADDRESS=$(jq -r '.transactions[3].contractAddress' $RUN_FILE 2>/dev/null)
 fi
 
-# Also deploy old SBC contract for backward compatibility
-echo ""
-echo "=== Deploying old SBC contract for backward compatibility ==="
-forge script script/Deploy.s.sol:Deploy --rpc-url $RPC_URL --broadcast
-OLD_RUN_FILE="$PROJECT_ROOT/broadcast/Deploy.s.sol/31337/run-latest.json"
-SBC_ADDRESS=$(jq -r '.transactions[0].contractAddress' $OLD_RUN_FILE)
+# Legacy contract names for backward compatibility (if old deployment exists)
+DUCK_COIN_ADDRESS="$SBC_ADDRESS"  # SBC replaced DuckCoin
+PROVE_OF_REPUTATION_ADDRESS="$SRPC_ADDRESS"  # SRPC replaced ProveOfReputation
 
 if [ -z "$SBC_ADDRESS" ] || [ "$SBC_ADDRESS" = "null" ]; then
-    echo "WARNING: Could not extract old SBC address!"
+    echo "WARNING: Could not extract contract addresses!"
     SBC_ADDRESS="0x0000000000000000000000000000000000000000"
+    SDC_ADDRESS="0x0000000000000000000000000000000000000000"
+    SRPC_ADDRESS="0x0000000000000000000000000000000000000000"
+    STUDENT_MANAGEMENT_ADDRESS="0x0000000000000000000000000000000000000000"
 fi
 
-echo "DuckCoin deployed to: $DUCK_COIN_ADDRESS"
-echo "ProveOfReputation deployed to: $PROVE_OF_REPUTATION_ADDRESS"
+echo "StevensBananaCoin (SBC) deployed to: $SBC_ADDRESS"
+echo "StevensDuckCoin (SDC) deployed to: $SDC_ADDRESS"
+echo "StevensReputationProofCoin (SRPC) deployed to: $SRPC_ADDRESS"
 echo "StudentManagement deployed to: $STUDENT_MANAGEMENT_ADDRESS"
-echo "Old SBC deployed to: $SBC_ADDRESS"
 
 echo ""
 echo "=== Updating frontend config.js with new contract addresses ==="
@@ -92,9 +104,13 @@ cat > "$CONFIG_JS" <<EOF
 // IMPORTANT:
 // Automatically updated after every forge deploy
 export const SBC_ADDRESS = "$SBC_ADDRESS";
+export const SDC_ADDRESS = "$SDC_ADDRESS";
+export const SRPC_ADDRESS = "$SRPC_ADDRESS";
 
 // New contract addresses
 export const STUDENT_MANAGEMENT_ADDRESS = "$STUDENT_MANAGEMENT_ADDRESS";
+
+// Legacy names for backward compatibility
 export const DUCK_COIN_ADDRESS = "$DUCK_COIN_ADDRESS";
 export const PROVE_OF_REPUTATION_ADDRESS = "$PROVE_OF_REPUTATION_ADDRESS";
 EOF
@@ -102,18 +118,25 @@ EOF
 echo "Updated $CONFIG_JS"
 
 echo ""
-echo "=== Fetching Contract Owner ==="
-OWNER=$(cast call $SBC_ADDRESS "owner()" --rpc-url $RPC_URL)
-echo "Contract owner: $OWNER"
-
-echo ""
 echo "=== Installing frontend dependencies ==="
 cd "$FRONTEND_DIR"
-pnpm install --silent || true
+if [ -f "package.json" ]; then
+    if command -v pnpm &> /dev/null; then
+        pnpm install --silent || true
+    elif command -v npm &> /dev/null; then
+        npm install --silent || true
+    else
+        echo "WARNING: Neither pnpm nor npm found. Please install dependencies manually."
+    fi
+else
+    echo "WARNING: package.json not found in $FRONTEND_DIR"
+fi
 
 echo ""
 echo "=== Starting Frontend with PM2 ==="
 cd "$PROJECT_ROOT"
+export PROJECT_ROOT="$PROJECT_ROOT"
+export FRONTEND_DIR="$FRONTEND_DIR"
 pm2 start ecosystem.config.js --only sbc-frontend
 
 echo ""
@@ -126,7 +149,6 @@ echo ""
 echo "Your applications are now running with PM2:"
 echo "  - Anvil: http://localhost:8545"
 echo "  - Frontend: http://localhost:5173"
-echo "  - Public access: http://10.246.103.99 (via nginx)"
 echo ""
 echo "Useful PM2 commands:"
 echo "  pm2 status              - View running processes"
@@ -141,4 +163,3 @@ echo ""
 echo "To save PM2 configuration for auto-start on reboot:"
 echo "  pm2 save"
 echo "  pm2 startup"
-

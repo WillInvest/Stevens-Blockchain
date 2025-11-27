@@ -5,7 +5,7 @@
 Run the deployment script:
 
 ```bash
-cd /home/stevensbc/SBC-Project-Full
+cd contracts
 forge script script/DeployNewContracts.s.sol:DeployNewContracts --rpc-url http://localhost:8545 --broadcast
 ```
 
