@@ -88,60 +88,43 @@ See [docs/tokenomics/TOKENOMICS_REFINEMENT.md](docs/tokenomics/TOKENOMICS_REFINE
 ## 🏛️ Architecture
 
 ```
-                   +===============================================+
-                   ||   Onchain Performance Metric System (OPMS)  ||
-                   ||   Stevens on-chain work & reputation layer  ||
-                   +===============================================+
-                                      |
-                       Whitelisting, Roles, Stevens IDs
-                            StudentManagement.sol
-                                      |
-                 +--------------------+--------------------+
-                 |                                         |
-          Professors (whitelisted)               Students (whitelisted)
-                 |                                         |
-                 |  Professor On-Chain Address (POCA)      |
-                 +--------------------+--------------------+
-                                      |
-                                      v
+┌─────────────────────────────────────────────────────────────┐
+│              Stevens Reputation Proof Coin (SRPC)           │
+│                    (Demand Engine)                          │
+│  • ERC721 Soulbound Token (Non-transferable)                │
+│  • Distributed only by Professor On-Chain Address (POCA)    │
+│  • Represents professor "thumbs up" / recognition           │
+│  • Scarcity through controlled distribution                 │
+│  • Real-world value: connections, opportunities             │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ Earned through
+                            │ SRPC-rewarded tasks
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Stevens Banana Coin (SBC)                      │
+│                      (The Fuel & Governance)                │
+│  • White-listed ERC20 Fungible Token (Transferable)         │
+│  • Used for bidding on SRPC-rewarded tasks                  │
+│  • Burned after task completion (deflationary)              │
+│  • Time-locked redemption to SDC (30-90 days)               │
+│  • Governance token (voting on system parameters)           │
+│  • Economic engine of the task marketplace                  │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ Can be purchased by SDC
+                            │ Can be redeemed to SDC (with time lock)
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Stevens Duck Coin (SDC)                        │
+│                    (Stevens Cash)                           │
+│  • ERC20 Fungible Token (Transferable)                      │
+│  • Redeemable anytime (cash equivalent)                     │
+│  • Stable value representation                              │
+│  • Used to purchase SBC through exchange                    │
+│  • Entry/exit point for the ecosystem                       │
+└─────────────────────────────────────────────────────────────┘
 
-    +-----------------------+   +------------------------+   +----------------------+
-    | StevensReputationProof |   |     TaskManager.sol    |   | StevensBananaCoin    |
-    |      Coin (SRPC)       |<->|  Core Work Marketplace |<->|      (SBC)           |
-    |   (The Demand Engine)  |   |                        |   |    (The Fuel)        |
-    |   ERC20 Soulbound      |   |  • SRPC-rewarded tasks |   |  ERC20 Fungible      |
-    |   Non-transferable     |   |    (POCA only)         |   |  Deflationary        |
-    +-----------+-----------+   |  • SBC-rewarded tasks  |   +-----------+----------+
-                ^               |    (all whitelisted)   |               |
-                |               |  • Students bid SBC    |               |
-                |               |  • SBC burned on task |               |
-                |               |    completion          |               |
-                |               |  • Winners earn SRPC  |               |
-                |               +------------------------+               |
-                |                                                    SBC used to:
-                |                                                    • bid on SRPC tasks
-                |                                                    • trade / borrow
-                |                                                    • repay loans
-                |                                                        
-                |                                                        
-                |                                                        
-                v                                                         v
-
-    +-----------------------+                                   +----------------------+
-    |    LendingPool.sol    |                                   |   Liquidity Layer    |
-    |  • Stake SRPC as      |                                   |  • AMM.sol  (DEX)    |
-    |    collateral         |<---------------------------------->|  • SHIFT.sol (CEX)   |
-    |  • Borrow SBC to      |           SBC for bidding /      |  Swap SBC ↔ SDC     |
-    |    bid on tasks       |           liquidity / repayment   +----------------------+
-    +-----------------------+                                            |
-                                                                          |
-                                                                          v
-                                                              +----------------------+
-                                                              | StevensDuckCoin (SDC)|
-                                                              |   (Stevens Cash)     |
-                                                              |   ERC20 Fungible     |
-                                                              |   Redeemable Anytime |
-                                                              +----------------------+
 ```
 
 ---
