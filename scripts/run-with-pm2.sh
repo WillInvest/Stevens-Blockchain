@@ -148,22 +148,70 @@ fi
 
 cd "$FRONTEND_DIR"
 if [ -f "package.json" ]; then
-    if command -v pnpm &> /dev/null; then
-        pnpm install --silent || true
+    # Check for pnpm-lock.yaml first (preferred)
+    if [ -f "pnpm-lock.yaml" ] && command -v pnpm &> /dev/null; then
+        echo "Using pnpm (pnpm-lock.yaml detected)..."
+        pnpm install --silent || pnpm install
+    # Check for package-lock.json (npm)
+    elif [ -f "package-lock.json" ] && command -v npm &> /dev/null; then
+        echo "Using npm (package-lock.json detected)..."
+        npm install --silent || npm install
+    # Check for yarn.lock (yarn)
+    elif [ -f "yarn.lock" ] && command -v yarn &> /dev/null; then
+        echo "Using yarn (yarn.lock detected)..."
+        yarn install --silent || yarn install
+    # Fallback: try pnpm, then npm
+    elif command -v pnpm &> /dev/null; then
+        echo "Using pnpm (fallback)..."
+        pnpm install --silent || pnpm install
     elif command -v npm &> /dev/null; then
-        npm install --silent || true
+        echo "Using npm (fallback)..."
+        npm install --silent || npm install
     else
-        echo "WARNING: Neither pnpm nor npm found. Please install dependencies manually."
+        echo "WARNING: No package manager found. Please install pnpm, npm, or yarn."
+        echo "  Install pnpm: npm install -g pnpm"
+        echo "  Or use npm/yarn if available"
     fi
 else
     echo "WARNING: package.json not found in $FRONTEND_DIR"
 fi
 
 echo ""
+echo "=== Detecting package manager for frontend ==="
+cd "$FRONTEND_DIR"
+PACKAGE_MANAGER="pnpm"  # default
+# Check for lock files in the frontend directory (not home directory)
+if [ -f "$FRONTEND_DIR/pnpm-lock.yaml" ] && command -v pnpm &> /dev/null; then
+    PACKAGE_MANAGER="pnpm"
+    echo "Detected pnpm (pnpm-lock.yaml found)"
+elif [ -f "$FRONTEND_DIR/package-lock.json" ] && command -v npm &> /dev/null; then
+    PACKAGE_MANAGER="npm"
+    echo "Detected npm (package-lock.json found)"
+elif [ -f "$FRONTEND_DIR/yarn.lock" ] && command -v yarn &> /dev/null; then
+    PACKAGE_MANAGER="yarn"
+    echo "Detected yarn (yarn.lock found)"
+# Fallback: check what's available
+elif command -v pnpm &> /dev/null; then
+    PACKAGE_MANAGER="pnpm"
+    echo "Using pnpm (fallback - no lock file found)"
+elif command -v npm &> /dev/null; then
+    PACKAGE_MANAGER="npm"
+    echo "Using npm (fallback - no lock file found)"
+elif command -v yarn &> /dev/null; then
+    PACKAGE_MANAGER="yarn"
+    echo "Using yarn (fallback - no lock file found)"
+else
+    echo "WARNING: No package manager found. Frontend may not start correctly."
+    echo "Please install pnpm, npm, or yarn."
+fi
+echo "Package manager: $PACKAGE_MANAGER"
+
+echo ""
 echo "=== Starting Frontend with PM2 ==="
 cd "$PROJECT_ROOT"
 export PROJECT_ROOT="$PROJECT_ROOT"
 export FRONTEND_DIR="$FRONTEND_DIR"
+export PACKAGE_MANAGER="$PACKAGE_MANAGER"
 pm2 start ecosystem.config.js --only sbc-frontend
 
 echo ""

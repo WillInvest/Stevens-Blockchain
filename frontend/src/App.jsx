@@ -14,8 +14,9 @@ export default function App() {
     wallet, 
     contract, 
     studentManagementContract, 
-    duckCoinContract, 
-    nftContract, 
+    duckCoinContract, // SBC
+    nftContract, // SRPC
+    sdcContract, // SDC
     connectWallet 
   } = useContract();
   const [activeTab, setActiveTab] = useState("stevensCoin");
@@ -326,9 +327,9 @@ export default function App() {
                   {activeTab === "stevensCoin" && (
                     <StevensCoin 
                       contract={studentManagementContract || contract} 
-                      sbcContract={duckCoinContract} // Legacy: duckCoinContract is now SBC
-                      sdcContract={null} // TODO: Add SDC contract when deployed
-                      srpcContract={nftContract} // Legacy: nftContract is now SRPC
+                      sbcContract={duckCoinContract} // SBC (Stevens Banana Coin)
+                      sdcContract={sdcContract} // SDC (Stevens Duck Coin)
+                      srpcContract={nftContract} // SRPC (Stevens Reputation Proof Coin)
                       wallet={wallet} 
                     />
                   )}
@@ -360,12 +361,17 @@ export default function App() {
                   {activeTab === "studentInfo" && (
                     <StudentInfo 
                       contract={studentManagementContract || contract}
-                      duckCoinContract={duckCoinContract}
-                      nftContract={nftContract}
+                      sbcContract={duckCoinContract}
+                      sdcContract={sdcContract}
+                      srpcContract={nftContract}
                     />
                   )}
                   {activeTab === "transactionInfo" && <TransactionInfo contract={contract} />}
-                  {activeTab === "available" && <AvailableAddresses contract={contract} />}
+                  {activeTab === "available" && (
+                    <AvailableAddresses 
+                      contract={studentManagementContract || contract}
+                    />
+                  )}
                 </div>
               </>
             )}

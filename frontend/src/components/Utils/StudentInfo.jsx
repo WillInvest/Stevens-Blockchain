@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ethers } from "ethers";
 import { cardStyle, stevensRed, stevensTextGrey, stevensDarkGrey, buttonStyle, inputStyle } from "../../styles/constants";
 
-export default function StudentInfo({ contract, duckCoinContract, nftContract }) {
+export default function StudentInfo({ contract, sbcContract, sdcContract, srpcContract }) {
   const [activeSubTab, setActiveSubTab] = useState("addUpdate");
   const [newStudent, setNewStudent] = useState({
     wallet: "",
@@ -74,44 +74,56 @@ export default function StudentInfo({ contract, duckCoinContract, nftContract })
         return;
       }
 
-      // Get Duck Coin balance (ERC20) - prioritize duckCoinContract
-      let duckCoinBalance = BigInt(0);
-      if (duckCoinContract) {
+      // Get SBC (Stevens Banana Coin) balance
+      let sbcBalance = BigInt(0);
+      if (sbcContract) {
         try {
-          duckCoinBalance = await duckCoinContract.balanceOf(info.wallet);
+          sbcBalance = await sbcContract.balanceOf(info.wallet);
         } catch (err) {
-          console.warn("Could not fetch DuckCoin balance:", err);
+          console.warn("Could not fetch SBC balance:", err);
           // Fallback to old contract
           if (contract && contract.balanceOf) {
-            duckCoinBalance = await contract.balanceOf(info.wallet);
+            sbcBalance = await contract.balanceOf(info.wallet);
           }
         }
       } else if (contract && contract.balanceOf) {
         // Fallback to old contract
-        duckCoinBalance = await contract.balanceOf(info.wallet);
+        sbcBalance = await contract.balanceOf(info.wallet);
       }
       
-      // Get Prove of Reputation balance (ERC20 - fungible token)
-      let porBalance = BigInt(0);
-      if (nftContract) {
+      // Get SDC (Stevens Duck Coin) balance
+      let sdcBalance = BigInt(0);
+      if (sdcContract) {
         try {
-          porBalance = await nftContract.balanceOf(info.wallet);
+          sdcBalance = await sdcContract.balanceOf(info.wallet);
         } catch (err) {
-          console.warn("Could not fetch PoR balance:", err);
+          console.warn("Could not fetch SDC balance:", err);
+        }
+      }
+      
+      // Get SRPC (Stevens Reputation Proof Coin) balance
+      let srpcBalance = BigInt(0);
+      if (srpcContract) {
+        try {
+          srpcBalance = await srpcContract.balanceOf(info.wallet);
+        } catch (err) {
+          console.warn("Could not fetch SRPC balance:", err);
         }
       }
 
       // Format balances to show reasonable decimals (max 6 decimal places)
-      const formattedDuckCoinBalance = parseFloat(ethers.formatEther(duckCoinBalance)).toFixed(6).replace(/\.?0+$/, '');
-      const formattedPorBalance = parseFloat(ethers.formatEther(porBalance)).toFixed(6).replace(/\.?0+$/, '');
+      const formattedSbcBalance = parseFloat(ethers.formatEther(sbcBalance)).toFixed(6).replace(/\.?0+$/, '');
+      const formattedSdcBalance = parseFloat(ethers.formatEther(sdcBalance)).toFixed(6).replace(/\.?0+$/, '');
+      const formattedSrpcBalance = parseFloat(ethers.formatEther(srpcBalance)).toFixed(6).replace(/\.?0+$/, '');
 
       setStudentInfo({
         name: info.name,
         studentId: info.studentId.toString(),
         wallet: info.wallet,
         isWhitelisted: info.isWhitelisted,
-        duckCoinBalance: formattedDuckCoinBalance,
-        porBalance: formattedPorBalance
+        sbcBalance: formattedSbcBalance,
+        sdcBalance: formattedSdcBalance,
+        srpcBalance: formattedSrpcBalance
       });
       setSearchStudentId("");
     } catch (err) {
@@ -122,7 +134,18 @@ export default function StudentInfo({ contract, duckCoinContract, nftContract })
 
   // ---------------- LOAD ALL STUDENTS ----------------
   async function loadAllStudents() {
-    const list = await contract.getAllStudents();
+    if (!contract) {
+      alert("❌ Contract not connected. Please connect your wallet first.");
+      return;
+    }
+
+    if (!contract.getAllStudents) {
+      alert("❌ Contract does not have getAllStudents function. Please ensure StudentManagement contract is connected.");
+      return;
+    }
+
+    try {
+      const list = await contract.getAllStudents();
 
     // Filter out students with zero address
     const validStudents = list.filter(s => 
@@ -142,49 +165,65 @@ export default function StudentInfo({ contract, duckCoinContract, nftContract })
 
     const enriched = await Promise.all(
       uniqueStudents.map(async (s) => {
-        // Get Duck Coin balance (ERC20) - prioritize duckCoinContract
-        let duckCoinBalance = BigInt(0);
-        if (duckCoinContract) {
+        // Get SBC (Stevens Banana Coin) balance
+        let sbcBalance = BigInt(0);
+        if (sbcContract) {
           try {
-            duckCoinBalance = await duckCoinContract.balanceOf(s.wallet);
+            sbcBalance = await sbcContract.balanceOf(s.wallet);
           } catch (err) {
-            console.warn(`Could not fetch DuckCoin balance for ${s.wallet}:`, err);
+            console.warn(`Could not fetch SBC balance for ${s.wallet}:`, err);
             // Fallback to old contract
             if (contract && contract.balanceOf) {
-              duckCoinBalance = await contract.balanceOf(s.wallet);
+              sbcBalance = await contract.balanceOf(s.wallet);
             }
           }
         } else if (contract && contract.balanceOf) {
           // Fallback to old contract
-          duckCoinBalance = await contract.balanceOf(s.wallet);
+          sbcBalance = await contract.balanceOf(s.wallet);
         }
         
-        // Get Prove of Reputation balance (ERC20 - fungible token)
-        let porBalance = BigInt(0);
-        if (nftContract) {
+        // Get SDC (Stevens Duck Coin) balance
+        let sdcBalance = BigInt(0);
+        if (sdcContract) {
           try {
-            porBalance = await nftContract.balanceOf(s.wallet);
+            sdcBalance = await sdcContract.balanceOf(s.wallet);
           } catch (err) {
-            // If balanceOf fails, PoR contract might not be deployed or accessible
-            console.warn(`Could not fetch PoR balance for ${s.wallet}:`, err);
+            console.warn(`Could not fetch SDC balance for ${s.wallet}:`, err);
+          }
+        }
+        
+        // Get SRPC (Stevens Reputation Proof Coin) balance
+        let srpcBalance = BigInt(0);
+        if (srpcContract) {
+          try {
+            srpcBalance = await srpcContract.balanceOf(s.wallet);
+          } catch (err) {
+            console.warn(`Could not fetch SRPC balance for ${s.wallet}:`, err);
           }
         }
 
         // Format balances to show reasonable decimals (max 6 decimal places)
-        const formattedDuckCoinBalance = parseFloat(ethers.formatEther(duckCoinBalance)).toFixed(6).replace(/\.?0+$/, '');
-        const formattedPorBalance = parseFloat(ethers.formatEther(porBalance)).toFixed(6).replace(/\.?0+$/, '');
+        const formattedSbcBalance = parseFloat(ethers.formatEther(sbcBalance)).toFixed(6).replace(/\.?0+$/, '');
+        const formattedSdcBalance = parseFloat(ethers.formatEther(sdcBalance)).toFixed(6).replace(/\.?0+$/, '');
+        const formattedSrpcBalance = parseFloat(ethers.formatEther(srpcBalance)).toFixed(6).replace(/\.?0+$/, '');
 
         return {
           name: s.name,
           id: s.studentId.toString(),
           wallet: s.wallet,
-          duckCoinBalance: formattedDuckCoinBalance,
-          porBalance: formattedPorBalance
+          sbcBalance: formattedSbcBalance,
+          sdcBalance: formattedSdcBalance,
+          srpcBalance: formattedSrpcBalance
         };
       })
     );
 
     setStudentList(enriched);
+    } catch (err) {
+      console.error("Error loading all students:", err);
+      alert("❌ Failed to load students: " + (err.message || "Unknown error") + "\n\nMake sure StudentManagement contract is connected and has students registered.");
+      setStudentList([]);
+    }
   }
 
   return (
@@ -480,8 +519,9 @@ export default function StudentInfo({ contract, duckCoinContract, nftContract })
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Duck Coin Balance</th>
-                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Prove of Reputation</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SDC</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SBC</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SRPC</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -498,8 +538,9 @@ export default function StudentInfo({ contract, duckCoinContract, nftContract })
                           <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
                           <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.duckCoinBalance} DC</td>
-                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.porBalance} PoR</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.sdcBalance} SDC</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.sbcBalance} SBC</td>
+                          <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.srpcBalance} SRPC</td>
                         </tr>
                       ))}
                     </tbody>

@@ -2,14 +2,44 @@ import { useState } from "react";
 import detectEthereumProvider from "@metamask/detect-provider";
 import { ethers } from "ethers";
 import { SBC_ABI } from "../../contracts/abi";
-import { SBC_ADDRESS } from "../../contracts/config";
+import { 
+  SBC_ADDRESS, 
+  SDC_ADDRESS, 
+  SRPC_ADDRESS, 
+  STUDENT_MANAGEMENT_ADDRESS 
+} from "../../contracts/config";
+import studentManagementAbiData from "../../contracts/studentManagementAbi.json";
+import duckCoinAbiData from "../../contracts/duckCoinAbi.json";
+import proveOfReputationAbiData from "../../contracts/proveOfReputationAbi.json";
 import { cardStyle, stevensRed, stevensTextGrey, stevensDarkGrey, buttonStyle, inputStyle } from "../../styles/constants";
+
+// Parse ABIs
+const studentManagementAbi = typeof studentManagementAbiData === 'string' 
+  ? JSON.parse(studentManagementAbiData) 
+  : studentManagementAbiData;
+const duckCoinAbi = typeof duckCoinAbiData === 'string' 
+  ? JSON.parse(duckCoinAbiData) 
+  : duckCoinAbiData;
+const proveOfReputationAbi = typeof proveOfReputationAbiData === 'string' 
+  ? JSON.parse(proveOfReputationAbiData) 
+  : proveOfReputationAbiData;
 
 export default function TransactionInfo({ contract }) {
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [searchTxHash, setSearchTxHash] = useState("");
   const [searchStudentId, setSearchStudentId] = useState("");
+
+  // Helper function to determine token type from contract address
+  function getTokenType(address) {
+    if (!address) return "Unknown";
+    const addr = address.toLowerCase();
+    if (addr === SBC_ADDRESS.toLowerCase()) return "SBC";
+    if (addr === SDC_ADDRESS.toLowerCase()) return "SDC";
+    if (addr === SRPC_ADDRESS.toLowerCase()) return "SRPC";
+    if (addr === STUDENT_MANAGEMENT_ADDRESS.toLowerCase()) return "StudentManagement";
+    return "Unknown";
+  }
 
   // ---------------- TRANSACTION HISTORY ----------------
   async function loadTransactionHistory() {
@@ -23,38 +53,53 @@ export default function TransactionInfo({ contract }) {
       if (!provider) return alert("Provider not found");
       
       const ethersProvider = new ethers.BrowserProvider(provider);
-      const contractWithProvider = new ethers.Contract(SBC_ADDRESS, SBC_ABI, ethersProvider);
       
       // Get current block number to limit search range
       const currentBlock = await ethersProvider.getBlockNumber();
       const fromBlock = Math.max(0, currentBlock - 1000); // Last 1000 blocks
 
-      // Get all events (Transfer, StudentAdded, StudentRemoved, TokensMinted, TokensBurned)
-      const transferFilter = contractWithProvider.filters.Transfer();
-      const studentAddedFilter = contractWithProvider.filters.StudentAdded();
-      const studentRemovedFilter = contractWithProvider.filters.StudentRemoved();
-      const tokensMintedFilter = contractWithProvider.filters.TokensMinted();
-      const tokensBurnedFilter = contractWithProvider.filters.TokensBurned();
+      // Create contract instances for all tokens
+      const sbcContract = new ethers.Contract(SBC_ADDRESS, duckCoinAbi, ethersProvider);
+      const sdcContract = new ethers.Contract(SDC_ADDRESS, duckCoinAbi, ethersProvider);
+      const srpcContract = new ethers.Contract(SRPC_ADDRESS, proveOfReputationAbi, ethersProvider);
+      const studentMgmtContract = new ethers.Contract(STUDENT_MANAGEMENT_ADDRESS, studentManagementAbi, ethersProvider);
 
-      const [transferEvents, studentAddedEvents, studentRemovedEvents, tokensMintedEvents, tokensBurnedEvents] = await Promise.all([
-        contractWithProvider.queryFilter(transferFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(studentAddedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(studentRemovedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(tokensMintedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(tokensBurnedFilter, fromBlock, currentBlock)
+      // Query Transfer events from all token contracts
+      const [sbcTransfers, sdcTransfers, srpcTransfers] = await Promise.all([
+        sbcContract.queryFilter(sbcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => []),
+        sdcContract.queryFilter(sdcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => []),
+        srpcContract.queryFilter(srpcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => [])
+      ]);
+
+      // Query events from StudentManagement contract
+      const [studentAddedEvents, studentRemovedEvents, sbcMintedEvents, sbcBurnedEvents, sdcMintedEvents, sdcBurnedEvents, srpcMintedEvents, srpcBurnedEvents] = await Promise.all([
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentAdded(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentRemoved(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCBurned(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCBurned(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCBurned(), fromBlock, currentBlock).catch(() => [])
       ]);
 
       // Get all transactions sent to the contract address
       const allTransactions = [];
       const seenHashes = new Set();
 
-      // Process all events
+      // Process all events with token type information
       const allEvents = [
-        ...transferEvents.map(e => ({ ...e, eventType: "Transfer" })),
-        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded" })),
-        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved" })),
-        ...tokensMintedEvents.map(e => ({ ...e, eventType: "TokensMinted" })),
-        ...tokensBurnedEvents.map(e => ({ ...e, eventType: "TokensBurned" }))
+        ...sbcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SBC", contractAddress: SBC_ADDRESS })),
+        ...sdcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SDC", contractAddress: SDC_ADDRESS })),
+        ...srpcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SRPC", contractAddress: SRPC_ADDRESS })),
+        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded", tokenType: "StudentManagement", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved", tokenType: "StudentManagement", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...sbcMintedEvents.map(e => ({ ...e, eventType: "SBCMinted", tokenType: "SBC", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...sbcBurnedEvents.map(e => ({ ...e, eventType: "SBCBurned", tokenType: "SBC", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...sdcMintedEvents.map(e => ({ ...e, eventType: "SDCMinted", tokenType: "SDC", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...sdcBurnedEvents.map(e => ({ ...e, eventType: "SDCBurned", tokenType: "SDC", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...srpcMintedEvents.map(e => ({ ...e, eventType: "SRPCMinted", tokenType: "SRPC", contractAddress: STUDENT_MANAGEMENT_ADDRESS })),
+        ...srpcBurnedEvents.map(e => ({ ...e, eventType: "SRPCBurned", tokenType: "SRPC", contractAddress: STUDENT_MANAGEMENT_ADDRESS }))
       ];
 
       for (const event of allEvents) {
@@ -72,26 +117,27 @@ export default function TransactionInfo({ contract }) {
         let transferFrom = null;
         let transferTo = null;
         let transferAmount = "0";
+        const tokenType = event.tokenType || getTokenType(tx.to);
 
         if (event.eventType === "Transfer") {
           transferFrom = event.args.from;
           transferTo = event.args.to;
           transferAmount = ethers.formatEther(event.args.value);
-          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.value)} SBC`;
+          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.value)} ${tokenType}`;
         } else if (event.eventType === "StudentAdded") {
           transferTo = event.args.wallet;
           functionParams = `Wallet: ${event.args.wallet.substring(0, 6)}...${event.args.wallet.substring(38)}, Name: ${event.args.name}, ID: ${event.args.studentId}`;
         } else if (event.eventType === "StudentRemoved") {
           transferFrom = event.args.wallet;
           functionParams = `Student ID: ${event.args.studentId}, Wallet: ${event.args.wallet.substring(0, 6)}...${event.args.wallet.substring(38)}`;
-        } else if (event.eventType === "TokensMinted") {
+        } else if (event.eventType === "SBCMinted" || event.eventType === "SDCMinted" || event.eventType === "SRPCMinted") {
           transferTo = event.args.to;
           transferAmount = ethers.formatEther(event.args.amount);
-          functionParams = `To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} SBC`;
-        } else if (event.eventType === "TokensBurned") {
+          functionParams = `To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} ${tokenType}`;
+        } else if (event.eventType === "SBCBurned" || event.eventType === "SDCBurned" || event.eventType === "SRPCBurned") {
           transferFrom = event.args.from;
           transferAmount = ethers.formatEther(event.args.amount);
-          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} SBC`;
+          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} ${tokenType}`;
         }
 
         allTransactions.push({
@@ -100,7 +146,7 @@ export default function TransactionInfo({ contract }) {
           timestamp: block.timestamp,
           date: date.toLocaleString(),
           from: tx.from,
-          to: tx.to || SBC_ADDRESS,
+          to: tx.to || event.contractAddress || SBC_ADDRESS,
           value: ethers.formatEther(tx.value || 0),
           gasUsed: receipt.gasUsed.toString(),
           gasPrice: tx.gasPrice ? tx.gasPrice.toString() : "0",
@@ -110,12 +156,20 @@ export default function TransactionInfo({ contract }) {
           transferAmount: transferAmount,
           functionName: functionName,
           functionParams: functionParams,
-          type: event.eventType || "Unknown"
+          type: event.eventType || "Unknown",
+          tokenType: tokenType
         });
       }
 
-      // Get all other transactions to the contract (non-Transfer)
-      // We'll scan blocks for transactions to our contract
+      // Get all other transactions to the contracts (non-Transfer)
+      // We'll scan blocks for transactions to our contracts
+      const contractAddresses = [
+        SBC_ADDRESS,
+        SDC_ADDRESS,
+        SRPC_ADDRESS,
+        STUDENT_MANAGEMENT_ADDRESS
+      ].filter(addr => addr && addr.trim() !== "");
+
       for (let blockNum = currentBlock; blockNum >= fromBlock && blockNum >= 0; blockNum--) {
         try {
           const block = await ethersProvider.getBlock(blockNum, true);
@@ -126,11 +180,28 @@ export default function TransactionInfo({ contract }) {
 
             try {
               const tx = await ethersProvider.getTransaction(txHash);
-              if (!tx || tx.to?.toLowerCase() !== SBC_ADDRESS.toLowerCase()) continue;
+              if (!tx || !tx.to) continue;
+              
+              // Check if transaction is to any of our contracts
+              const contractMatch = contractAddresses.find(addr => 
+                tx.to?.toLowerCase() === addr.toLowerCase()
+              );
+              if (!contractMatch) continue;
 
               seenHashes.add(txHash);
               const receipt = await ethersProvider.getTransactionReceipt(txHash);
               const date = new Date(Number(block.timestamp) * 1000);
+
+              // Determine which contract and ABI to use
+              const tokenType = getTokenType(contractMatch);
+              let abiToUse = duckCoinAbi;
+              if (tokenType === "SRPC") {
+                abiToUse = proveOfReputationAbi;
+              } else if (tokenType === "StudentManagement") {
+                abiToUse = studentManagementAbi;
+              } else if (tokenType === "SBC" || tokenType === "SDC") {
+                abiToUse = duckCoinAbi;
+              }
 
               // Decode function call
               let functionName = "Unknown";
@@ -142,7 +213,7 @@ export default function TransactionInfo({ contract }) {
 
               try {
                 if (tx.data && tx.data.length >= 10) {
-                  const iface = new ethers.Interface(SBC_ABI);
+                  const iface = new ethers.Interface(abiToUse);
                   const decoded = iface.parseTransaction({ data: tx.data });
                   if (decoded) {
                     functionName = decoded.name;
@@ -159,20 +230,27 @@ export default function TransactionInfo({ contract }) {
                       return String(arg);
                     }).join(", ");
 
-                    // Extract info for addStudent/removeStudent
+                    // Extract info for different functions
                     if (decoded.name === "addStudent") {
                       transferTo = decoded.args[0]; // wallet address
                       functionParams = `Wallet: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Name: ${decoded.args[1]}, ID: ${decoded.args[2]}`;
                     } else if (decoded.name === "removeStudent") {
                       functionParams = `Student ID: ${decoded.args[0]}`;
-                    } else if (decoded.name === "mint") {
+                    } else if (decoded.name === "mint" || decoded.name === "mintSBC" || decoded.name === "mintSDC" || decoded.name === "mintSRPC") {
                       transferTo = decoded.args[0];
                       transferAmount = ethers.formatEther(decoded.args[1]);
-                      functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
-                    } else if (decoded.name === "burn") {
+                      const token = decoded.name === "mintSBC" ? "SBC" : decoded.name === "mintSDC" ? "SDC" : decoded.name === "mintSRPC" ? "SRPC" : tokenType;
+                      functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
+                    } else if (decoded.name === "burn" || decoded.name === "burnSBC" || decoded.name === "burnSDC" || decoded.name === "burnSRPC") {
                       transferFrom = decoded.args[0];
                       transferAmount = ethers.formatEther(decoded.args[1]);
-                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
+                      const token = decoded.name === "burnSBC" ? "SBC" : decoded.name === "burnSDC" ? "SDC" : decoded.name === "burnSRPC" ? "SRPC" : tokenType;
+                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
+                    } else if (decoded.name === "transfer") {
+                      transferFrom = decoded.args[0];
+                      transferTo = decoded.args[1];
+                      transferAmount = ethers.formatEther(decoded.args[2]);
+                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, To: ${decoded.args[1].substring(0, 6)}...${decoded.args[1].substring(38)}, Amount: ${ethers.formatEther(decoded.args[2])} ${tokenType}`;
                     }
                   }
                 }
@@ -196,7 +274,8 @@ export default function TransactionInfo({ contract }) {
                 transferAmount: transferAmount,
                 functionName: functionName,
                 functionParams: functionParams,
-                type: type
+                type: type,
+                tokenType: tokenType
               });
             } catch (e) {
               // Skip if transaction fetch fails
@@ -242,31 +321,42 @@ export default function TransactionInfo({ contract }) {
 
       const receipt = await ethersProvider.getTransactionReceipt(searchTxHash);
       const block = await ethersProvider.getBlock(receipt.blockNumber);
-      const contractWithProvider = new ethers.Contract(SBC_ADDRESS, SBC_ABI, ethersProvider);
       const date = new Date(Number(block.timestamp) * 1000);
 
-      // Get all event types
-      const transferFilter = contractWithProvider.filters.Transfer();
-      const studentAddedFilter = contractWithProvider.filters.StudentAdded();
-      const studentRemovedFilter = contractWithProvider.filters.StudentRemoved();
-      const tokensMintedFilter = contractWithProvider.filters.TokensMinted();
-      const tokensBurnedFilter = contractWithProvider.filters.TokensBurned();
+      // Create contract instances for all tokens
+      const sbcContract = new ethers.Contract(SBC_ADDRESS, duckCoinAbi, ethersProvider);
+      const sdcContract = new ethers.Contract(SDC_ADDRESS, duckCoinAbi, ethersProvider);
+      const srpcContract = new ethers.Contract(SRPC_ADDRESS, proveOfReputationAbi, ethersProvider);
+      const studentMgmtContract = new ethers.Contract(STUDENT_MANAGEMENT_ADDRESS, studentManagementAbi, ethersProvider);
 
-      const [transferEvents, studentAddedEvents, studentRemovedEvents, tokensMintedEvents, tokensBurnedEvents] = await Promise.all([
-        contractWithProvider.queryFilter(transferFilter, receipt.blockNumber, receipt.blockNumber),
-        contractWithProvider.queryFilter(studentAddedFilter, receipt.blockNumber, receipt.blockNumber),
-        contractWithProvider.queryFilter(studentRemovedFilter, receipt.blockNumber, receipt.blockNumber),
-        contractWithProvider.queryFilter(tokensMintedFilter, receipt.blockNumber, receipt.blockNumber),
-        contractWithProvider.queryFilter(tokensBurnedFilter, receipt.blockNumber, receipt.blockNumber)
+      // Query events from all contracts for this block
+      const [sbcTransfers, sdcTransfers, srpcTransfers, studentAddedEvents, studentRemovedEvents, sbcMintedEvents, sbcBurnedEvents, sdcMintedEvents, sdcBurnedEvents, srpcMintedEvents, srpcBurnedEvents] = await Promise.all([
+        sbcContract.queryFilter(sbcContract.filters.Transfer(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        sdcContract.queryFilter(sdcContract.filters.Transfer(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        srpcContract.queryFilter(srpcContract.filters.Transfer(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentAdded(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentRemoved(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCMinted(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCBurned(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCMinted(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCBurned(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCMinted(), receipt.blockNumber, receipt.blockNumber).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCBurned(), receipt.blockNumber, receipt.blockNumber).catch(() => [])
       ]);
 
       // Find the matching event
       const allEvents = [
-        ...transferEvents.map(e => ({ ...e, eventType: "Transfer" })),
-        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded" })),
-        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved" })),
-        ...tokensMintedEvents.map(e => ({ ...e, eventType: "TokensMinted" })),
-        ...tokensBurnedEvents.map(e => ({ ...e, eventType: "TokensBurned" }))
+        ...sbcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SBC" })),
+        ...sdcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SDC" })),
+        ...srpcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SRPC" })),
+        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded", tokenType: "StudentManagement" })),
+        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved", tokenType: "StudentManagement" })),
+        ...sbcMintedEvents.map(e => ({ ...e, eventType: "SBCMinted", tokenType: "SBC" })),
+        ...sbcBurnedEvents.map(e => ({ ...e, eventType: "SBCBurned", tokenType: "SBC" })),
+        ...sdcMintedEvents.map(e => ({ ...e, eventType: "SDCMinted", tokenType: "SDC" })),
+        ...sdcBurnedEvents.map(e => ({ ...e, eventType: "SDCBurned", tokenType: "SDC" })),
+        ...srpcMintedEvents.map(e => ({ ...e, eventType: "SRPCMinted", tokenType: "SRPC" })),
+        ...srpcBurnedEvents.map(e => ({ ...e, eventType: "SRPCBurned", tokenType: "SRPC" }))
       ];
 
       const matchingEvent = allEvents.find(e => e.transactionHash === searchTxHash);
@@ -278,36 +368,46 @@ export default function TransactionInfo({ contract }) {
       let transferFrom = null;
       let transferTo = null;
       let transferAmount = "0";
+      const tokenType = getTokenType(tx.to);
 
       if (matchingEvent) {
         functionName = matchingEvent.eventType || "Unknown";
         type = matchingEvent.eventType || "Unknown";
+        const eventTokenType = matchingEvent.tokenType || tokenType;
 
         if (matchingEvent.eventType === "Transfer") {
           transferFrom = matchingEvent.args.from;
           transferTo = matchingEvent.args.to;
           transferAmount = ethers.formatEther(matchingEvent.args.value);
-          functionParams = `From: ${matchingEvent.args.from.substring(0, 6)}...${matchingEvent.args.from.substring(38)}, To: ${matchingEvent.args.to.substring(0, 6)}...${matchingEvent.args.to.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.value)} SBC`;
+          functionParams = `From: ${matchingEvent.args.from.substring(0, 6)}...${matchingEvent.args.from.substring(38)}, To: ${matchingEvent.args.to.substring(0, 6)}...${matchingEvent.args.to.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.value)} ${eventTokenType}`;
         } else if (matchingEvent.eventType === "StudentAdded") {
           transferTo = matchingEvent.args.wallet;
           functionParams = `Wallet: ${matchingEvent.args.wallet.substring(0, 6)}...${matchingEvent.args.wallet.substring(38)}, Name: ${matchingEvent.args.name}, ID: ${matchingEvent.args.studentId}`;
         } else if (matchingEvent.eventType === "StudentRemoved") {
           transferFrom = matchingEvent.args.wallet;
           functionParams = `Student ID: ${matchingEvent.args.studentId}, Wallet: ${matchingEvent.args.wallet.substring(0, 6)}...${matchingEvent.args.wallet.substring(38)}`;
-        } else if (matchingEvent.eventType === "TokensMinted") {
+        } else if (matchingEvent.eventType === "SBCMinted" || matchingEvent.eventType === "SDCMinted" || matchingEvent.eventType === "SRPCMinted") {
           transferTo = matchingEvent.args.to;
           transferAmount = ethers.formatEther(matchingEvent.args.amount);
-          functionParams = `To: ${matchingEvent.args.to.substring(0, 6)}...${matchingEvent.args.to.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.amount)} SBC`;
-        } else if (matchingEvent.eventType === "TokensBurned") {
+          functionParams = `To: ${matchingEvent.args.to.substring(0, 6)}...${matchingEvent.args.to.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.amount)} ${eventTokenType}`;
+        } else if (matchingEvent.eventType === "SBCBurned" || matchingEvent.eventType === "SDCBurned" || matchingEvent.eventType === "SRPCBurned") {
           transferFrom = matchingEvent.args.from;
           transferAmount = ethers.formatEther(matchingEvent.args.amount);
-          functionParams = `From: ${matchingEvent.args.from.substring(0, 6)}...${matchingEvent.args.from.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.amount)} SBC`;
+          functionParams = `From: ${matchingEvent.args.from.substring(0, 6)}...${matchingEvent.args.from.substring(38)}, Amount: ${ethers.formatEther(matchingEvent.args.amount)} ${eventTokenType}`;
         }
       } else {
         // Try to decode from transaction data
         try {
           if (tx.data && tx.data.length >= 10) {
-            const iface = new ethers.Interface(SBC_ABI);
+            // Determine which ABI to use
+            let abiToUse = duckCoinAbi;
+            if (tokenType === "SRPC") {
+              abiToUse = proveOfReputationAbi;
+            } else if (tokenType === "StudentManagement") {
+              abiToUse = studentManagementAbi;
+            }
+
+            const iface = new ethers.Interface(abiToUse);
             const decoded = iface.parseTransaction({ data: tx.data });
             if (decoded) {
               functionName = decoded.name;
@@ -324,25 +424,27 @@ export default function TransactionInfo({ contract }) {
                 return String(arg);
               }).join(", ");
 
-              // Extract info for addStudent/removeStudent
+              // Extract info for different functions
               if (decoded.name === "addStudent") {
                 transferTo = decoded.args[0]; // wallet address
                 functionParams = `Wallet: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Name: ${decoded.args[1]}, ID: ${decoded.args[2]}`;
               } else if (decoded.name === "removeStudent") {
                 functionParams = `Student ID: ${decoded.args[0]}`;
-              } else if (decoded.name === "mint") {
+              } else if (decoded.name === "mint" || decoded.name === "mintSBC" || decoded.name === "mintSDC" || decoded.name === "mintSRPC") {
                 transferTo = decoded.args[0];
                 transferAmount = ethers.formatEther(decoded.args[1]);
-                functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
-              } else if (decoded.name === "burn") {
+                const token = decoded.name === "mintSBC" ? "SBC" : decoded.name === "mintSDC" ? "SDC" : decoded.name === "mintSRPC" ? "SRPC" : tokenType;
+                functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
+              } else if (decoded.name === "burn" || decoded.name === "burnSBC" || decoded.name === "burnSDC" || decoded.name === "burnSRPC") {
                 transferFrom = decoded.args[0];
                 transferAmount = ethers.formatEther(decoded.args[1]);
-                functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
+                const token = decoded.name === "burnSBC" ? "SBC" : decoded.name === "burnSDC" ? "SDC" : decoded.name === "burnSRPC" ? "SRPC" : tokenType;
+                functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
               } else if (decoded.name === "transfer") {
                 transferFrom = decoded.args[0];
                 transferTo = decoded.args[1];
                 transferAmount = ethers.formatEther(decoded.args[2]);
-                functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, To: ${decoded.args[1].substring(0, 6)}...${decoded.args[1].substring(38)}, Amount: ${ethers.formatEther(decoded.args[2])} SBC`;
+                functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, To: ${decoded.args[1].substring(0, 6)}...${decoded.args[1].substring(38)}, Amount: ${ethers.formatEther(decoded.args[2])} ${tokenType}`;
               }
             }
           }
@@ -367,7 +469,8 @@ export default function TransactionInfo({ contract }) {
         transferAmount: transferAmount,
         functionName: functionName,
         functionParams: functionParams,
-        type: type
+        type: type,
+        tokenType: matchingEvent?.tokenType || tokenType
       };
 
       setTransactionHistory([txDetails]);
@@ -405,34 +508,46 @@ export default function TransactionInfo({ contract }) {
       if (!provider) return alert("Provider not found");
       
       const ethersProvider = new ethers.BrowserProvider(provider);
-      const contractWithProvider = new ethers.Contract(SBC_ADDRESS, SBC_ABI, ethersProvider);
+      
+      // Create contract instances for all tokens
+      const sbcContract = new ethers.Contract(SBC_ADDRESS, duckCoinAbi, ethersProvider);
+      const sdcContract = new ethers.Contract(SDC_ADDRESS, duckCoinAbi, ethersProvider);
+      const srpcContract = new ethers.Contract(SRPC_ADDRESS, proveOfReputationAbi, ethersProvider);
+      const studentMgmtContract = new ethers.Contract(STUDENT_MANAGEMENT_ADDRESS, studentManagementAbi, ethersProvider);
       
       const currentBlock = await ethersProvider.getBlockNumber();
       const fromBlock = Math.max(0, currentBlock - 1000);
 
-      const transferFilter = contractWithProvider.filters.Transfer();
-      const studentAddedFilter = contractWithProvider.filters.StudentAdded();
-      const studentRemovedFilter = contractWithProvider.filters.StudentRemoved();
-      const tokensMintedFilter = contractWithProvider.filters.TokensMinted();
-      const tokensBurnedFilter = contractWithProvider.filters.TokensBurned();
-
-      const [transferEvents, studentAddedEvents, studentRemovedEvents, tokensMintedEvents, tokensBurnedEvents] = await Promise.all([
-        contractWithProvider.queryFilter(transferFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(studentAddedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(studentRemovedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(tokensMintedFilter, fromBlock, currentBlock),
-        contractWithProvider.queryFilter(tokensBurnedFilter, fromBlock, currentBlock)
+      // Query Transfer events from all token contracts
+      const [sbcTransfers, sdcTransfers, srpcTransfers, studentAddedEvents, studentRemovedEvents, sbcMintedEvents, sbcBurnedEvents, sdcMintedEvents, sdcBurnedEvents, srpcMintedEvents, srpcBurnedEvents] = await Promise.all([
+        sbcContract.queryFilter(sbcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => []),
+        sdcContract.queryFilter(sdcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => []),
+        srpcContract.queryFilter(srpcContract.filters.Transfer(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentAdded(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.StudentRemoved(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SBCBurned(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SDCBurned(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCMinted(), fromBlock, currentBlock).catch(() => []),
+        studentMgmtContract.queryFilter(studentMgmtContract.filters.SRPCBurned(), fromBlock, currentBlock).catch(() => [])
       ]);
 
       const allTransactions = [];
       const seenHashes = new Set();
 
       const allEvents = [
-        ...transferEvents.map(e => ({ ...e, eventType: "Transfer" })),
-        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded" })),
-        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved" })),
-        ...tokensMintedEvents.map(e => ({ ...e, eventType: "TokensMinted" })),
-        ...tokensBurnedEvents.map(e => ({ ...e, eventType: "TokensBurned" }))
+        ...sbcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SBC" })),
+        ...sdcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SDC" })),
+        ...srpcTransfers.map(e => ({ ...e, eventType: "Transfer", tokenType: "SRPC" })),
+        ...studentAddedEvents.map(e => ({ ...e, eventType: "StudentAdded", tokenType: "StudentManagement" })),
+        ...studentRemovedEvents.map(e => ({ ...e, eventType: "StudentRemoved", tokenType: "StudentManagement" })),
+        ...sbcMintedEvents.map(e => ({ ...e, eventType: "SBCMinted", tokenType: "SBC" })),
+        ...sbcBurnedEvents.map(e => ({ ...e, eventType: "SBCBurned", tokenType: "SBC" })),
+        ...sdcMintedEvents.map(e => ({ ...e, eventType: "SDCMinted", tokenType: "SDC" })),
+        ...sdcBurnedEvents.map(e => ({ ...e, eventType: "SDCBurned", tokenType: "SDC" })),
+        ...srpcMintedEvents.map(e => ({ ...e, eventType: "SRPCMinted", tokenType: "SRPC" })),
+        ...srpcBurnedEvents.map(e => ({ ...e, eventType: "SRPCBurned", tokenType: "SRPC" }))
       ];
 
       for (const event of allEvents) {
@@ -465,25 +580,27 @@ export default function TransactionInfo({ contract }) {
         let transferTo = null;
         let transferAmount = "0";
 
+        const tokenType = event.tokenType || getTokenType(tx.to);
+
         if (event.eventType === "Transfer") {
           transferFrom = event.args.from;
           transferTo = event.args.to;
           transferAmount = ethers.formatEther(event.args.value);
-          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.value)} SBC`;
+          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.value)} ${tokenType}`;
         } else if (event.eventType === "StudentAdded") {
           transferTo = event.args.wallet;
           functionParams = `Wallet: ${event.args.wallet.substring(0, 6)}...${event.args.wallet.substring(38)}, Name: ${event.args.name}, ID: ${event.args.studentId}`;
         } else if (event.eventType === "StudentRemoved") {
           transferFrom = event.args.wallet;
           functionParams = `Student ID: ${event.args.studentId}, Wallet: ${event.args.wallet.substring(0, 6)}...${event.args.wallet.substring(38)}`;
-        } else if (event.eventType === "TokensMinted") {
+        } else if (event.eventType === "SBCMinted" || event.eventType === "SDCMinted" || event.eventType === "SRPCMinted") {
           transferTo = event.args.to;
           transferAmount = ethers.formatEther(event.args.amount);
-          functionParams = `To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} SBC`;
-        } else if (event.eventType === "TokensBurned") {
+          functionParams = `To: ${event.args.to.substring(0, 6)}...${event.args.to.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} ${tokenType}`;
+        } else if (event.eventType === "SBCBurned" || event.eventType === "SDCBurned" || event.eventType === "SRPCBurned") {
           transferFrom = event.args.from;
           transferAmount = ethers.formatEther(event.args.amount);
-          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} SBC`;
+          functionParams = `From: ${event.args.from.substring(0, 6)}...${event.args.from.substring(38)}, Amount: ${ethers.formatEther(event.args.amount)} ${tokenType}`;
         }
 
         allTransactions.push({
@@ -502,7 +619,8 @@ export default function TransactionInfo({ contract }) {
           transferAmount: transferAmount,
           functionName: functionName,
           functionParams: functionParams,
-          type: event.eventType || "Unknown"
+          type: event.eventType || "Unknown",
+          tokenType: tokenType
         });
       }
 
@@ -517,12 +635,34 @@ export default function TransactionInfo({ contract }) {
 
             try {
               const tx = await ethersProvider.getTransaction(txHash);
-              if (!tx || tx.to?.toLowerCase() !== SBC_ADDRESS.toLowerCase()) continue;
+              if (!tx || !tx.to) continue;
+              
+              // Check if transaction is to any of our contracts
+              const contractAddresses = [
+                SBC_ADDRESS,
+                SDC_ADDRESS,
+                SRPC_ADDRESS,
+                STUDENT_MANAGEMENT_ADDRESS
+              ].filter(addr => addr && addr.trim() !== "");
+              
+              const contractMatch = contractAddresses.find(addr => 
+                tx.to?.toLowerCase() === addr.toLowerCase()
+              );
+              if (!contractMatch) continue;
               if (tx.from.toLowerCase() !== studentWallet) continue; // Only transactions from this student
 
               seenHashes.add(txHash);
               const receipt = await ethersProvider.getTransactionReceipt(txHash);
               const date = new Date(Number(block.timestamp) * 1000);
+
+              // Determine which contract and ABI to use
+              const tokenType = getTokenType(contractMatch);
+              let abiToUse = duckCoinAbi;
+              if (tokenType === "SRPC") {
+                abiToUse = proveOfReputationAbi;
+              } else if (tokenType === "StudentManagement") {
+                abiToUse = studentManagementAbi;
+              }
 
               let functionName = "Unknown";
               let functionParams = "";
@@ -533,7 +673,7 @@ export default function TransactionInfo({ contract }) {
 
               try {
                 if (tx.data && tx.data.length >= 10) {
-                  const iface = new ethers.Interface(SBC_ABI);
+                  const iface = new ethers.Interface(abiToUse);
                   const decoded = iface.parseTransaction({ data: tx.data });
                   if (decoded) {
                     functionName = decoded.name;
@@ -554,19 +694,21 @@ export default function TransactionInfo({ contract }) {
                       functionParams = `Wallet: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Name: ${decoded.args[1]}, ID: ${decoded.args[2]}`;
                     } else if (decoded.name === "removeStudent") {
                       functionParams = `Student ID: ${decoded.args[0]}`;
-                    } else if (decoded.name === "mint") {
+                    } else if (decoded.name === "mint" || decoded.name === "mintSBC" || decoded.name === "mintSDC" || decoded.name === "mintSRPC") {
                       transferTo = decoded.args[0];
                       transferAmount = ethers.formatEther(decoded.args[1]);
-                      functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
-                    } else if (decoded.name === "burn") {
+                      const token = decoded.name === "mintSBC" ? "SBC" : decoded.name === "mintSDC" ? "SDC" : decoded.name === "mintSRPC" ? "SRPC" : tokenType;
+                      functionParams = `To: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
+                    } else if (decoded.name === "burn" || decoded.name === "burnSBC" || decoded.name === "burnSDC" || decoded.name === "burnSRPC") {
                       transferFrom = decoded.args[0];
                       transferAmount = ethers.formatEther(decoded.args[1]);
-                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} SBC`;
+                      const token = decoded.name === "burnSBC" ? "SBC" : decoded.name === "burnSDC" ? "SDC" : decoded.name === "burnSRPC" ? "SRPC" : tokenType;
+                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, Amount: ${ethers.formatEther(decoded.args[1])} ${token}`;
                     } else if (decoded.name === "transfer") {
                       transferFrom = decoded.args[0];
                       transferTo = decoded.args[1];
                       transferAmount = ethers.formatEther(decoded.args[2]);
-                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, To: ${decoded.args[1].substring(0, 6)}...${decoded.args[1].substring(38)}, Amount: ${ethers.formatEther(decoded.args[2])} SBC`;
+                      functionParams = `From: ${decoded.args[0].substring(0, 6)}...${decoded.args[0].substring(38)}, To: ${decoded.args[1].substring(0, 6)}...${decoded.args[1].substring(38)}, Amount: ${ethers.formatEther(decoded.args[2])} ${tokenType}`;
                     }
                   }
                 }
@@ -590,7 +732,8 @@ export default function TransactionInfo({ contract }) {
                 transferAmount: transferAmount,
                 functionName: functionName,
                 functionParams: functionParams,
-                type: type
+                type: type,
+                tokenType: tokenType
               });
             } catch (e) {
               continue;
@@ -630,7 +773,7 @@ export default function TransactionInfo({ contract }) {
         📜 Transaction History
       </h3>
       <p style={{ marginBottom: 20, color: stevensTextGrey }}>
-        Load and view all recent transactions on the SBC contract.
+        Load and view all recent transactions on SBC, SDC, SRPC, and StudentManagement contracts.
       </p>
       <button 
         onClick={loadTransactionHistory} 
@@ -672,6 +815,7 @@ export default function TransactionInfo({ contract }) {
               <thead>
                 <tr style={{ background: stevensRed }}>
                   <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Hash</th>
+                  <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Token</th>
                   <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Block</th>
                   <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Time</th>
                   <th style={{ padding: 10, textAlign: "left", color: "white", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}>Function</th>
@@ -692,7 +836,10 @@ export default function TransactionInfo({ contract }) {
                     onMouseLeave={(e) => e.target.style.background = "white"}
                   >
                     <td style={{ padding: 10, color: stevensTextGrey, fontFamily: "monospace", fontSize: 10, wordBreak: "break-all", cursor: "pointer" }} title={tx.hash}>
-                      {tx.hash}
+                      {tx.hash.substring(0, 10)}...
+                    </td>
+                    <td style={{ padding: 10, color: stevensRed, fontSize: 11, fontWeight: 600 }}>
+                      {tx.tokenType || "Unknown"}
                     </td>
                     <td style={{ padding: 10, color: stevensDarkGrey, fontSize: 11 }}>{tx.blockNumber.toString()}</td>
                     <td style={{ padding: 10, color: stevensTextGrey, fontSize: 10 }} title={tx.date}>
@@ -714,7 +861,7 @@ export default function TransactionInfo({ contract }) {
                       }
                     </td>
                     <td style={{ padding: 10, color: stevensRed, fontWeight: 600, fontSize: 11 }}>
-                      {tx.transferAmount ? `${parseFloat(tx.transferAmount).toFixed(2)} SBC` : `${tx.value} ETH`}
+                      {tx.transferAmount ? `${parseFloat(tx.transferAmount).toFixed(2)} ${tx.tokenType || "SBC"}` : `${tx.value} ETH`}
                     </td>
                     <td style={{ padding: 10, fontSize: 11 }}>
                       <span style={{

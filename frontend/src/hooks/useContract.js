@@ -4,6 +4,8 @@ import { ethers } from "ethers";
 import { SBC_ABI } from "../contracts/abi";
 import { 
   SBC_ADDRESS, 
+  SDC_ADDRESS,
+  SRPC_ADDRESS,
   STUDENT_MANAGEMENT_ADDRESS, 
   DUCK_COIN_ADDRESS, 
   PROVE_OF_REPUTATION_ADDRESS 
@@ -30,8 +32,9 @@ export function useContract() {
   const [wallet, setWallet] = useState("");
   const [contract, setContract] = useState(null); // Old SBC contract (for backward compatibility)
   const [studentManagementContract, setStudentManagementContract] = useState(null);
-  const [duckCoinContract, setDuckCoinContract] = useState(null);
-  const [nftContract, setNftContract] = useState(null);
+  const [duckCoinContract, setDuckCoinContract] = useState(null); // SBC (Stevens Banana Coin)
+  const [nftContract, setNftContract] = useState(null); // SRPC (Stevens Reputation Proof Coin)
+  const [sdcContract, setSdcContract] = useState(null); // SDC (Stevens Duck Coin)
 
   const connectWallet = async () => {
     const provider = await detectEthereumProvider();
@@ -63,14 +66,21 @@ export function useContract() {
       const nft = new ethers.Contract(PROVE_OF_REPUTATION_ADDRESS, proveOfReputationAbi, signer);
       setNftContract(nft);
     }
+
+    // Load SDC contract (Stevens Duck Coin)
+    if (SDC_ADDRESS && SDC_ADDRESS.trim() !== "") {
+      const sdc = new ethers.Contract(SDC_ADDRESS, duckCoinAbi, signer); // Use same ERC20 ABI
+      setSdcContract(sdc);
+    }
   };
 
   return { 
     wallet, 
     contract, // Old SBC contract
     studentManagementContract, // New StudentManagement contract
-    duckCoinContract, // DuckCoin contract
-    nftContract, // ProveOfReputation contract
+    duckCoinContract, // SBC (Stevens Banana Coin) - legacy name
+    nftContract, // SRPC (Stevens Reputation Proof Coin) - legacy name
+    sdcContract, // SDC (Stevens Duck Coin)
     connectWallet 
   };
 }

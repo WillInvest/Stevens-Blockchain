@@ -18,22 +18,19 @@ module.exports = {
     },
     {
       name: 'sbc-frontend',
-      script: 'pnpm',
-      args: 'run dev --host 0.0.0.0 --port 5173',
+      script: process.env.PACKAGE_MANAGER === 'yarn' ? 'yarn' : (process.env.PACKAGE_MANAGER === 'npm' ? 'npm' : 'pnpm'),
+      args: process.env.PACKAGE_MANAGER === 'yarn' ? 'dev --host 0.0.0.0 --port 5173' : 'run dev --host 0.0.0.0 --port 5173',
       cwd: process.env.FRONTEND_DIR || './frontend',
-      error_file: '../logs/frontend-error.log',
-      out_file: '../logs/frontend.log',
-      log_file: '../logs/frontend-combined.log',
+      error_file: './logs/frontend-error.log',
+      out_file: './logs/frontend.log',
+      log_file: './logs/frontend-combined.log',
       time: true,
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'development'
-      },
-      // Wait for anvil to be ready
-      wait_ready: true,
-      listen_timeout: 10000
+      }
     }
   ]
 };

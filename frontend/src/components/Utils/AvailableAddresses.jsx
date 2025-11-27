@@ -4,23 +4,49 @@ import { cardStyle, stevensRed, stevensTextGrey, stevensDarkGrey, buttonStyle } 
 
 export default function AvailableAddresses({ contract }) {
   const [available, setAvailable] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // ---------------- AVAILABLE ADDRESSES ----------------
   async function loadAvailableAddresses() {
-    const res = await fetch("/addresses.txt");
-    const text = await res.text();
+    if (!contract) {
+      setError("❌ Contract not connected. Please connect your wallet first.");
+      return;
+    }
 
-    const raw = text.match(/0x[a-fA-F0-9]{40}/g) || [];
-    const publicAddresses = raw.filter(addr => ethers.isAddress(addr));
+    setLoading(true);
+    setError(null);
 
-    const onchain = await contract.getAllStudents();
-    const used = onchain.map(s => s.wallet.toLowerCase());
+    try {
+      // Check if contract has getAllStudents function
+      if (!contract.getAllStudents) {
+        throw new Error("Contract does not have getAllStudents function. Please ensure StudentManagement contract is connected.");
+      }
 
-    const unused = publicAddresses.filter(
-      addr => !used.includes(addr.toLowerCase())
-    );
+      const res = await fetch("/addresses.txt");
+      if (!res.ok) {
+        throw new Error("Failed to fetch addresses.txt");
+      }
+      const text = await res.text();
 
-    setAvailable(unused.slice(0, 3)); // show only top 3
+      const raw = text.match(/0x[a-fA-F0-9]{40}/g) || [];
+      const publicAddresses = raw.filter(addr => ethers.isAddress(addr));
+
+      const onchain = await contract.getAllStudents();
+      const used = onchain.map(s => s.wallet.toLowerCase());
+
+      const unused = publicAddresses.filter(
+        addr => !used.includes(addr.toLowerCase())
+      );
+
+      setAvailable(unused.slice(0, 3)); // show only top 3
+    } catch (err) {
+      console.error("Error loading available addresses:", err);
+      setError("❌ Error: " + (err.message || "Unknown error"));
+      setAvailable([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -39,27 +65,50 @@ export default function AvailableAddresses({ contract }) {
       <p style={{ marginBottom: 20, color: stevensTextGrey }}>
         Display wallet addresses that are available but not yet registered as students.
       </p>
+      
+      {error && (
+        <div style={{
+          marginBottom: 16,
+          padding: 12,
+          background: "#FFF3CD",
+          border: "1px solid #FFC107",
+          borderRadius: 6,
+          color: "#856404",
+          fontSize: 14
+        }}>
+          {error}
+        </div>
+      )}
+
       <button 
-        onClick={loadAvailableAddresses} 
+        onClick={loadAvailableAddresses}
+        disabled={loading || !contract}
         style={{
           ...buttonStyle,
           width: "100%",
-          background: stevensRed,
-          color: "white"
+          background: (loading || !contract) ? "#ccc" : stevensRed,
+          color: "white",
+          cursor: (loading || !contract) ? "not-allowed" : "pointer",
+          opacity: (loading || !contract) ? 0.6 : 1
         }}
         onMouseEnter={(e) => {
-          e.target.style.transform = "translateY(-2px)";
-          e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
-          e.target.style.background = "#8B1E2E";
+          if (!loading && contract) {
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.boxShadow = "0 4px 8px rgba(163, 38, 56, 0.4)";
+            e.target.style.background = "#8B1E2E";
+          }
         }}
         onMouseLeave={(e) => {
-          e.target.style.transform = "translateY(0)";
-          e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
-          e.target.style.background = stevensRed;
+          if (!loading && contract) {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 2px 4px rgba(163, 38, 56, 0.3)";
+            e.target.style.background = stevensRed;
+          }
         }}
       >
-        Load Available Addresses
+        {loading ? "Loading..." : "Load Available Addresses"}
       </button>
+      
       {available.length > 0 && (
         <div style={{ marginTop: 24 }}>
           <h4 style={{ color: stevensRed, marginBottom: 16 }}>Unused Wallet Addresses</h4>
@@ -97,4 +146,3 @@ export default function AvailableAddresses({ contract }) {
     </div>
   );
 }
-
