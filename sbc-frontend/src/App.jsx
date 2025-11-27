@@ -326,8 +326,9 @@ export default function App() {
                   {activeTab === "stevensCoin" && (
                     <StevensCoin 
                       contract={studentManagementContract || contract} 
-                      duckCoinContract={duckCoinContract}
-                      nftContract={nftContract}
+                      sbcContract={duckCoinContract} // Legacy: duckCoinContract is now SBC
+                      sdcContract={null} // TODO: Add SDC contract when deployed
+                      srpcContract={nftContract} // Legacy: nftContract is now SRPC
                       wallet={wallet} 
                     />
                   )}

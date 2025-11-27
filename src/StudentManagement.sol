@@ -2,12 +2,14 @@
 pragma solidity ^0.8.24;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import "./DuckCoin.sol";
-import "./ProveOfReputation.sol";
+import "./StevensBananaCoin.sol";
+import "./StevensDuckCoin.sol";
+import "./StevensReputationProofCoin.sol";
 
 /**
  * @title StudentManagement
- * @dev Main contract that manages student information and coordinates with DuckCoin and ProveOfReputation contracts
+ * @dev Main contract that manages student information and coordinates with Stevens tokens
+ * Manages three tokens: SBC (Stevens Banana Coin), SDC (Stevens Duck Coin), SRPC (Stevens Reputation Proof Coin)
  */
 contract StudentManagement is Ownable {
     
@@ -23,21 +25,30 @@ contract StudentManagement is Ownable {
     uint256[] public allStudentIds;
 
     // Token contracts
-    DuckCoin public duckCoin;
-    ProveOfReputation public proveOfReputation;
+    StevensBananaCoin public stevensBananaCoin;  // SBC - The Fuel
+    StevensDuckCoin public stevensDuckCoin;      // SDC - Stevens Cash
+    StevensReputationProofCoin public stevensReputationProofCoin;  // SRPC - The Demand Engine
 
     // Events
     event StudentAdded(address indexed wallet, string name, uint256 indexed studentId);
     event StudentRemoved(uint256 indexed studentId, address indexed wallet);
-    event DuckCoinMinted(address indexed to, uint256 amount);
-    event DuckCoinBurned(address indexed from, uint256 amount);
-    event DuckCoinTransferred(address indexed from, address indexed to, uint256 amount);
-    event NFTMinted(address indexed to, uint256 indexed tokenId);
-    event NFTBurned(address indexed from, uint256 indexed tokenId);
+    event SBCMinted(address indexed to, uint256 amount);
+    event SBCBurned(address indexed from, uint256 amount);
+    event SBCTransferred(address indexed from, address indexed to, uint256 amount);
+    event SDCMinted(address indexed to, uint256 amount);
+    event SDCBurned(address indexed from, uint256 amount);
+    event SDCTransferred(address indexed from, address indexed to, uint256 amount);
+    event SRPCMinted(address indexed to, uint256 amount);
+    event SRPCBurned(address indexed from, uint256 amount);
 
-    constructor(address _duckCoinAddress, address _nftAddress) Ownable(msg.sender) {
-        duckCoin = DuckCoin(_duckCoinAddress);
-        proveOfReputation = ProveOfReputation(_nftAddress);
+    constructor(
+        address _sbcAddress,
+        address _sdcAddress,
+        address _srpcAddress
+    ) Ownable(msg.sender) {
+        stevensBananaCoin = StevensBananaCoin(_sbcAddress);
+        stevensDuckCoin = StevensDuckCoin(_sdcAddress);
+        stevensReputationProofCoin = StevensReputationProofCoin(_srpcAddress);
     }
 
     /**
@@ -129,84 +140,130 @@ contract StudentManagement is Ownable {
         return out;
     }
 
-    // ============ DUCK COIN FUNCTIONS ============
+    // ============ STEVENS BANANA COIN (SBC) FUNCTIONS ============
 
     /**
-     * @dev Mint Duck Coin tokens to a whitelisted student
+     * @dev Mint Stevens Banana Coin (SBC) tokens to a whitelisted student
      */
-    function mintDuckCoin(address to, uint256 amount) external onlyOwner {
+    function mintSBC(address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
-        duckCoin.mint(to, amount);
-        emit DuckCoinMinted(to, amount);
+        stevensBananaCoin.mint(to, amount);
+        emit SBCMinted(to, amount);
     }
 
     /**
-     * @dev Burn Duck Coin tokens from a wallet
+     * @dev Burn Stevens Banana Coin (SBC) tokens from a wallet
      */
-    function burnDuckCoin(address from, uint256 amount) external onlyOwner {
-        duckCoin.burn(from, amount);
-        emit DuckCoinBurned(from, amount);
+    function burnSBC(address from, uint256 amount) external onlyOwner {
+        stevensBananaCoin.burn(from, amount);
+        emit SBCBurned(from, amount);
     }
 
     /**
-     * @dev Transfer Duck Coin tokens (only for whitelisted addresses)
+     * @dev Transfer Stevens Banana Coin (SBC) tokens (only for whitelisted addresses)
      */
-    function transferDuckCoin(address from, address to, uint256 amount) external onlyOwner {
+    function transferSBC(address from, address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
-        duckCoin.transferFrom(from, to, amount);
-        emit DuckCoinTransferred(from, to, amount);
+        stevensBananaCoin.transferFrom(from, to, amount);
+        emit SBCTransferred(from, to, amount);
     }
 
-    // ============ PROVE OF REPUTATION FUNCTIONS ============
+    // ============ STEVENS DUCK COIN (SDC) FUNCTIONS ============
 
     /**
-     * @dev Mint Prove of Reputation tokens to a whitelisted student
+     * @dev Mint Stevens Duck Coin (SDC) tokens to a whitelisted student
+     */
+    function mintSDC(address to, uint256 amount) external onlyOwner {
+        require(students[to].isWhitelisted, "Recipient not whitelisted");
+        stevensDuckCoin.mint(to, amount);
+        emit SDCMinted(to, amount);
+    }
+
+    /**
+     * @dev Burn Stevens Duck Coin (SDC) tokens from a wallet
+     */
+    function burnSDC(address from, uint256 amount) external onlyOwner {
+        stevensDuckCoin.burn(from, amount);
+        emit SDCBurned(from, amount);
+    }
+
+    /**
+     * @dev Transfer Stevens Duck Coin (SDC) tokens (only for whitelisted addresses)
+     */
+    function transferSDC(address from, address to, uint256 amount) external onlyOwner {
+        require(students[to].isWhitelisted, "Recipient not whitelisted");
+        stevensDuckCoin.transferFrom(from, to, amount);
+        emit SDCTransferred(from, to, amount);
+    }
+
+    // ============ STEVENS REPUTATION PROOF COIN (SRPC) FUNCTIONS ============
+
+    /**
+     * @dev Mint Stevens Reputation Proof Coin (SRPC) tokens to a whitelisted student
      * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint
+     * @param amount The amount of SRPC tokens to mint
+     * @notice SRPC should typically be distributed through TaskManager by POCA
+     */
+    function mintSRPC(address to, uint256 amount) external onlyOwner {
+        require(students[to].isWhitelisted, "Recipient not whitelisted");
+        stevensReputationProofCoin.mint(to, amount);
+        emit SRPCMinted(to, amount);
+    }
+
+    /**
+     * @dev Burn Stevens Reputation Proof Coin (SRPC) tokens from a student
+     * @param from The address to burn tokens from
+     * @param amount The amount of SRPC tokens to burn
+     */
+    function burnSRPC(address from, uint256 amount) external onlyOwner {
+        stevensReputationProofCoin.burn(from, amount);
+        emit SRPCBurned(from, amount);
+    }
+
+    /**
+     * @dev Legacy function names for backward compatibility
      */
     function mintPoR(address to, uint256 amount) external onlyOwner {
-        require(students[to].isWhitelisted, "Recipient not whitelisted");
-        proveOfReputation.mint(to, amount);
-        emit NFTMinted(to, amount);
+        mintSRPC(to, amount);
     }
 
-    /**
-     * @dev Burn Prove of Reputation tokens from a student
-     * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn
-     */
     function burnPoR(address from, uint256 amount) external onlyOwner {
-        proveOfReputation.burn(from, amount);
-        emit NFTBurned(from, amount);
+        burnSRPC(from, amount);
     }
 
-    /**
-     * @dev Legacy function name for backward compatibility (calls mintPoR)
-     * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint (previously tokenId)
-     */
     function mintNFT(address to, uint256 amount) external onlyOwner {
-        require(students[to].isWhitelisted, "Recipient not whitelisted");
-        proveOfReputation.mint(to, amount);
-        emit NFTMinted(to, amount);
+        mintSRPC(to, amount);
     }
 
-    /**
-     * @dev Legacy function name for backward compatibility (calls burnPoR)
-     * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn (previously tokenId)
-     */
     function burnNFT(address from, uint256 amount) external onlyOwner {
-        proveOfReputation.burn(from, amount);
-        emit NFTBurned(from, amount);
+        burnSRPC(from, amount);
+    }
+
+    // Legacy DuckCoin functions for backward compatibility
+    function mintDuckCoin(address to, uint256 amount) external onlyOwner {
+        mintSBC(to, amount);
+    }
+
+    function burnDuckCoin(address from, uint256 amount) external onlyOwner {
+        burnSBC(from, amount);
+    }
+
+    function transferDuckCoin(address from, address to, uint256 amount) external onlyOwner {
+        transferSBC(from, to, amount);
     }
 
     /**
      * @dev Update token contract addresses (in case of upgrade)
      */
-    function updateTokenContracts(address _duckCoinAddress, address _nftAddress) external onlyOwner {
-        duckCoin = DuckCoin(_duckCoinAddress);
-        proveOfReputation = ProveOfReputation(_nftAddress);
+    function updateTokenContracts(
+        address _sbcAddress,
+        address _sdcAddress,
+        address _srpcAddress
+    ) external onlyOwner {
+        stevensBananaCoin = StevensBananaCoin(_sbcAddress);
+        stevensDuckCoin = StevensDuckCoin(_sdcAddress);
+        stevensReputationProofCoin = StevensReputationProofCoin(_srpcAddress);
     }
 }
+
 

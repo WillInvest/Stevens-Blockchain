@@ -1,11 +1,12 @@
 import { useState } from "react";
-import DuckCoin from "./DuckCoin";
-import ProveOfReputation from "./ProveOfReputation";
+import StevensDuckCoin from "./StevensDuckCoin";
+import StevensBananaCoin from "./StevensBananaCoin";
+import StevensReputationProofCoin from "./StevensReputationProofCoin";
 import { stevensRed, stevensTextGrey } from "../../styles/constants";
 import { SBC_ADDRESS } from "../../contracts/config";
 
-export default function StevensCoin({ contract, duckCoinContract, nftContract, wallet }) {
-  const [activeSubTab, setActiveSubTab] = useState("duckCoin");
+export default function StevensCoin({ contract, sbcContract, sdcContract, srpcContract, wallet }) {
+  const [activeSubTab, setActiveSubTab] = useState("sdc");
 
   return (
     <div>
@@ -19,8 +20,9 @@ export default function StevensCoin({ contract, duckCoinContract, nftContract, w
         paddingBottom: 0
       }}>
         {[
-          { id: "duckCoin", label: "🦆 Duck Coin", icon: "🦆" },
-          { id: "proveOfReputation", label: "🏆 Prove of Reputation", icon: "🏆" }
+          { id: "sdc", label: "🦆 SDC", icon: "🦆" },
+          { id: "sbc", label: "🍌 SBC", icon: "🍌" },
+          { id: "srpc", label: "🏆 SRPC", icon: "🏆" }
         ].map(subTab => (
           <button
             key={subTab.id}
@@ -31,7 +33,7 @@ export default function StevensCoin({ contract, duckCoinContract, nftContract, w
               background: activeSubTab === subTab.id ? stevensRed : "transparent",
               color: activeSubTab === subTab.id ? "white" : stevensRed,
               fontWeight: activeSubTab === subTab.id ? 700 : 500,
-              fontSize: 12,
+              fontSize: 18,
               cursor: "pointer",
               textTransform: "uppercase",
               letterSpacing: "0.5px",
@@ -56,36 +58,26 @@ export default function StevensCoin({ contract, duckCoinContract, nftContract, w
         ))}
       </div>
 
-      {/* Contract Address
-      <div style={{
-        marginBottom: 16,
-        padding: "12px 16px",
-        background: "#f8f9fa",
-        borderRadius: 6,
-        border: "1px solid #e9ecef"
-      }}>
-        <span style={{ fontSize: 12, color: stevensTextGrey, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-          Contract Address:{" "}
-        </span>
-        <span style={{ fontSize: 12, fontFamily: "monospace", color: stevensRed, fontWeight: 600 }}>
-          {SBC_ADDRESS}
-        </span>
-      </div> */}
-
-      {activeSubTab === "duckCoin" && (
-        <DuckCoin 
+      {activeSubTab === "sdc" && (
+        <StevensDuckCoin 
           contract={contract} 
-          duckCoinContract={duckCoinContract}
+          sdcContract={sdcContract}
           wallet={wallet} 
         />
       )}
-      {activeSubTab === "proveOfReputation" && (
-        <ProveOfReputation 
+      {activeSubTab === "sbc" && (
+        <StevensBananaCoin 
+          contract={contract} 
+          sbcContract={sbcContract}
+          wallet={wallet} 
+        />
+      )}
+      {activeSubTab === "srpc" && (
+        <StevensReputationProofCoin 
           contract={contract}
-          nftContract={nftContract}
+          srpcContract={srpcContract}
         />
       )}
     </div>
   );
 }
-

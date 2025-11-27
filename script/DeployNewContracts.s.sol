@@ -2,8 +2,9 @@
 pragma solidity ^0.8.24;
 
 import { Script } from "forge-std/Script.sol";
-import { DuckCoin } from "../src/DuckCoin.sol";
-import { ProveOfReputation } from "../src/ProveOfReputation.sol";
+import { StevensBananaCoin } from "../src/StevensBananaCoin.sol";
+import { StevensDuckCoin } from "../src/StevensDuckCoin.sol";
+import { StevensReputationProofCoin } from "../src/StevensReputationProofCoin.sol";
 import { StudentManagement } from "../src/StudentManagement.sol";
 import { console } from "forge-std/console.sol";
 
@@ -15,41 +16,53 @@ contract DeployNewContracts is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        // Step 1: Deploy DuckCoin (ERC20)
-        console.log("Deploying DuckCoin...");
-        DuckCoin duckCoin = new DuckCoin();
-        console.log("DuckCoin deployed to:", address(duckCoin));
+        // Step 1: Deploy StevensBananaCoin (SBC) - The Fuel
+        console.log("Deploying StevensBananaCoin (SBC)...");
+        StevensBananaCoin sbc = new StevensBananaCoin();
+        console.log("StevensBananaCoin (SBC) deployed to:", address(sbc));
 
-        // Step 2: Deploy ProveOfReputation (ERC721)
-        console.log("Deploying ProveOfReputation...");
-        ProveOfReputation proveOfReputation = new ProveOfReputation();
-        console.log("ProveOfReputation deployed to:", address(proveOfReputation));
+        // Step 2: Deploy StevensDuckCoin (SDC) - Stevens Cash
+        console.log("Deploying StevensDuckCoin (SDC)...");
+        StevensDuckCoin sdc = new StevensDuckCoin();
+        console.log("StevensDuckCoin (SDC) deployed to:", address(sdc));
 
-        // Step 3: Deploy StudentManagement (main contract)
+        // Step 3: Deploy StevensReputationProofCoin (SRPC) - The Demand Engine
+        console.log("Deploying StevensReputationProofCoin (SRPC)...");
+        StevensReputationProofCoin srpc = new StevensReputationProofCoin();
+        console.log("StevensReputationProofCoin (SRPC) deployed to:", address(srpc));
+
+        // Step 4: Deploy StudentManagement (main contract)
         console.log("Deploying StudentManagement...");
         StudentManagement studentManagement = new StudentManagement(
-            address(duckCoin),
-            address(proveOfReputation)
+            address(sbc),
+            address(sdc),
+            address(srpc)
         );
         console.log("StudentManagement deployed to:", address(studentManagement));
 
-        // Step 4: Link the contracts
+        // Step 5: Link the contracts
         console.log("Linking contracts...");
-        duckCoin.setStudentManagement(address(studentManagement));
-        console.log("DuckCoin linked to StudentManagement");
+        sbc.setStudentManagement(address(studentManagement));
+        console.log("StevensBananaCoin (SBC) linked to StudentManagement");
 
-        proveOfReputation.setStudentManagement(address(studentManagement));
-        console.log("ProveOfReputation linked to StudentManagement");
+        sdc.setStudentManagement(address(studentManagement));
+        console.log("StevensDuckCoin (SDC) linked to StudentManagement");
+
+        srpc.setStudentManagement(address(studentManagement));
+        console.log("StevensReputationProofCoin (SRPC) linked to StudentManagement");
 
         // Print summary
         console.log("\n=== Deployment Summary ===");
-        console.log("DuckCoin Address:", address(duckCoin));
-        console.log("ProveOfReputation Address:", address(proveOfReputation));
+        console.log("StevensBananaCoin (SBC) Address:", address(sbc));
+        console.log("StevensDuckCoin (SDC) Address:", address(sdc));
+        console.log("StevensReputationProofCoin (SRPC) Address:", address(srpc));
         console.log("StudentManagement Address:", address(studentManagement));
         console.log("\nCopy these addresses to sbc-frontend/src/contracts/config.js");
+        console.log("\nToken Roles:");
+        console.log("- SBC: The Fuel (used for bidding on SRPC-rewarded tasks)");
+        console.log("- SDC: Stevens Cash (redeemable anytime)");
+        console.log("- SRPC: The Demand Engine (non-transferable, distributed by POCA)");
 
         vm.stopBroadcast();
     }
 }
-
-

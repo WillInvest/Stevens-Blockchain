@@ -2,11 +2,12 @@
 
 ## Overview
 
-The system is now split into **3 separate smart contracts** for better modularity and separation of concerns:
+The system is now split into **4 separate smart contracts** for better modularity and separation of concerns:
 
 1. **StudentManagement.sol** - Main contract managing student information
-2. **DuckCoin.sol** - ERC20 fungible token contract
-3. **ProveOfReputation.sol** - ERC721 non-fungible token (NFT) contract
+2. **StevensBananaCoin.sol (SBC)** - ERC20 fungible token contract (The Fuel)
+3. **StevensDuckCoin.sol (SDC)** - ERC20 fungible token contract (Stevens Cash)
+4. **StevensReputationProofCoin.sol (SRPC)** - ERC20 soulbound token contract (The Demand Engine)
 
 ## Architecture Diagram
 
@@ -18,17 +19,20 @@ The system is now split into **3 separate smart contracts** for better modularit
 │   - Coordinates token operations     │
 └──────────────┬──────────────────────┘
                │
-       ┌───────┴────────┐
-       │                │
-       ▼                ▼
-┌──────────────┐  ┌──────────────────┐
-│ DuckCoin.sol │  │ ProveOfReputation │
-│ (ERC20)      │  │ .sol (ERC721)      │
-│              │  │                   │
-│ - Mint       │  │ - Mint NFT        │
-│ - Burn       │  │ - Burn NFT        │
-│ - Transfer   │  │                   │
-└──────────────┘  └──────────────────┘
+       ┌───────┴────────┬──────────────┐
+       │                │               │
+       ▼                ▼               ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+│ StevensBanana│  │ StevensDuck  │  │ StevensReputation│
+│ Coin (SBC)   │  │ Coin (SDC)   │  │ ProofCoin (SRPC) │
+│ (ERC20)      │  │ (ERC20)      │  │ (ERC20 SBT)      │
+│              │  │              │  │                  │
+│ - Mint       │  │ - Mint       │  │ - Mint           │
+│ - Burn       │  │ - Burn       │  │ - Burn           │
+│ - Transfer   │  │ - Transfer   │  │ - Non-transferable│
+│              │  │ - Redeemable │  │                  │
+│ The Fuel     │  │ Stevens Cash │  │ Demand Engine    │
+└──────────────┘  └──────────────┘  └──────────────────┘
 ```
 
 ## Contract Details
@@ -48,99 +52,131 @@ The system is now split into **3 separate smart contracts** for better modularit
 - `removeStudent(uint256 studentId)` - Remove a student
 - `getStudentById(uint256 studentId)` - Get student info by ID
 - `getAllStudents()` - Get all students
-- `mintDuckCoin(address to, uint256 amount)` - Mint Duck Coin tokens
-- `burnDuckCoin(address from, uint256 amount)` - Burn Duck Coin tokens
-- `transferDuckCoin(address from, address to, uint256 amount)` - Transfer Duck Coin
-- `mintNFT(address to, uint256 tokenId)` - Mint Prove of Reputation NFT
-- `burnNFT(address from, uint256 tokenId)` - Burn Prove of Reputation NFT
+- `mintSBC(address to, uint256 amount)` - Mint Stevens Banana Coin (SBC) tokens
+- `burnSBC(address from, uint256 amount)` - Burn Stevens Banana Coin (SBC) tokens
+- `transferSBC(address from, address to, uint256 amount)` - Transfer Stevens Banana Coin (SBC)
+- `mintSDC(address to, uint256 amount)` - Mint Stevens Duck Coin (SDC) tokens
+- `burnSDC(address from, uint256 amount)` - Burn Stevens Duck Coin (SDC) tokens
+- `transferSDC(address from, address to, uint256 amount)` - Transfer Stevens Duck Coin (SDC)
+- `mintSRPC(address to, uint256 amount)` - Mint Stevens Reputation Proof Coin (SRPC) tokens
+- `burnSRPC(address from, uint256 amount)` - Burn Stevens Reputation Proof Coin (SRPC) tokens
 
-### 2. DuckCoin.sol
+**Legacy Functions** (for backward compatibility):
+- `mintDuckCoin()` → calls `mintSBC()`
+- `burnDuckCoin()` → calls `burnSBC()`
+- `transferDuckCoin()` → calls `transferSBC()`
+- `mintPoR()` / `mintNFT()` → calls `mintSRPC()`
+- `burnPoR()` / `burnNFT()` → calls `burnSRPC()`
 
-**Purpose**: ERC20 fungible token contract for Duck Coin.
+### 2. StevensBananaCoin.sol (SBC)
+
+**Purpose**: ERC20 fungible token contract for Stevens Banana Coin - The Fuel.
 
 **Key Features**:
 - Standard ERC20 implementation
 - Only StudentManagement can mint/burn
 - Whitelist checks enforced via StudentManagement
+- Used for bidding on SRPC-rewarded tasks
+- Burned after task completion (deflationary)
 
 **Main Functions**:
 - `mint(address to, uint256 amount)` - Mint tokens (only StudentManagement)
 - `burn(address from, uint256 amount)` - Burn tokens (only StudentManagement)
 - `setStudentManagement(address)` - Set the StudentManagement contract address
 
-### 3. ProveOfReputation.sol
+**Token Role**: The Fuel - Primary bidding currency for SRPC-rewarded tasks.
 
-**Purpose**: ERC721 non-fungible token contract for Proof of Reputation.
+### 3. StevensDuckCoin.sol (SDC)
+
+**Purpose**: ERC20 fungible token contract for Stevens Duck Coin - Stevens Cash.
 
 **Key Features**:
-- Standard ERC721 implementation
-- Only StudentManagement can mint/burn
-- Auto-incrementing token IDs (if tokenId = 0)
-- Manual token ID assignment (if tokenId > 0)
+- Standard ERC20 implementation
+- Only StudentManagement or RedemptionContract can mint/burn
+- Whitelist checks enforced via StudentManagement
+- Redeemable anytime (cash equivalent)
+- Used in exchanges (AMM/CEX)
 
 **Main Functions**:
-- `mint(address to, uint256 tokenId)` - Mint NFT (only StudentManagement)
-  - If tokenId = 0, uses auto-increment
-  - If tokenId > 0, uses specified ID
-- `burn(uint256 tokenId)` - Burn NFT (only StudentManagement)
+- `mint(address to, uint256 amount)` - Mint tokens (only StudentManagement or RedemptionContract)
+- `burn(address from, uint256 amount)` - Burn tokens (only StudentManagement or RedemptionContract)
+- `redeem(address user, uint256 amount)` - Redeem SDC for cash (only RedemptionContract)
 - `setStudentManagement(address)` - Set the StudentManagement contract address
-- `getTokenCounter()` - Get current token counter
-- `totalSupply()` - Get total number of NFTs minted
+- `setRedemptionContract(address)` - Set the redemption contract address
+
+**Token Role**: Stevens Cash - Redeemable cash equivalent, provides liquidity bridge.
+
+### 4. StevensReputationProofCoin.sol (SRPC)
+
+**Purpose**: ERC20 soulbound token contract for Stevens Reputation Proof Coin - The Demand Engine.
+
+**Key Features**:
+- ERC20 implementation with transfer prevention (soulbound)
+- Only StudentManagement or TaskManager can mint/burn
+- Non-transferable (soulbound token)
+- Distributed by Professor On-Chain Address (POCA) through tasks
+- Represents professor recognition ("thumbs up")
+
+**Main Functions**:
+- `mint(address to, uint256 amount)` - Mint tokens (only StudentManagement or TaskManager)
+- `burn(address from, uint256 amount)` - Burn tokens (only StudentManagement or TaskManager)
+- `setStudentManagement(address)` - Set the StudentManagement contract address
+- `setTaskManager(address)` - Set the TaskManager contract address (for SRPC distribution)
+- `transfer()` - Reverted (non-transferable)
+- `transferFrom()` - Reverted (non-transferable)
+
+**Token Role**: The Demand Engine - Creates demand for SBC through scarcity and real-world value.
 
 ## Deployment Order
 
-1. **Deploy DuckCoin.sol**
-   - Deploy with constructor: `DuckCoin()`
+1. **Deploy StevensBananaCoin.sol (SBC)**
+   - Deploy with constructor: `StevensBananaCoin()`
    - Save the contract address
 
-2. **Deploy ProveOfReputation.sol**
-   - Deploy with constructor: `ProveOfReputation()`
+2. **Deploy StevensDuckCoin.sol (SDC)**
+   - Deploy with constructor: `StevensDuckCoin()`
    - Save the contract address
 
-3. **Deploy StudentManagement.sol**
-   - Deploy with constructor: `StudentManagement(duckCoinAddress, nftAddress)`
-   - Pass the addresses from steps 1 and 2
+3. **Deploy StevensReputationProofCoin.sol (SRPC)**
+   - Deploy with constructor: `StevensReputationProofCoin()`
    - Save the contract address
 
-4. **Link the contracts**
-   - Call `duckCoin.setStudentManagement(studentManagementAddress)` (as owner)
-   - Call `proveOfReputation.setStudentManagement(studentManagementAddress)` (as owner)
+4. **Deploy StudentManagement.sol**
+   - Deploy with constructor: `StudentManagement(address sbc, address sdc, address srpc)`
+   - Pass addresses of all three token contracts
+   - Save the contract address
 
-## Migration from Old Contract
+5. **Link the contracts**
+   - Call `setStudentManagement(address)` on each token contract
+   - Pass the StudentManagement contract address
+   - For SRPC, also call `setTaskManager(address)` when TaskManager is deployed
 
-The old `SBC.sol` contract combined everything into one contract. The new architecture separates concerns:
+## Token Economics
 
-**Old Structure:**
-- Single contract (SBC.sol) with student management + ERC20 token
+### Stevens Banana Coin (SBC) - The Fuel
+- **Type**: ERC20 Fungible Token
+- **Supply Model**: Deflationary (burned after task completion)
+- **Primary Use**: Bidding on SRPC-rewarded tasks
+- **Exchange**: Can be swapped for SDC via AMM/CEX
 
-**New Structure:**
-- StudentManagement.sol (student info + coordination)
-- DuckCoin.sol (ERC20 token)
-- ProveOfReputation.sol (ERC721 NFT)
+### Stevens Duck Coin (SDC) - Stevens Cash
+- **Type**: ERC20 Fungible Token
+- **Supply Model**: Stable (redeemable)
+- **Primary Use**: Cash equivalent, liquidity bridge
+- **Exchange**: Can be swapped for SBC via AMM/CEX
+- **Redemption**: Can be redeemed for cash/fiat anytime
 
-## Frontend Updates Needed
+### Stevens Reputation Proof Coin (SRPC) - The Demand Engine
+- **Type**: ERC20 Soulbound Token (Non-transferable)
+- **Supply Model**: Controlled by POCA distribution
+- **Primary Use**: Reputation metric, creates demand for SBC
+- **Distribution**: Only by Professor On-Chain Address (POCA) through tasks
+- **Value**: Real-world opportunities (connections, research, jobs)
 
-After deploying the new contracts, update the frontend:
+## Notes
 
-1. **Update contract addresses** in `sbc-frontend/src/contracts/config.js`:
-   ```javascript
-   export const STUDENT_MANAGEMENT_ADDRESS = "0x...";
-   export const DUCK_COIN_ADDRESS = "0x...";
-   export const PROVE_OF_REPUTATION_ADDRESS = "0x...";
-   ```
-
-2. **Update useContract hook** to load all three contracts
-
-3. **Update components** to use the appropriate contract:
-   - StudentInfo: Use StudentManagement for student operations, DuckCoin for balance, ProveOfReputation for NFT count
-   - DuckCoin component: Use StudentManagement contract (which calls DuckCoin)
-   - ProveOfReputation component: Use StudentManagement contract (which calls ProveOfReputation)
-
-## Benefits of This Architecture
-
-1. **Separation of Concerns**: Each contract has a single responsibility
-2. **Upgradeability**: Can upgrade token contracts independently
-3. **Gas Efficiency**: Smaller contracts are cheaper to deploy
-4. **Modularity**: Easier to test and maintain
-5. **Flexibility**: Can add more token types in the future
-
+- All tokens require whitelisting via StudentManagement
+- Only whitelisted users can hold, transfer, and interact with tokens
+- SRPC is non-transferable (soulbound) to ensure authenticity
+- SBC is burned after task completion to create deflationary pressure
+- SDC is redeemable for cash/fiat to provide liquidity bridge
