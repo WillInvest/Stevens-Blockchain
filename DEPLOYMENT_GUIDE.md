@@ -71,3 +71,4 @@ npm run dev
 - Check that students are whitelisted before minting
 - Verify the contract addresses are correct
 
+

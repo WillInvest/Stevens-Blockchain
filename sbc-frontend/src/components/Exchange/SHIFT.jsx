@@ -21,3 +21,4 @@ export default function SHIFT({ contract, duckCoinContract, nftContract }) {
   );
 }
 
+

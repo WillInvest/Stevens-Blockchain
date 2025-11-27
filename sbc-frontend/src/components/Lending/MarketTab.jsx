@@ -194,3 +194,4 @@ export default function MarketTab({ wallet, duckCoinContract, nftContract }) {
   );
 }
 
+
