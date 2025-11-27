@@ -16,7 +16,8 @@ cache_forge/
 # ============================================
 # Dependencies
 node_modules/
-sbc-frontend/node_modules/
+frontend/sbc-frontend/node_modules/
+contracts/node_modules/
 
 # Build outputs
 dist/
@@ -179,4 +180,3 @@ Cargo.lock
 .last_confs
 certora_*
 .zip-output-url.txt
-
