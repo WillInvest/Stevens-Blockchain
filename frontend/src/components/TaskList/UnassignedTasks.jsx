@@ -9,7 +9,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1234...5678",
     description: "Develop a smart contract for decentralized voting system with gas optimization",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -53,7 +53,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1111...2222",
     description: "Write comprehensive documentation for the blockchain system",
     fileHash: "QmYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYy",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "5",
     assignedTo: null,
     bidAmount: "25",
@@ -152,7 +152,7 @@ export default function UnassignedTasks({
         fontSize: 12,
         color: "#1E40AF"
       }}>
-        💡 <strong>Live Bidding:</strong> For PoR tasks, you can place bids with Duck Coin. 
+        💡 <strong>Live Bidding:</strong> For SRPC tasks, you can place bids with Duck Coin. 
         The highest bidder wins when the creator accepts. Each new bid resets the 24-hour acceptance deadline.
       </div>
 

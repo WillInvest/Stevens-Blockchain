@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for a Task List system that allows administrators/professors and students to create tasks with rewards (Duck Coin or Proof of Reputation), with a bidding mechanism for PoR tasks and a credit score system based on PoR holdings.
+This document outlines the implementation plan for a Task List system that allows administrators/professors and students to create tasks with rewards (Duck Coin or Proof of Reputation), with a bidding mechanism for SRPC tasks and a credit score system based on SRPC holdings.
 
 ---
 
@@ -33,9 +33,9 @@ This document outlines the implementation plan for a Task List system that allow
 **Location:** `src/TaskManager.sol`
 
 **Dependencies:**
-- `StudentManagement.sol` - For checking whitelist and PoR balances
+- `StudentManagement.sol` - For checking whitelist and SRPC balances
 - `DuckCoin.sol` - For Duck Coin rewards and bidding
-- `ProveOfReputation.sol` - For PoR rewards
+- `ProveOfReputation.sol` - For SRPC rewards
 
 **Key Structures:**
 
@@ -50,7 +50,7 @@ enum TaskStatus {
 
 enum RewardType {
     DuckCoin,     // Reward in Duck Coin
-    PoR           // Reward in Proof of Reputation
+    SRPC           // Reward in Proof of Reputation
 }
 
 struct Task {
@@ -61,7 +61,7 @@ struct Task {
     RewardType rewardType;
     uint256 rewardAmount;
     address assignedTo;     // Task taker (set when bid accepted)
-    uint256 bidAmount;     // Staked Duck Coin (for PoR tasks)
+    uint256 bidAmount;     // Staked Duck Coin (for SRPC tasks)
     TaskStatus status;
     uint256 createdAt;
     uint256 assignedAt;
@@ -99,11 +99,11 @@ uint256 public nextTaskId;
 
 1. **Task Creation:**
    - `createTask(string description, string fileHash, RewardType rewardType, uint256 rewardAmount)`
-   - Validates creator has sufficient PoR (if PoR reward)
-   - Locks PoR in contract (if PoR reward)
+   - Validates creator has sufficient SRPC (if SRPC reward)
+   - Locks SRPC in contract (if SRPC reward)
    - Emits `TaskCreated` event
 
-2. **Live Bidding (PoR tasks only):**
+2. **Live Bidding (SRPC tasks only):**
    - `placeBid(uint256 taskId, uint256 duckCoinAmount)`
    - Must be higher than current highest bid
    - Automatically refunds previous highest bidder's Duck Coin
@@ -124,7 +124,7 @@ uint256 public nextTaskId;
 4. **Complete Task:**
    - `completeTask(uint256 taskId)`
    - Only task creator can call
-   - Transfers PoR to task taker (if PoR reward)
+   - Transfers SRPC to task taker (if SRPC reward)
    - Burns staked Duck Coin
    - Moves task to Completed
    - Emits `TaskCompleted` event
@@ -138,7 +138,7 @@ uint256 public nextTaskId;
 6. **Resolve Dispute (Admin only):**
    - `resolveDispute(uint256 taskId, bool creatorAtFault, uint256 slashAmount)`
    - Only owner can call
-   - If creator at fault: slash PoR
+   - If creator at fault: slash SRPC
    - Refund or burn Duck Coin based on resolution
    - Emits `DisputeResolved` event
 
@@ -147,12 +147,12 @@ uint256 public nextTaskId;
    - `getOngoingTasks() returns (Task[] memory)`
    - `getMyTasks(address user) returns (Task[] memory)` - Returns both created and assigned tasks
    - `getCurrentBid(uint256 taskId) returns (Bid memory)` - Returns current highest bid
-   - `getCreatorCreditScore(address creator) returns (uint256)` - Returns PoR balance
+   - `getCreatorCreditScore(address creator) returns (uint256)` - Returns SRPC balance
 
 **Access Control:**
 - Uses `StudentManagement` to check if user is whitelisted
 - Uses `Ownable` for admin functions (dispute resolution)
-- PoR balance check via `ProveOfReputation.balanceOf()`
+- SRPC balance check via `ProveOfReputation.balanceOf()`
 
 ---
 
@@ -181,7 +181,7 @@ function setStudent(address student, bool status) external onlyOwner {
 }
 ```
 
-**Alternative:** Use PoR threshold (e.g., > 100 PoR = Professor)
+**Alternative:** Use SRPC threshold (e.g., > 100 SRPC = Professor)
 
 ---
 
@@ -219,29 +219,29 @@ sbc-frontend/src/components/
 - Form fields:
   - Description (textarea)
   - File Upload (optional - stores IPFS hash or file reference)
-  - Reward Type (radio: Duck Coin / PoR)
+  - Reward Type (radio: Duck Coin / SRPC)
   - Reward Amount (number input)
 - Validation:
-  - Check if PoR reward requires professor role
-  - Check if creator has sufficient PoR
+  - Check if SRPC reward requires professor role
+  - Check if creator has sufficient SRPC
   - Validate all fields
 - Calls `taskManagerContract.createTask()`
 
 #### **TaskCard.jsx**
 - Displays task information
 - Color coding:
-  - **PoR tasks:** Gold/Amber background (`#FFD700` or `#FFA500`)
+  - **SRPC tasks:** Gold/Amber background (`#FFD700` or `#FFA500`)
   - **Duck Coin tasks:** Standard white/light gray
 - Shows:
   - Task ID, Description, Creator, Reward Type/Amount
-  - Credit Score (PoR balance of creator)
-  - **Current Highest Bid** (for PoR tasks) - Live display
+  - Credit Score (SRPC balance of creator)
+  - **Current Highest Bid** (for SRPC tasks) - Live display
   - Status badge
   - Action buttons (Place Bid, Accept Bid, Complete, Report)
 
 #### **UnassignedTasks.jsx**
 - Lists all tasks with status `Unassigned`
-- For PoR tasks:
+- For SRPC tasks:
   - Shows **current highest bid** (live, updates automatically)
   - Shows **bid deadline countdown** (24 hours from last bid, resets on new bid)
   - Shows "Place Bid" button
@@ -258,9 +258,9 @@ sbc-frontend/src/components/
 #### **MyTasks.jsx**
 - Shows tasks where user is creator OR assigned taker
 - For creators:
-  - Shows **current highest bid** (for unassigned PoR tasks)
+  - Shows **current highest bid** (for unassigned SRPC tasks)
   - Shows **countdown timer** until bid deadline (24 hours from last bid)
-  - "Accept Bid" button (PoR tasks with current bid, disabled if deadline passed)
+  - "Accept Bid" button (SRPC tasks with current bid, disabled if deadline passed)
   - Warning if deadline is approaching (< 1 hour remaining)
   - "Complete Task" button (Ongoing tasks)
 - For takers:
@@ -268,7 +268,7 @@ sbc-frontend/src/components/
   - View task details
 
 #### **BidModal.jsx**
-- Modal for placing bids on PoR tasks
+- Modal for placing bids on SRPC tasks
 - Displays **current highest bid** prominently
 - Input: Duck Coin amount to stake
 - Validation: Must be higher than current bid
@@ -280,23 +280,23 @@ sbc-frontend/src/components/
 
 ## 5. Data Flow Diagrams
 
-### 5.1 Task Creation Flow (PoR Reward)
+### 5.1 Task Creation Flow (SRPC Reward)
 
 ```
 User (Professor) → CreateTask.jsx
   ↓
-Check: isProfessor? && PoR balance >= reward?
+Check: isProfessor? && SRPC balance >= reward?
   ↓
 TaskManager.createTask()
   ↓
-Lock PoR in contract
+Lock SRPC in contract
   ↓
 Emit TaskCreated event
   ↓
 Task appears in UnassignedTasks
 ```
 
-### 5.2 Live Bidding Flow (PoR Task)
+### 5.2 Live Bidding Flow (SRPC Task)
 
 ```
 Student → UnassignedTasks → See current bid (e.g., 50 DC)
@@ -361,7 +361,7 @@ Click "Complete Task"
   ↓
 TaskManager.completeTask()
   ↓
-Transfer PoR to taker
+Transfer SRPC to taker
   ↓
 Burn staked Duck Coin
   ↓
@@ -383,35 +383,35 @@ Task moves to Disputed
   ↓
 Admin reviews → resolveDispute()
   ↓
-If creator at fault: Slash PoR
+If creator at fault: Slash SRPC
 ```
 
 ---
 
 ## 6. Smart Contract Implementation Details
 
-### 6.1 PoR Locking Mechanism
+### 6.1 SRPC Locking Mechanism
 
-When professor creates PoR reward task:
+When professor creates SRPC reward task:
 ```solidity
 // In createTask()
-if (rewardType == RewardType.PoR) {
-    require(proveOfReputation.balanceOf(msg.sender) >= rewardAmount, "Insufficient PoR");
-    // Lock PoR by transferring to contract
+if (rewardType == RewardType.SRPC) {
+    require(proveOfReputation.balanceOf(msg.sender) >= rewardAmount, "Insufficient SRPC");
+    // Lock SRPC by transferring to contract
     proveOfReputation.transferFrom(msg.sender, address(this), rewardAmount);
-    // Note: Since PoR is non-transferable, we need a special mechanism
-    // Alternative: Use allowance pattern or modify PoR contract
+    // Note: Since SRPC is non-transferable, we need a special mechanism
+    // Alternative: Use allowance pattern or modify SRPC contract
 }
 ```
 
-**Issue:** PoR is non-transferable! 
+**Issue:** SRPC is non-transferable! 
 
 **Solution Options:**
-1. **Modify PoR contract** to allow TaskManager to transfer (add `taskManager` role)
+1. **Modify SRPC contract** to allow TaskManager to transfer (add `taskManager` role)
 2. **Use escrow pattern** - Professor approves TaskManager, TaskManager can transfer on completion
 3. **Track locked amounts** in TaskManager without actually transferring
 
-**Recommended:** Option 1 - Add `taskManager` address to PoR contract with transfer permissions
+**Recommended:** Option 1 - Add `taskManager` address to SRPC contract with transfer permissions
 
 ### 6.2 Duck Coin Live Bidding & Burning
 
@@ -599,7 +599,7 @@ const fetchCurrentBid = async (taskId) => {
 ## 9. UI/UX Considerations
 
 ### 9.1 Color Scheme
-- **PoR Tasks:** Gold/Amber (`#FFD700`, `#FFA500`) - High priority
+- **SRPC Tasks:** Gold/Amber (`#FFD700`, `#FFA500`) - High priority
 - **Duck Coin Tasks:** Standard white/light gray
 - **Status Badges:**
   - Unassigned: Blue
@@ -609,18 +609,18 @@ const fetchCurrentBid = async (taskId) => {
   - Cancelled: Dark gray
 
 ### 9.2 Credit Score Display
-- Show PoR balance as "Credit Score"
-- Professors: Show "Professor" badge + PoR amount
-- Students: Show PoR amount only
-- Format: "Credit: 50 PoR" or "Professor (100 PoR)"
+- Show SRPC balance as "Credit Score"
+- Professors: Show "Professor" badge + SRPC amount
+- Students: Show SRPC amount only
+- Format: "Credit: 50 SRPC" or "Professor (100 SRPC)"
 
 ### 9.3 Task Card Layout
 ```
 ┌─────────────────────────────────────┐
-│ [PoR Badge] Task #123              │
+│ [SRPC Badge] Task #123              │
 │ Description: ...                   │
-│ Creator: 0x... (Credit: 50 PoR)   │
-│ Reward: 10 PoR                     │
+│ Creator: 0x... (Credit: 50 SRPC)   │
+│ Reward: 10 SRPC                     │
 │ Current Bid: 50 DC                │ ← Live display
 │ ⏰ Accept Deadline: 18h 23m       │ ← Countdown timer
 │ Status: Unassigned                 │
@@ -638,7 +638,7 @@ const fetchCurrentBid = async (taskId) => {
 - [ ] Implement bidding system
 - [ ] Implement task assignment
 - [ ] Implement task completion
-- [ ] Add PoR transfer permissions to `ProveOfReputation.sol`
+- [ ] Add SRPC transfer permissions to `ProveOfReputation.sol`
 - [ ] Write tests
 
 ### Phase 2: Role Management (Week 1)
@@ -668,7 +668,7 @@ const fetchCurrentBid = async (taskId) => {
 ### Phase 6: Dispute System (Week 3)
 - [ ] Implement dispute reporting
 - [ ] Implement dispute resolution (admin)
-- [ ] Add PoR slashing logic
+- [ ] Add SRPC slashing logic
 - [ ] Update UI for disputes
 
 ### Phase 7: Polish & Testing (Week 4)
@@ -684,7 +684,7 @@ const fetchCurrentBid = async (taskId) => {
 
 ### 11.1 Access Control
 - ✅ Only whitelisted users can create tasks
-- ✅ Only professors can create PoR reward tasks
+- ✅ Only professors can create SRPC reward tasks
 - ✅ Only task creator can accept bids
 - ✅ Only task creator can complete task
 - ✅ Only task taker can report dispute
@@ -697,7 +697,7 @@ const fetchCurrentBid = async (taskId) => {
 ### 11.3 Input Validation
 - Validate all string inputs (description, fileHash)
 - Validate reward amounts > 0
-- Validate PoR balance before task creation
+- Validate SRPC balance before task creation
 
 ### 11.4 Frontend Validation
 - Client-side validation before contract calls
@@ -735,7 +735,7 @@ const fetchCurrentBid = async (taskId) => {
 ### 13.2 Integration Tests
 - End-to-end task flow
 - Role-based access control
-- PoR locking and transfer
+- SRPC locking and transfer
 - Duck Coin staking and burning
 
 ### 13.3 Frontend Tests
@@ -779,10 +779,10 @@ const fetchCurrentBid = async (taskId) => {
 
 ## 16. Questions & Decisions Needed
 
-1. **PoR Transfer Mechanism:** How to handle PoR locking since it's non-transferable?
-   - **Decision:** Add `taskManager` role to PoR contract
+1. **SRPC Transfer Mechanism:** How to handle SRPC locking since it's non-transferable?
+   - **Decision:** Add `taskManager` role to SRPC contract
 
-2. **Professor Identification:** Use PoR threshold or explicit role?
+2. **Professor Identification:** Use SRPC threshold or explicit role?
    - **Decision:** Explicit role in StudentManagement (more flexible)
 
 3. **File Storage:** IPFS, centralized, or on-chain?

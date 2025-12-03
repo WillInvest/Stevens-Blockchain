@@ -38,7 +38,7 @@ export default function SearchByTakerId({ wallet, taskManagerContract, duckCoinC
           creator: "0x5555...6666",
           description: "Task assigned to this student",
           fileHash: "",
-          rewardType: "PoR",
+          rewardType: "SRPC",
           rewardAmount: "15",
           assignedTo: "0xABCD...EFGH",
           bidAmount: "75",

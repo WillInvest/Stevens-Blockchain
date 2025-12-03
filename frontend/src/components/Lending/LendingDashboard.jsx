@@ -4,7 +4,7 @@ import { cardStyle, stevensRed } from "../../styles/constants";
 
 // Mock data - will be replaced with contract calls
 const MOCK_LENDING_POOL = {
-  totalPoRStaked: "25000",
+  totalSRPCStaked: "25000",
   totalDCSupplied: "10000",
   totalDCBorrowed: "7000",
   utilizationRate: 0.70,
@@ -27,7 +27,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
       setLoading(true);
       try {
         // TODO: Fetch from contract
-        // const totalPoR = await lendingContract.getTotalPoRStaked();
+        // const totalSRPC = await lendingContract.getTotalSRPCStaked();
         // const totalDCSupplied = await lendingContract.getTotalDCSupplied();
         // const totalDCBorrowed = await lendingContract.getTotalDCBorrowed();
         // const utilizationRate = await lendingContract.getUtilizationRate();
@@ -122,8 +122,8 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
           icon="📈"
         />
         <MetricCard
-          title="Total PoR Staked"
-          value={`${poolData.totalPoRStaked} PoR`}
+          title="Total SRPC Staked"
+          value={`${poolData.totalSRPCStaked} SRPC`}
           subtitle="As Collateral (Borrowers)"
           color={stevensRed}
           icon="🛡️"

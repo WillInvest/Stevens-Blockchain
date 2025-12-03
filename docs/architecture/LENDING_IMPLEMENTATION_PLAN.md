@@ -2,21 +2,21 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (PoR) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
+This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (SRPC) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
 
 ---
 
 ## 1. Core Concept
 
 ### 1.1 Lending Mechanism
-- **Lenders**: Students who lend Duck Coin (no PoR staking required)
-- **Borrowers**: Students who borrow Duck Coin (require PoR collateral)
-- **Collateral**: PoR (Proof of Reputation) - required only for borrowers
+- **Lenders**: Students who lend Duck Coin (no SRPC staking required)
+- **Borrowers**: Students who borrow Duck Coin (require SRPC collateral)
+- **Collateral**: SRPC (Proof of Reputation) - required only for borrowers
 - **Asset**: Duck Coin (DC) - the currency being lent
 
 ### 1.2 Key Principles
-- Lenders can lend DC without staking PoR
-- Borrowers must provide PoR collateral to borrow
+- Lenders can lend DC without staking SRPC
+- Borrowers must provide SRPC collateral to borrow
 - Interest rates adjust dynamically based on market conditions
 - Transparent metrics for monitoring lending health
 
@@ -26,16 +26,16 @@ This document outlines the implementation plan for a Peer-to-Peer Lending system
 
 ### 2.1 Primary Metrics
 
-#### **Total PoR Staked (Borrower Collateral)**
-- **Name**: **Total PoR Staked** or **Borrower Collateral**
-- **Formula**: `Sum of all PoR staked by borrowers as collateral`
+#### **Total SRPC Staked (Borrower Collateral)**
+- **Name**: **Total SRPC Staked** or **Borrower Collateral**
+- **Formula**: `Sum of all SRPC staked by borrowers as collateral`
 - **Purpose**: Measures the total collateral backing borrowed DC
 - **Display**: 
-  - Total PoR amount (e.g., 25,000 PoR)
+  - Total SRPC amount (e.g., 25,000 SRPC)
   - Shows security of the lending pool
 - **Interpretation**:
-  - Higher PoR staked = More secure lending pool
-  - Lower PoR staked = Higher risk (less collateral backing loans)
+  - Higher SRPC staked = More secure lending pool
+  - Lower SRPC staked = Higher risk (less collateral backing loans)
 
 #### **Interest Rate**
 - **Name**: **Lending Interest Rate** or **APY (Annual Percentage Yield)**
@@ -93,7 +93,7 @@ Borrow Interest Rate = Base Rate + (Utilization × Borrow Slope) + Spread
 Lending.jsx (Main Component)
 ├── LendingDashboard.jsx (Top Section - Metrics)
 │   ├── MetricCard.jsx (Reusable metric card)
-│   │   - PoR Collateralization Ratio
+│   │   - SRPC Collateralization Ratio
 │   │   - Total DC Supplied
 │   │   - Total DC Borrowed
 │   │   - Utilization Rate
@@ -104,8 +104,8 @@ Lending.jsx (Main Component)
 ├── LendingTabs.jsx (Tab Navigation)
 │   ├── SupplyTab.jsx (Lend DC)
 │   │   ├── SupplyForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Staking Input (required to lend)
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Staking Input (required to lend)
 │   │   │   - DC Amount to Lend Input
 │   │   │   - Expected APY Display
 │   │   │   - Supply Button
@@ -118,11 +118,11 @@ Lending.jsx (Main Component)
 │   │
 │   ├── BorrowTab.jsx (Borrow DC)
 │   │   ├── BorrowForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Collateral Input
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Collateral Input
 │   │   │   - DC Amount to Borrow Input
 │   │   │   - Borrow Interest Rate Display
-│   │   │   - Max Borrowable Amount (based on PoR)
+│   │   │   - Max Borrowable Amount (based on SRPC)
 │   │   │   - Borrow Button
 │   │   └── MyBorrows.jsx
 │   │       └── BorrowCard.jsx
@@ -144,7 +144,7 @@ Lending.jsx (Main Component)
 │                    LENDING DASHBOARD                         │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ PoR-to-DC    │  │ Utilization  │  │ Supply APY   │      │
+│  │ SRPC-to-DC    │  │ Utilization  │  │ Supply APY   │      │
 │  │ Ratio        │  │ Rate         │  │              │      │
 │  │ 2.5:1 (250%) │  │ 70%          │  │ 5.5%         │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -169,53 +169,53 @@ Lending.jsx (Main Component)
 **User Journey:**
 1. User navigates to "Supply" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Supply APY
    - Total DC already supplied (if any)
 3. User inputs:
-   - Amount of PoR to stake (required)
+   - Amount of SRPC to stake (required)
    - Amount of DC to lend
 4. System calculates:
-   - Maximum DC they can lend (based on PoR staked)
+   - Maximum DC they can lend (based on SRPC staked)
    - Expected APY based on current utilization
    - Estimated earnings
 5. User confirms and supplies
-6. PoR is locked, DC is transferred to lending pool
+6. SRPC is locked, DC is transferred to lending pool
 7. User sees their active supply in "My Supplies"
 
 **Validation Rules:**
-- Must stake PoR to lend DC
-- PoR staked must be >= minimum threshold (e.g., 10 PoR)
+- Must stake SRPC to lend DC
+- SRPC staked must be >= minimum threshold (e.g., 10 SRPC)
 - DC amount must be <= available DC balance
-- DC amount must be within limits based on PoR staked (e.g., 1:1 ratio minimum)
+- DC amount must be within limits based on SRPC staked (e.g., 1:1 ratio minimum)
 
 ### 4.2 Borrow Flow
 
 **User Journey:**
 1. User navigates to "Borrow" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Borrow APY
    - Total DC already borrowed (if any)
 3. User inputs:
-   - Amount of PoR to use as collateral
+   - Amount of SRPC to use as collateral
    - Amount of DC to borrow
 4. System calculates:
-   - Maximum borrowable amount (based on PoR collateral)
+   - Maximum borrowable amount (based on SRPC collateral)
    - Borrow interest rate
    - Total repayment amount
    - Repayment schedule
 5. User confirms and borrows
-6. PoR is locked as collateral, DC is transferred to user
+6. SRPC is locked as collateral, DC is transferred to user
 7. User sees their active borrow in "My Borrows"
 
 **Validation Rules:**
-- Must provide PoR collateral to borrow
-- Borrow amount must be within collateral limits (e.g., 50% of PoR value)
+- Must provide SRPC collateral to borrow
+- Borrow amount must be within collateral limits (e.g., 50% of SRPC value)
 - Cannot exceed maximum utilization rate (e.g., 95%)
-- Must have sufficient PoR balance
+- Must have sufficient SRPC balance
 
 ### 4.3 Interest Rate Calculation Display
 
@@ -240,7 +240,7 @@ Utilization: 70% (7,000 DC / 10,000 DC)
 ```javascript
 const lendingPool = {
   // Metrics
-  totalPoRStaked: "25000",      // Total PoR locked as collateral
+  totalSRPCStaked: "25000",      // Total SRPC locked as collateral
   totalDCSupplied: "10000",      // Total DC in lending pool
   totalDCBorrowed: "7000",       // Total DC currently borrowed
   utilizationRate: 0.70,          // 70% (borrowed / supplied)
@@ -267,7 +267,7 @@ const lendingPool = {
 const userSupply = {
   supplyId: 1,
   lender: "0x1234...5678",
-  porStaked: "100",              // PoR staked
+  porStaked: "100",              // SRPC staked
   dcSupplied: "500",             // DC supplied
   currentAPY: 0.055,             // Current APY
   totalEarned: "25.5",           // Total interest earned
@@ -282,7 +282,7 @@ const userSupply = {
 const userBorrow = {
   borrowId: 1,
   borrower: "0xABCD...EFGH",
-  porCollateral: "200",          // PoR used as collateral
+  porCollateral: "200",          // SRPC used as collateral
   dcBorrowed: "100",             // DC borrowed
   currentAPY: 0.091,             // Current borrow APY
   totalOwed: "109.1",            // Principal + interest
@@ -324,7 +324,7 @@ const userBorrow = {
 
 ### 6.3 Information Hierarchy
 
-1. **Top Level**: Key metrics (PoR-to-DC Ratio, Utilization, Interest Rates)
+1. **Top Level**: Key metrics (SRPC-to-DC Ratio, Utilization, Interest Rates)
 2. **Second Level**: Action forms (Supply/Borrow)
 3. **Third Level**: User positions (My Supplies/My Borrows)
 4. **Fourth Level**: Market overview (All active loans)
@@ -336,7 +336,7 @@ const userBorrow = {
 ### Phase 1: Core Dashboard & Metrics (Week 1)
 - [ ] Create Lending.jsx main component
 - [ ] Create LendingDashboard with metric cards
-- [ ] Implement PoR-to-DC Ratio calculation and display
+- [ ] Implement SRPC-to-DC Ratio calculation and display
 - [ ] Implement Utilization Rate calculation and display
 - [ ] Create interest rate calculation logic
 - [ ] Display Supply and Borrow APY
@@ -344,7 +344,7 @@ const userBorrow = {
 
 ### Phase 2: Supply (Lend) Functionality (Week 1-2)
 - [ ] Create SupplyTab component
-- [ ] Create SupplyForm with PoR staking input
+- [ ] Create SupplyForm with SRPC staking input
 - [ ] Create DC lending input
 - [ ] Implement validation logic
 - [ ] Create MySupplies component
@@ -353,7 +353,7 @@ const userBorrow = {
 
 ### Phase 3: Borrow Functionality (Week 2)
 - [ ] Create BorrowTab component
-- [ ] Create BorrowForm with PoR collateral input
+- [ ] Create BorrowForm with SRPC collateral input
 - [ ] Create DC borrow input
 - [ ] Implement max borrowable calculation
 - [ ] Create MyBorrows component
@@ -388,7 +388,7 @@ const userBorrow = {
 
 ```solidity
 // Lending Pool Metrics
-function getTotalPoRStaked() external view returns (uint256);
+function getTotalSRPCStaked() external view returns (uint256);
 function getTotalDCSupplied() external view returns (uint256);
 function getTotalDCBorrowed() external view returns (uint256);
 function getUtilizationRate() external view returns (uint256); // in basis points
@@ -418,17 +418,17 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 - Transparent and predictable
 - Industry-standard approach
 
-### 9.2 PoR as Collateral
-**Decision**: PoR must be staked to lend DC
+### 9.2 SRPC as Collateral
+**Decision**: SRPC must be staked to lend DC
 **Rationale**:
 - Demonstrates lender credibility
 - Reduces risk in the system
-- Creates value for PoR token
+- Creates value for SRPC token
 - Aligns with reputation-based system
 
 ### 9.3 Metrics Naming
 **Decision**: 
-- **PoR Collateralization Ratio** (primary metric)
+- **SRPC Collateralization Ratio** (primary metric)
 - **Utilization Rate** (secondary metric)
 **Rationale**:
 - Clear and descriptive
@@ -450,8 +450,8 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 
 ## 11. Questions & Considerations
 
-1. **Minimum PoR Staking**: What's the minimum PoR required to lend?
-2. **Collateral Ratio**: What's the minimum PoR-to-DC ratio required?
+1. **Minimum SRPC Staking**: What's the minimum SRPC required to lend?
+2. **Collateral Ratio**: What's the minimum SRPC-to-DC ratio required?
 3. **Borrow Limits**: Maximum borrowable amount per user?
 4. **Interest Accrual**: How often does interest accrue? (per block, per day?)
 5. **Withdrawal**: Can lenders withdraw before loan term ends?
@@ -462,7 +462,7 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 ## Conclusion
 
 This plan provides a comprehensive roadmap for implementing the Lending feature with a focus on:
-- PoR-based credibility system
+- SRPC-based credibility system
 - Dynamic interest rate calculation
 - Clear metrics and monitoring
 - User-friendly interface

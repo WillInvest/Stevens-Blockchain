@@ -17,7 +17,7 @@ contract ProveOfReputation is ERC20, Ownable {
     event TokenMinted(address indexed to, uint256 amount);
     event TokenBurned(address indexed from, uint256 amount);
 
-    constructor() ERC20("Proof of Reputation", "PoR") Ownable(msg.sender) {}
+    constructor() ERC20("Proof of Reputation", "SRPC") Ownable(msg.sender) {}
 
     /**
      * @dev Set the StudentManagement contract address

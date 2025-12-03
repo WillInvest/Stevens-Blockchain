@@ -100,7 +100,7 @@
   },
   {
     "type": "function",
-    "name": "burnPoR",
+    "name": "burnSRPC",
     "inputs": [
       {
         "name": "from",
@@ -303,7 +303,7 @@
   },
   {
     "type": "function",
-    "name": "mintPoR",
+    "name": "mintSRPC",
     "inputs": [
       {
         "name": "to",

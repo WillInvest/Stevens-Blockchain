@@ -13,8 +13,8 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
     amount: ""
   });
 
-  // ---------------- MINT PoR ----------------
-  async function mintPoR() {
+  // ---------------- MINT SRPC ----------------
+  async function mintSRPC() {
     if (!mintData.wallet) return alert("Please enter a recipient wallet address");
     if (!mintData.amount) return alert("Please enter an amount");
     
@@ -40,8 +40,8 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
     }
   }
 
-  // ---------------- BURN PoR ----------------
-  async function burnPoR() {
+  // ---------------- BURN SRPC ----------------
+  async function burnSRPC() {
     if (!burnData.wallet) return alert("Please enter a wallet address");
     if (!burnData.amount) return alert("Please enter an amount");
     
@@ -149,7 +149,7 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
               onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
             />
             <button 
-              onClick={mintPoR} 
+              onClick={mintSRPC} 
               style={{
                 ...buttonStyle,
                 marginTop: 8,
@@ -168,7 +168,7 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
                 e.target.style.background = stevensRed;
               }}
             >
-              Mint PoR
+              Mint SRPC
             </button>
           </>
         )}
@@ -207,7 +207,7 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
               onBlur={(e) => e.target.style.borderColor = "#e0e0e0"}
             />
             <button 
-              onClick={burnPoR} 
+              onClick={burnSRPC} 
               style={{
                 ...buttonStyle,
                 marginTop: 8,
@@ -226,7 +226,7 @@ export default function ProveOfReputation({ contract, nftContract, contractAddre
                 e.target.style.background = "#8B1E2E";
               }}
             >
-              Burn PoR
+              Burn SRPC
             </button>
           </>
         )}

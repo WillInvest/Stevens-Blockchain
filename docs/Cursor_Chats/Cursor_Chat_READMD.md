@@ -201,7 +201,7 @@ const MOCK_TASKS = [
     creator: "0x1234...5678",
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -287,7 +287,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -314,19 +314,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -340,7 +340,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -409,7 +409,7 @@ export default function TaskCard({
               Credit Score:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.creatorCreditScore} PoR
+              {task.creatorCreditScore} SRPC
             </div>
           </div>
           <div>
@@ -417,7 +417,7 @@ export default function TaskCard({
               Reward Type:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardType === "PoR" ? "Proof of Reputation" : "Duck Coin"}
+              {task.rewardType === "SRPC" ? "Proof of Reputation" : "Duck Coin"}
             </div>
           </div>
           <div>
@@ -425,13 +425,13 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -502,7 +502,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -521,7 +521,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -659,8 +659,8 @@ export default function CreateTask({
         throw new Error("Reward amount must be greater than 0");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -865,15 +865,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -882,7 +882,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -907,7 +907,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -1262,7 +1262,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1234...5678",
     description: "Develop a smart contract for decentralized voting system with gas optimization",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -1302,7 +1302,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1111...2222",
     description: "Write comprehensive documentation for the blockchain system",
     fileHash: "QmYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYy",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "5",
     assignedTo: null,
     bidAmount: "25",
@@ -1399,7 +1399,7 @@ export default function UnassignedTasks({
         fontSize: 12,
         color: "#1E40AF"
       }}>
-        💡 <strong>Live Bidding:</strong> For PoR tasks, you can place bids with Duck Coin. 
+        💡 <strong>Live Bidding:</strong> For SRPC tasks, you can place bids with Duck Coin. 
         The highest bidder wins when the creator accepts. Each new bid resets the 24-hour acceptance deadline.
       </div>
 
@@ -1436,7 +1436,7 @@ const MOCK_ONGOING_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x7777...8888",
     bidAmount: "75",
@@ -1571,7 +1571,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -1593,7 +1593,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -2930,7 +2930,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -2957,19 +2957,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -2983,7 +2983,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -3052,7 +3052,7 @@ export default function TaskCard({
               Credit Score:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.creatorCreditScore} PoR
+              {task.creatorCreditScore} SRPC
             </div>
           </div>
           <div>
@@ -3060,7 +3060,7 @@ export default function TaskCard({
               Reward Type:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardType === "PoR" ? "Proof of Reputation" : "Duck Coin"}
+              {task.rewardType === "SRPC" ? "Proof of Reputation" : "Duck Coin"}
             </div>
           </div>
           <div>
@@ -3068,13 +3068,13 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -3145,7 +3145,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -3164,7 +3164,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -3260,7 +3260,7 @@ Created the frontend structure for the Task List feature. Summary:
    - Modal management for task creation
 
 2. **TaskCard.jsx** — Reusable task display with:
-   - Color coding (Gold/Amber for PoR tasks, standard for Duck Coin)
+   - Color coding (Gold/Amber for SRPC tasks, standard for Duck Coin)
    - Status badges (Unassigned, Ongoing, Completed, Disputed)
    - Current bid display with countdown timer
    - Credit score display
@@ -3270,7 +3270,7 @@ Created the frontend structure for the Task List feature. Summary:
 3. **CreateTask.jsx** — Task creation modal with:
    - Description textarea
    - File upload (IPFS integration placeholder)
-   - Reward type selection (Duck Coin / PoR)
+   - Reward type selection (Duck Coin / SRPC)
    - Reward amount input
    - Validation and error handling
 
@@ -3299,7 +3299,7 @@ Created the frontend structure for the Task List feature. Summary:
 
 ## Features Implemented
 
-- Color coding (PoR tasks in gold/amber)
+- Color coding (SRPC tasks in gold/amber)
 - Status badges with appropriate colors
 - Live bid display with countdown timer
 - Credit score display
@@ -3322,7 +3322,7 @@ The structure is ready for demo and can be connected to the smart contracts when
 
 **User**
 
-1. for the unassignment task, for those PoR task, we do not need the credit score, because PoR task can only be created by professors who has the highest credit score
+1. for the unassignment task, for those SRPC task, we do not need the credit score, because SRPC task can only be created by professors who has the highest credit score
 
 
 
@@ -3403,7 +3403,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -3430,19 +3430,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -3456,7 +3456,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -3520,18 +3520,18 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for PoR unassigned tasks */}
-          {!(isPoRTask && task.status === "Unassigned") && (
+          {/* Credit Score - Hide for SRPC unassigned tasks */}
+          {!(isSRPCTask && task.status === "Unassigned") && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
-          {isPoRTask && task.status === "Unassigned" && (
+          {isSRPCTask && task.status === "Unassigned" && (
             <div></div> // Empty div to maintain grid layout
           )}
           <div>
@@ -3539,7 +3539,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -3555,8 +3555,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -3627,7 +3627,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -3646,7 +3646,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -3741,7 +3741,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -3763,7 +3763,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -3965,7 +3965,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -3987,7 +3987,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -4188,7 +4188,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -4210,7 +4210,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -4410,7 +4410,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -4432,7 +4432,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -4633,7 +4633,7 @@ const MOCK_ONGOING_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x7777...8888",
     bidAmount: "75",
@@ -4771,7 +4771,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -4793,7 +4793,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -5044,7 +5044,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -5071,19 +5071,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -5097,7 +5097,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -5161,18 +5161,18 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for PoR unassigned tasks */}
-          {!(isPoRTask && task.status === "Unassigned") && (
+          {/* Credit Score - Hide for SRPC unassigned tasks */}
+          {!(isSRPCTask && task.status === "Unassigned") && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
-          {isPoRTask && task.status === "Unassigned" && (
+          {isSRPCTask && task.status === "Unassigned" && (
             <div></div> {/* Empty div to maintain grid layout */}
           )}
           <div>
@@ -5180,7 +5180,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -5196,8 +5196,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -5268,7 +5268,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -5287,7 +5287,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -5372,9 +5372,9 @@ export default function TaskCard({
 
 ## Changes Made:
 
-1. **Removed Credit Score for PoR Unassigned Tasks**
-   - Credit score is hidden for PoR tasks with "Unassigned" status
-   - Still shown for Duck Coin tasks and ongoing/completed PoR tasks
+1. **Removed Credit Score for SRPC Unassigned Tasks**
+   - Credit score is hidden for SRPC tasks with "Unassigned" status
+   - Still shown for Duck Coin tasks and ongoing/completed SRPC tasks
 
 2. **Removed Reward Type Field**
    - Removed the "Reward Type" field from the task details grid
@@ -5404,7 +5404,7 @@ All changes are complete and there are no linting errors. The TaskCard component
 
 181 |            )}
 
-182 |            {isPoRTask && task.status === "Unassigned" && (
+182 |            {isSRPCTask && task.status === "Unassigned" && (
 
 183 |              <div></div> {/* Empty div to maintain grid layout */}
 
@@ -5478,7 +5478,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -5505,19 +5505,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -5531,7 +5531,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -5595,14 +5595,14 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for PoR unassigned tasks */}
-          {!(isPoRTask && task.status === "Unassigned") && (
+          {/* Credit Score - Hide for SRPC unassigned tasks */}
+          {!(isSRPCTask && task.status === "Unassigned") && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
@@ -5611,7 +5611,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -5627,8 +5627,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -5699,7 +5699,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -5718,7 +5718,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -5801,13 +5801,13 @@ export default function TaskCard({
 
 ```
 
-Fixed the syntax error by removing the empty div. The grid will handle the layout: when the credit score is hidden for PoR unassigned tasks, the reward amount will flow naturally. The error should be resolved.
+Fixed the syntax error by removing the empty div. The grid will handle the layout: when the credit score is hidden for SRPC unassigned tasks, the reward amount will flow naturally. The error should be resolved.
 
 ---
 
 **User**
 
-for the ongoing tasks, there are still credit score for the PoR tasks, 
+for the ongoing tasks, there are still credit score for the SRPC tasks, 
 
 
 
@@ -5819,10 +5819,10 @@ before the "Create frontend UI for task management system with React
 
 **Cursor**
 
-Fixing both issues: removing the credit score for PoR tasks in ongoing tasks, and adding a "Task Description:" label before the description.
+Fixing both issues: removing the credit score for SRPC tasks in ongoing tasks, and adding a "Task Description:" label before the description.
 
 
-Updating TaskCard to hide the credit score for all PoR tasks and add a "Task Description:" label:
+Updating TaskCard to hide the credit score for all SRPC tasks and add a "Task Description:" label:
 
 
 ```javascriptreact
@@ -5879,7 +5879,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -5906,19 +5906,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -5932,7 +5932,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -6002,14 +6002,14 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for PoR unassigned tasks */}
-          {!(isPoRTask && task.status === "Unassigned") && (
+          {/* Credit Score - Hide for SRPC unassigned tasks */}
+          {!(isSRPCTask && task.status === "Unassigned") && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
@@ -6018,7 +6018,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -6034,8 +6034,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -6106,7 +6106,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -6125,7 +6125,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -6262,7 +6262,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -6289,19 +6289,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -6315,7 +6315,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -6385,14 +6385,14 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for all PoR tasks */}
-          {!isPoRTask && (
+          {/* Credit Score - Hide for all SRPC tasks */}
+          {!isSRPCTask && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
@@ -6401,7 +6401,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -6417,8 +6417,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -6489,7 +6489,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -6508,7 +6508,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -6593,11 +6593,11 @@ export default function TaskCard({
 
 Made both changes:
 
-1. **Removed credit score for all PoR tasks** — Changed the condition from hiding it only for unassigned PoR tasks to hiding it for all PoR tasks (unassigned, ongoing, completed). Credit score now only shows for Duck Coin tasks.
+1. **Removed credit score for all SRPC tasks** — Changed the condition from hiding it only for unassigned SRPC tasks to hiding it for all SRPC tasks (unassigned, ongoing, completed). Credit score now only shows for Duck Coin tasks.
 
 2. **Added "Task Description:" label** — Added a label before the description text, matching the style of other fields.
 
-The credit score will no longer appear for PoR tasks in any status, and the description now has a clear label.
+The credit score will no longer appear for SRPC tasks in any status, and the description now has a clear label.
 
 ---
 
@@ -6727,8 +6727,8 @@ export default function CreateTask({
         throw new Error("Reward amount must be greater than 0");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -6933,15 +6933,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -6950,7 +6950,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -6975,7 +6975,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -7086,8 +7086,8 @@ export default function CreateTask({
         throw new Error("Reward amount must be greater than 0");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -7292,15 +7292,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -7309,7 +7309,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -7334,372 +7334,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
-          />
-
-          {/* Error Message */}
-          {error && (
-            <div style={{
-              marginTop: 16,
-              padding: 12,
-              background: "#FEE2E2",
-              borderRadius: 6,
-              color: "#DC2626",
-              fontSize: 12
-            }}>
-              {error}
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <div style={{
-            display: "flex",
-            gap: 12,
-            marginTop: 24
-          }}>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...buttonStyle,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? "Creating..." : "Create Task"}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                ...buttonStyle,
-                background: "#6B7280",
-                color: "white"
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-
-```
-
-```javascriptreact
-import { useState } from "react";
-import { cardStyle, stevensRed, stevensTextGrey, inputStyle, buttonStyle } from "../../styles/constants";
-import { TASK_CATEGORIES } from "./categories";
-
-export default function CreateTask({
-  wallet,
-  taskManagerContract,
-  studentManagementContract,
-  duckCoinContract,
-  onClose,
-  onTaskCreated
-}) {
-  const [description, setDescription] = useState("");
-  const [fileHash, setFileHash] = useState("");
-  const [rewardType, setRewardType] = useState("DuckCoin");
-  const [rewardAmount, setRewardAmount] = useState("");
-  const [subject, setSubject] = useState(""); // Required category
-  const [categories, setCategories] = useState([]); // Additional categories (up to 3 more)
-  const [isUploading, setIsUploading] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      // TODO: Implement IPFS upload
-      // For demo, we'll just simulate it
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockHash = "Qm" + Math.random().toString(36).substring(2, 15);
-      setFileHash(mockHash);
-      alert(`File uploaded! IPFS Hash: ${mockHash}\n(Note: This is a demo - actual IPFS integration needed)`);
-    } catch (err) {
-      setError("File upload failed: " + err.message);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // Validation
-      if (!description.trim()) {
-        throw new Error("Description is required");
-      }
-      if (!subject) {
-        throw new Error("Subject category is required");
-      }
-      if (!rewardAmount || parseFloat(rewardAmount) <= 0) {
-        throw new Error("Reward amount must be greater than 0");
-      }
-      if (categories.length > 3) {
-        throw new Error("You can select up to 3 additional categories (4 total including subject)");
-      }
-
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
-      // TODO: Call contract method
-      // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
-
-      // For demo, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("Task creation (demo):", {
-        description,
-        fileHash,
-        rewardType,
-        rewardAmount
-      });
-
-      // Reset form
-      setDescription("");
-      setFileHash("");
-      setRewardType("DuckCoin");
-      setRewardAmount("");
-      
-      if (onTaskCreated) onTaskCreated();
-    } catch (err) {
-      setError(err.message || "Failed to create task");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 1000,
-      padding: 20
-    }}>
-      <div style={{
-        ...cardStyle,
-        maxWidth: 600,
-        width: "100%",
-        maxHeight: "90vh",
-        overflowY: "auto",
-        position: "relative"
-      }}>
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            background: "transparent",
-            border: "none",
-            fontSize: 24,
-            cursor: "pointer",
-            color: stevensTextGrey,
-            width: 32,
-            height: 32,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "50%",
-            transition: "all 0.2s ease"
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = "#f0f0f0";
-            e.target.style.color = stevensRed;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = "transparent";
-            e.target.style.color = stevensTextGrey;
-          }}
-        >
-          ×
-        </button>
-
-        <h2 style={{
-          marginTop: 0,
-          marginBottom: 24,
-          color: stevensRed,
-          fontSize: 20,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.5px"
-        }}>
-          Create New Task
-        </h2>
-
-        <form onSubmit={handleSubmit}>
-          {/* Description */}
-          <label style={{
-            display: "block",
-            marginBottom: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            color: stevensTextGrey,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            Description *
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            rows={4}
-            style={{
-              ...inputStyle,
-              resize: "vertical",
-              fontFamily: "inherit"
-            }}
-            placeholder="Describe the task requirements..."
-          />
-
-          {/* File Upload */}
-          <label style={{
-            display: "block",
-            marginTop: 16,
-            marginBottom: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            color: stevensTextGrey,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            File Upload (Optional)
-          </label>
-          <input
-            type="file"
-            onChange={handleFileUpload}
-            disabled={isUploading}
-            style={{
-              ...inputStyle,
-              padding: "8px 12px",
-              cursor: "pointer"
-            }}
-          />
-          {isUploading && (
-            <div style={{ fontSize: 12, color: stevensTextGrey, marginTop: 4 }}>
-              Uploading to IPFS...
-            </div>
-          )}
-          {fileHash && (
-            <div style={{
-              marginTop: 8,
-              padding: 8,
-              background: "#E8F4F8",
-              borderRadius: 4,
-              fontSize: 11,
-              fontFamily: "monospace",
-              color: "#1E40AF"
-            }}>
-              IPFS Hash: {fileHash}
-            </div>
-          )}
-
-          {/* Reward Type */}
-          <label style={{
-            display: "block",
-            marginTop: 16,
-            marginBottom: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            color: stevensTextGrey,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            Reward Type *
-          </label>
-          <div style={{
-            display: "flex",
-            gap: 16,
-            marginBottom: 16
-          }}>
-            <label style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              cursor: "pointer",
-              fontSize: 14
-            }}>
-              <input
-                type="radio"
-                value="DuckCoin"
-                checked={rewardType === "DuckCoin"}
-                onChange={(e) => setRewardType(e.target.value)}
-                style={{ cursor: "pointer" }}
-              />
-              Duck Coin
-            </label>
-            <label style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              cursor: "pointer",
-              fontSize: 14
-            }}>
-              <input
-                type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
-                onChange={(e) => setRewardType(e.target.value)}
-                style={{ cursor: "pointer" }}
-              />
-              Proof of Reputation (PoR)
-            </label>
-          </div>
-          {rewardType === "PoR" && (
-            <div style={{
-              padding: 12,
-              background: "#FFF8DC",
-              borderRadius: 6,
-              marginBottom: 16,
-              fontSize: 12,
-              color: "#856404"
-            }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
-            </div>
-          )}
-
-          {/* Reward Amount */}
-          <label style={{
-            display: "block",
-            marginTop: 16,
-            marginBottom: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            color: stevensTextGrey,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            Reward Amount *
-          </label>
-          <input
-            type="number"
-            value={rewardAmount}
-            onChange={(e) => setRewardAmount(e.target.value)}
-            required
-            min="0.000001"
-            step="0.000001"
-            style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -7816,8 +7451,373 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
+      // TODO: Call contract method
+      // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
+
+      // For demo, just simulate success
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      console.log("Task creation (demo):", {
+        description,
+        fileHash,
+        rewardType,
+        rewardAmount
+      });
+
+      // Reset form
+      setDescription("");
+      setFileHash("");
+      setRewardType("DuckCoin");
+      setRewardAmount("");
+      
+      if (onTaskCreated) onTaskCreated();
+    } catch (err) {
+      setError(err.message || "Failed to create task");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 1000,
+      padding: 20
+    }}>
+      <div style={{
+        ...cardStyle,
+        maxWidth: 600,
+        width: "100%",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        position: "relative"
+      }}>
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            background: "transparent",
+            border: "none",
+            fontSize: 24,
+            cursor: "pointer",
+            color: stevensTextGrey,
+            width: 32,
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "50%",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "#f0f0f0";
+            e.target.style.color = stevensRed;
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "transparent";
+            e.target.style.color = stevensTextGrey;
+          }}
+        >
+          ×
+        </button>
+
+        <h2 style={{
+          marginTop: 0,
+          marginBottom: 24,
+          color: stevensRed,
+          fontSize: 20,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          Create New Task
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          {/* Description */}
+          <label style={{
+            display: "block",
+            marginBottom: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            color: stevensTextGrey,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            Description *
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            rows={4}
+            style={{
+              ...inputStyle,
+              resize: "vertical",
+              fontFamily: "inherit"
+            }}
+            placeholder="Describe the task requirements..."
+          />
+
+          {/* File Upload */}
+          <label style={{
+            display: "block",
+            marginTop: 16,
+            marginBottom: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            color: stevensTextGrey,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            File Upload (Optional)
+          </label>
+          <input
+            type="file"
+            onChange={handleFileUpload}
+            disabled={isUploading}
+            style={{
+              ...inputStyle,
+              padding: "8px 12px",
+              cursor: "pointer"
+            }}
+          />
+          {isUploading && (
+            <div style={{ fontSize: 12, color: stevensTextGrey, marginTop: 4 }}>
+              Uploading to IPFS...
+            </div>
+          )}
+          {fileHash && (
+            <div style={{
+              marginTop: 8,
+              padding: 8,
+              background: "#E8F4F8",
+              borderRadius: 4,
+              fontSize: 11,
+              fontFamily: "monospace",
+              color: "#1E40AF"
+            }}>
+              IPFS Hash: {fileHash}
+            </div>
+          )}
+
+          {/* Reward Type */}
+          <label style={{
+            display: "block",
+            marginTop: 16,
+            marginBottom: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            color: stevensTextGrey,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            Reward Type *
+          </label>
+          <div style={{
+            display: "flex",
+            gap: 16,
+            marginBottom: 16
+          }}>
+            <label style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              cursor: "pointer",
+              fontSize: 14
+            }}>
+              <input
+                type="radio"
+                value="DuckCoin"
+                checked={rewardType === "DuckCoin"}
+                onChange={(e) => setRewardType(e.target.value)}
+                style={{ cursor: "pointer" }}
+              />
+              Duck Coin
+            </label>
+            <label style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              cursor: "pointer",
+              fontSize: 14
+            }}>
+              <input
+                type="radio"
+                value="SRPC"
+                checked={rewardType === "SRPC"}
+                onChange={(e) => setRewardType(e.target.value)}
+                style={{ cursor: "pointer" }}
+              />
+              Proof of Reputation (SRPC)
+            </label>
+          </div>
+          {rewardType === "SRPC" && (
+            <div style={{
+              padding: 12,
+              background: "#FFF8DC",
+              borderRadius: 6,
+              marginBottom: 16,
+              fontSize: 12,
+              color: "#856404"
+            }}>
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
+            </div>
+          )}
+
+          {/* Reward Amount */}
+          <label style={{
+            display: "block",
+            marginTop: 16,
+            marginBottom: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            color: stevensTextGrey,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            Reward Amount *
+          </label>
+          <input
+            type="number"
+            value={rewardAmount}
+            onChange={(e) => setRewardAmount(e.target.value)}
+            required
+            min="0.000001"
+            step="0.000001"
+            style={inputStyle}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
+          />
+
+          {/* Error Message */}
+          {error && (
+            <div style={{
+              marginTop: 16,
+              padding: 12,
+              background: "#FEE2E2",
+              borderRadius: 6,
+              color: "#DC2626",
+              fontSize: 12
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div style={{
+            display: "flex",
+            gap: 12,
+            marginTop: 24
+          }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...buttonStyle,
+                opacity: loading ? 0.6 : 1,
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
+            >
+              {loading ? "Creating..." : "Create Task"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                ...buttonStyle,
+                background: "#6B7280",
+                color: "white"
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+```
+
+```javascriptreact
+import { useState } from "react";
+import { cardStyle, stevensRed, stevensTextGrey, inputStyle, buttonStyle } from "../../styles/constants";
+import { TASK_CATEGORIES } from "./categories";
+
+export default function CreateTask({
+  wallet,
+  taskManagerContract,
+  studentManagementContract,
+  duckCoinContract,
+  onClose,
+  onTaskCreated
+}) {
+  const [description, setDescription] = useState("");
+  const [fileHash, setFileHash] = useState("");
+  const [rewardType, setRewardType] = useState("DuckCoin");
+  const [rewardAmount, setRewardAmount] = useState("");
+  const [subject, setSubject] = useState(""); // Required category
+  const [categories, setCategories] = useState([]); // Additional categories (up to 3 more)
+  const [isUploading, setIsUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // TODO: Implement IPFS upload
+      // For demo, we'll just simulate it
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const mockHash = "Qm" + Math.random().toString(36).substring(2, 15);
+      setFileHash(mockHash);
+      alert(`File uploaded! IPFS Hash: ${mockHash}\n(Note: This is a demo - actual IPFS integration needed)`);
+    } catch (err) {
+      setError("File upload failed: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Validation
+      if (!description.trim()) {
+        throw new Error("Description is required");
+      }
+      if (!subject) {
+        throw new Error("Subject category is required");
+      }
+      if (!rewardAmount || parseFloat(rewardAmount) <= 0) {
+        throw new Error("Reward amount must be greater than 0");
+      }
+      if (categories.length > 3) {
+        throw new Error("You can select up to 3 additional categories (4 total including subject)");
+      }
+
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -8024,15 +8024,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -8041,7 +8041,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -8066,7 +8066,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -8183,8 +8183,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -8391,15 +8391,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -8408,7 +8408,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -8521,7 +8521,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -9090,7 +9090,7 @@ export default function SearchByTakerId({ wallet, taskManagerContract, duckCoinC
           creator: "0x5555...6666",
           description: "Task assigned to this student",
           fileHash: "",
-          rewardType: "PoR",
+          rewardType: "SRPC",
           rewardAmount: "15",
           assignedTo: "0xABCD...EFGH",
           bidAmount: "75",
@@ -9996,7 +9996,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -10023,19 +10023,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -10049,7 +10049,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -10119,14 +10119,14 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for all PoR tasks */}
-          {!isPoRTask && (
+          {/* Credit Score - Hide for all SRPC tasks */}
+          {!isSRPCTask && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
@@ -10135,7 +10135,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -10151,8 +10151,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -10266,7 +10266,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -10285,7 +10285,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}
@@ -10383,7 +10383,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1234...5678",
     description: "Develop a smart contract for decentralized voting system with gas optimization",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -10427,7 +10427,7 @@ const MOCK_UNASSIGNED_TASKS = [
     creator: "0x1111...2222",
     description: "Write comprehensive documentation for the blockchain system",
     fileHash: "QmYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYyYy",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "5",
     assignedTo: null,
     bidAmount: "25",
@@ -10526,7 +10526,7 @@ export default function UnassignedTasks({
         fontSize: 12,
         color: "#1E40AF"
       }}>
-        💡 <strong>Live Bidding:</strong> For PoR tasks, you can place bids with Duck Coin. 
+        💡 <strong>Live Bidding:</strong> For SRPC tasks, you can place bids with Duck Coin. 
         The highest bidder wins when the creator accepts. Each new bid resets the 24-hour acceptance deadline.
       </div>
 
@@ -10564,7 +10564,7 @@ const MOCK_ONGOING_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x7777...8888",
     bidAmount: "75",
@@ -10706,7 +10706,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -10730,7 +10730,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",
@@ -11083,8 +11083,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -11293,15 +11293,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -11310,7 +11310,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -11423,7 +11423,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -11540,8 +11540,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -11750,15 +11750,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -11767,7 +11767,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -11880,7 +11880,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -11997,8 +11997,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -12207,15 +12207,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -12224,7 +12224,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -12337,7 +12337,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -12454,8 +12454,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -12664,15 +12664,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -12681,7 +12681,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -12794,7 +12794,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -12911,8 +12911,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -13121,15 +13121,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -13138,7 +13138,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -13251,7 +13251,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -13368,8 +13368,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -13578,15 +13578,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -13595,7 +13595,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -13708,7 +13708,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -13825,8 +13825,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -14035,15 +14035,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              Proof of Reputation (PoR)
+              Proof of Reputation (SRPC)
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -14052,7 +14052,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -14165,7 +14165,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -14315,8 +14315,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -14529,15 +14529,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              <span style={{ color: "#333333" }}>Proof of Reputation (PoR)</span>
+              <span style={{ color: "#333333" }}>Proof of Reputation (SRPC)</span>
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -14546,7 +14546,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -14659,7 +14659,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -14776,8 +14776,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -14990,15 +14990,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              <span style={{ color: "#333333" }}>Proof of Reputation (PoR)</span>
+              <span style={{ color: "#333333" }}>Proof of Reputation (SRPC)</span>
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -15007,7 +15007,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -15131,7 +15131,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
@@ -15188,7 +15188,7 @@ export default function CreateTask({
 
 Fixed the visibility issue:
 
-1. **Radio button labels** — Added explicit color (`#333333`) to "Duck Coin" and "Proof of Reputation (PoR)" text, wrapped in `<span>` elements.
+1. **Radio button labels** — Added explicit color (`#333333`) to "Duck Coin" and "Proof of Reputation (SRPC)" text, wrapped in `<span>` elements.
 
 2. **Category checkboxes** — Added explicit color styling and improved the checkbox layout:
    - Text is now visible with `#333333` color
@@ -15196,7 +15196,7 @@ Fixed the visibility issue:
    - Better visual feedback when hovering/selecting
 
 The text should now be visible next to:
-- The "Duck Coin" and "Proof of Reputation (PoR)" radio buttons
+- The "Duck Coin" and "Proof of Reputation (SRPC)" radio buttons
 - All category checkboxes in the "Additional Categories" section
 
 Labels now use a darker color for better contrast against the white background.
@@ -15654,7 +15654,7 @@ my logic is to have people can lend Duck coin from the other students,
 
 
 
-lender needs to stack PoR to lend duck coin, simiarlly the higher PoR means higher credibility, 
+lender needs to stack SRPC to lend duck coin, simiarlly the higher SRPC means higher credibility, 
 
 
 
@@ -15662,7 +15662,7 @@ after all, under the Lending tab, we can monitor two metrics,
 
 
 
-one is (help me get names for both), ratio of PoR to DC, like the TVL, another ratio is the interest rate, check the current DeFI Lending platform, how do they decide the interest rate, I want a similar UI, only difference is that my collateral has to be PoR and only can lend duck Coin, 
+one is (help me get names for both), ratio of SRPC to DC, like the TVL, another ratio is the interest rate, check the current DeFI Lending platform, how do they decide the interest rate, I want a similar UI, only difference is that my collateral has to be SRPC and only can lend duck Coin, 
 
 
 
@@ -15687,21 +15687,21 @@ Creating the Lending feature implementation plan:
 
 ## Executive Summary
 
-This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (PoR) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
+This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (SRPC) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
 
 ---
 
 ## 1. Core Concept
 
 ### 1.1 Lending Mechanism
-- **Lenders**: Students who stake PoR to lend Duck Coin
-- **Borrowers**: Students who borrow Duck Coin (may also require PoR collateral)
-- **Collateral**: PoR (Proof of Reputation) - demonstrates lender credibility
+- **Lenders**: Students who stake SRPC to lend Duck Coin
+- **Borrowers**: Students who borrow Duck Coin (may also require SRPC collateral)
+- **Collateral**: SRPC (Proof of Reputation) - demonstrates lender credibility
 - **Asset**: Duck Coin (DC) - the currency being lent
 
 ### 1.2 Key Principles
-- Higher PoR = Higher credibility = Better lending terms
-- PoR must be staked (locked) while lending
+- Higher SRPC = Higher credibility = Better lending terms
+- SRPC must be staked (locked) while lending
 - Interest rates adjust dynamically based on market conditions
 - Transparent metrics for monitoring lending health
 
@@ -15711,12 +15711,12 @@ This document outlines the implementation plan for a Peer-to-Peer Lending system
 
 ### 2.1 Primary Metrics
 
-#### **Total Value Locked (TVL) - PoR-to-DC Ratio**
-- **Name**: **PoR Collateralization Ratio** or **Lending Health Ratio**
-- **Formula**: `Total PoR Staked / Total DC Lent`
+#### **Total Value Locked (TVL) - SRPC-to-DC Ratio**
+- **Name**: **SRPC Collateralization Ratio** or **Lending Health Ratio**
+- **Formula**: `Total SRPC Staked / Total DC Lent`
 - **Purpose**: Measures the overall health and security of the lending pool
 - **Display**: 
-  - Ratio (e.g., 2.5:1 means 2.5 PoR staked for every 1 DC lent)
+  - Ratio (e.g., 2.5:1 means 2.5 SRPC staked for every 1 DC lent)
   - Percentage (e.g., 250% collateralization)
 - **Interpretation**:
   - Higher ratio = More secure lending pool
@@ -15778,7 +15778,7 @@ Borrow Interest Rate = Base Rate + (Utilization × Borrow Slope) + Spread
 Lending.jsx (Main Component)
 ├── LendingDashboard.jsx (Top Section - Metrics)
 │   ├── MetricCard.jsx (Reusable metric card)
-│   │   - PoR Collateralization Ratio
+│   │   - SRPC Collateralization Ratio
 │   │   - Total DC Supplied
 │   │   - Total DC Borrowed
 │   │   - Utilization Rate
@@ -15789,8 +15789,8 @@ Lending.jsx (Main Component)
 ├── LendingTabs.jsx (Tab Navigation)
 │   ├── SupplyTab.jsx (Lend DC)
 │   │   ├── SupplyForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Staking Input (required to lend)
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Staking Input (required to lend)
 │   │   │   - DC Amount to Lend Input
 │   │   │   - Expected APY Display
 │   │   │   - Supply Button
@@ -15803,11 +15803,11 @@ Lending.jsx (Main Component)
 │   │
 │   ├── BorrowTab.jsx (Borrow DC)
 │   │   ├── BorrowForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Collateral Input
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Collateral Input
 │   │   │   - DC Amount to Borrow Input
 │   │   │   - Borrow Interest Rate Display
-│   │   │   - Max Borrowable Amount (based on PoR)
+│   │   │   - Max Borrowable Amount (based on SRPC)
 │   │   │   - Borrow Button
 │   │   └── MyBorrows.jsx
 │   │       └── BorrowCard.jsx
@@ -15829,7 +15829,7 @@ Lending.jsx (Main Component)
 │                    LENDING DASHBOARD                         │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ PoR-to-DC    │  │ Utilization  │  │ Supply APY   │      │
+│  │ SRPC-to-DC    │  │ Utilization  │  │ Supply APY   │      │
 │  │ Ratio        │  │ Rate         │  │              │      │
 │  │ 2.5:1 (250%) │  │ 70%          │  │ 5.5%         │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -15854,53 +15854,53 @@ Lending.jsx (Main Component)
 **User Journey:**
 1. User navigates to "Supply" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Supply APY
    - Total DC already supplied (if any)
 3. User inputs:
-   - Amount of PoR to stake (required)
+   - Amount of SRPC to stake (required)
    - Amount of DC to lend
 4. System calculates:
-   - Maximum DC they can lend (based on PoR staked)
+   - Maximum DC they can lend (based on SRPC staked)
    - Expected APY based on current utilization
    - Estimated earnings
 5. User confirms and supplies
-6. PoR is locked, DC is transferred to lending pool
+6. SRPC is locked, DC is transferred to lending pool
 7. User sees their active supply in "My Supplies"
 
 **Validation Rules:**
-- Must stake PoR to lend DC
-- PoR staked must be >= minimum threshold (e.g., 10 PoR)
+- Must stake SRPC to lend DC
+- SRPC staked must be >= minimum threshold (e.g., 10 SRPC)
 - DC amount must be <= available DC balance
-- DC amount must be within limits based on PoR staked (e.g., 1:1 ratio minimum)
+- DC amount must be within limits based on SRPC staked (e.g., 1:1 ratio minimum)
 
 ### 4.2 Borrow Flow
 
 **User Journey:**
 1. User navigates to "Borrow" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Borrow APY
    - Total DC already borrowed (if any)
 3. User inputs:
-   - Amount of PoR to use as collateral
+   - Amount of SRPC to use as collateral
    - Amount of DC to borrow
 4. System calculates:
-   - Maximum borrowable amount (based on PoR collateral)
+   - Maximum borrowable amount (based on SRPC collateral)
    - Borrow interest rate
    - Total repayment amount
    - Repayment schedule
 5. User confirms and borrows
-6. PoR is locked as collateral, DC is transferred to user
+6. SRPC is locked as collateral, DC is transferred to user
 7. User sees their active borrow in "My Borrows"
 
 **Validation Rules:**
-- Must provide PoR collateral to borrow
-- Borrow amount must be within collateral limits (e.g., 50% of PoR value)
+- Must provide SRPC collateral to borrow
+- Borrow amount must be within collateral limits (e.g., 50% of SRPC value)
 - Cannot exceed maximum utilization rate (e.g., 95%)
-- Must have sufficient PoR balance
+- Must have sufficient SRPC balance
 
 ### 4.3 Interest Rate Calculation Display
 
@@ -15925,7 +15925,7 @@ Utilization: 70% (7,000 DC / 10,000 DC)
 ```javascript
 const lendingPool = {
   // Metrics
-  totalPoRStaked: "25000",      // Total PoR locked as collateral
+  totalSRPCStaked: "25000",      // Total SRPC locked as collateral
   totalDCSupplied: "10000",      // Total DC in lending pool
   totalDCBorrowed: "7000",       // Total DC currently borrowed
   utilizationRate: 0.70,          // 70% (borrowed / supplied)
@@ -15952,7 +15952,7 @@ const lendingPool = {
 const userSupply = {
   supplyId: 1,
   lender: "0x1234...5678",
-  porStaked: "100",              // PoR staked
+  porStaked: "100",              // SRPC staked
   dcSupplied: "500",             // DC supplied
   currentAPY: 0.055,             // Current APY
   totalEarned: "25.5",           // Total interest earned
@@ -15967,7 +15967,7 @@ const userSupply = {
 const userBorrow = {
   borrowId: 1,
   borrower: "0xABCD...EFGH",
-  porCollateral: "200",          // PoR used as collateral
+  porCollateral: "200",          // SRPC used as collateral
   dcBorrowed: "100",             // DC borrowed
   currentAPY: 0.091,             // Current borrow APY
   totalOwed: "109.1",            // Principal + interest
@@ -16009,7 +16009,7 @@ const userBorrow = {
 
 ### 6.3 Information Hierarchy
 
-1. **Top Level**: Key metrics (PoR-to-DC Ratio, Utilization, Interest Rates)
+1. **Top Level**: Key metrics (SRPC-to-DC Ratio, Utilization, Interest Rates)
 2. **Second Level**: Action forms (Supply/Borrow)
 3. **Third Level**: User positions (My Supplies/My Borrows)
 4. **Fourth Level**: Market overview (All active loans)
@@ -16021,7 +16021,7 @@ const userBorrow = {
 ### Phase 1: Core Dashboard & Metrics (Week 1)
 - [ ] Create Lending.jsx main component
 - [ ] Create LendingDashboard with metric cards
-- [ ] Implement PoR-to-DC Ratio calculation and display
+- [ ] Implement SRPC-to-DC Ratio calculation and display
 - [ ] Implement Utilization Rate calculation and display
 - [ ] Create interest rate calculation logic
 - [ ] Display Supply and Borrow APY
@@ -16029,7 +16029,7 @@ const userBorrow = {
 
 ### Phase 2: Supply (Lend) Functionality (Week 1-2)
 - [ ] Create SupplyTab component
-- [ ] Create SupplyForm with PoR staking input
+- [ ] Create SupplyForm with SRPC staking input
 - [ ] Create DC lending input
 - [ ] Implement validation logic
 - [ ] Create MySupplies component
@@ -16038,7 +16038,7 @@ const userBorrow = {
 
 ### Phase 3: Borrow Functionality (Week 2)
 - [ ] Create BorrowTab component
-- [ ] Create BorrowForm with PoR collateral input
+- [ ] Create BorrowForm with SRPC collateral input
 - [ ] Create DC borrow input
 - [ ] Implement max borrowable calculation
 - [ ] Create MyBorrows component
@@ -16073,7 +16073,7 @@ const userBorrow = {
 
 ```solidity
 // Lending Pool Metrics
-function getTotalPoRStaked() external view returns (uint256);
+function getTotalSRPCStaked() external view returns (uint256);
 function getTotalDCSupplied() external view returns (uint256);
 function getTotalDCBorrowed() external view returns (uint256);
 function getUtilizationRate() external view returns (uint256); // in basis points
@@ -16103,17 +16103,17 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 - Transparent and predictable
 - Industry-standard approach
 
-### 9.2 PoR as Collateral
-**Decision**: PoR must be staked to lend DC
+### 9.2 SRPC as Collateral
+**Decision**: SRPC must be staked to lend DC
 **Rationale**:
 - Demonstrates lender credibility
 - Reduces risk in the system
-- Creates value for PoR token
+- Creates value for SRPC token
 - Aligns with reputation-based system
 
 ### 9.3 Metrics Naming
 **Decision**: 
-- **PoR Collateralization Ratio** (primary metric)
+- **SRPC Collateralization Ratio** (primary metric)
 - **Utilization Rate** (secondary metric)
 **Rationale**:
 - Clear and descriptive
@@ -16135,8 +16135,8 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 
 ## 11. Questions & Considerations
 
-1. **Minimum PoR Staking**: What's the minimum PoR required to lend?
-2. **Collateral Ratio**: What's the minimum PoR-to-DC ratio required?
+1. **Minimum SRPC Staking**: What's the minimum SRPC required to lend?
+2. **Collateral Ratio**: What's the minimum SRPC-to-DC ratio required?
 3. **Borrow Limits**: Maximum borrowable amount per user?
 4. **Interest Accrual**: How often does interest accrue? (per block, per day?)
 5. **Withdrawal**: Can lenders withdraw before loan term ends?
@@ -16147,7 +16147,7 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 ## Conclusion
 
 This plan provides a comprehensive roadmap for implementing the Lending feature with a focus on:
-- PoR-based credibility system
+- SRPC-based credibility system
 - Dynamic interest rate calculation
 - Clear metrics and monitoring
 - User-friendly interface
@@ -16165,8 +16165,8 @@ Created an implementation plan for the Lending feature. Summary:
 
 ### Key metrics
 
-1. PoR Collateralization Ratio (primary)
-   - Formula: `Total PoR Staked / Total DC Lent`
+1. SRPC Collateralization Ratio (primary)
+   - Formula: `Total SRPC Staked / Total DC Lent`
    - Example: 2.5:1 (250% collateralization)
    - Purpose: Measures lending pool health and security
 
@@ -16186,14 +16186,14 @@ Based on platforms like Aave and Compound:
 ### Frontend structure
 
 Three main tabs:
-1. Supply Tab — Lend DC (requires PoR staking)
-2. Borrow Tab — Borrow DC (requires PoR collateral)
+1. Supply Tab — Lend DC (requires SRPC staking)
+2. Borrow Tab — Borrow DC (requires SRPC collateral)
 3. Market Tab — Overview of all active loans
 
 ### Dashboard metrics
 
 Six key metric cards:
-- PoR-to-DC Ratio
+- SRPC-to-DC Ratio
 - Utilization Rate
 - Total DC Supplied
 - Total DC Borrowed
@@ -16334,7 +16334,7 @@ import { cardStyle, stevensRed } from "../../styles/constants";
 
 // Mock data - will be replaced with contract calls
 const MOCK_LENDING_POOL = {
-  totalPoRStaked: "25000",
+  totalSRPCStaked: "25000",
   totalDCSupplied: "10000",
   totalDCBorrowed: "7000",
   utilizationRate: 0.70,
@@ -16357,7 +16357,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
       setLoading(true);
       try {
         // TODO: Fetch from contract
-        // const totalPoR = await lendingContract.getTotalPoRStaked();
+        // const totalSRPC = await lendingContract.getTotalSRPCStaked();
         // const totalDCSupplied = await lendingContract.getTotalDCSupplied();
         // const totalDCBorrowed = await lendingContract.getTotalDCBorrowed();
         // const utilizationRate = await lendingContract.getUtilizationRate();
@@ -16417,7 +16417,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
         marginBottom: 24
       }}>
         <MetricCard
-          title="PoR-to-DC Ratio"
+          title="SRPC-to-DC Ratio"
           value={`${poolData.porToDCRatio.toFixed(2)}:1`}
           subtitle={`${(poolData.collateralizationRatio * 100).toFixed(0)}% Collateralization`}
           color={poolData.porToDCRatio >= 2.0 ? "#10B981" : poolData.porToDCRatio >= 1.5 ? "#F59E0B" : "#EF4444"}
@@ -16710,10 +16710,10 @@ export default function SupplyForm({
     try {
       // Validation
       if (!porStaked || parseFloat(porStaked) <= 0) {
-        throw new Error("Please enter PoR amount to stake");
+        throw new Error("Please enter SRPC amount to stake");
       }
       if (parseFloat(porStaked) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to lend");
@@ -16722,7 +16722,7 @@ export default function SupplyForm({
         throw new Error("Insufficient DC balance");
       }
       if (parseFloat(dcAmount) > calculateMaxDc()) {
-        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on PoR staked)`);
+        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on SRPC staked)`);
       }
 
       // TODO: Call contract method
@@ -16775,10 +16775,10 @@ export default function SupplyForm({
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            Your PoR Balance
+            Your SRPC Balance
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: stevensRed }}>
-            {porBalance} PoR
+            {porBalance} SRPC
           </div>
         </div>
         <div>
@@ -16792,7 +16792,7 @@ export default function SupplyForm({
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* PoR Staking Input */}
+        {/* SRPC Staking Input */}
         <label style={{
           display: "block",
           marginBottom: 8,
@@ -16802,7 +16802,7 @@ export default function SupplyForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          PoR to Stake (Required) *
+          SRPC to Stake (Required) *
         </label>
         <div style={{ position: "relative", marginBottom: 16 }}>
           <input
@@ -16812,7 +16812,7 @@ export default function SupplyForm({
             required
             min="0"
             step="0.000001"
-            placeholder="Enter PoR amount to stake"
+            placeholder="Enter SRPC amount to stake"
             style={{
               ...inputStyle,
               paddingRight: 80
@@ -16840,7 +16840,7 @@ export default function SupplyForm({
           </button>
         </div>
         <div style={{ fontSize: 11, color: stevensTextGrey, marginBottom: 16 }}>
-          ⚠️ PoR must be staked to lend Duck Coin. Higher PoR = Higher credibility.
+          ⚠️ SRPC must be staked to lend Duck Coin. Higher SRPC = Higher credibility.
         </div>
 
         {/* DC Amount Input */}
@@ -16893,7 +16893,7 @@ export default function SupplyForm({
         </div>
         {porStaked && parseFloat(porStaked) > 0 && (
           <div style={{ fontSize: 11, color: "#3B82F6", marginBottom: 16 }}>
-            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on PoR staked)
+            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on SRPC staked)
           </div>
         )}
 
@@ -17082,10 +17082,10 @@ export default function SupplyCard({ supply, onWithdraw }) {
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Staked
+            SRPC Staked
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: stevensRed }}>
-            {supply.porStaked} PoR
+            {supply.porStaked} SRPC
           </div>
         </div>
         <div>
@@ -17267,7 +17267,7 @@ export default function BorrowForm({
 
   const calculateMaxBorrowable = () => {
     if (!porCollateral || parseFloat(porCollateral) <= 0) return 0;
-    // 50% collateralization ratio (can borrow up to 50% of PoR value)
+    // 50% collateralization ratio (can borrow up to 50% of SRPC value)
     return parseFloat(porCollateral) * 0.5;
   };
 
@@ -17287,16 +17287,16 @@ export default function BorrowForm({
     try {
       // Validation
       if (!porCollateral || parseFloat(porCollateral) <= 0) {
-        throw new Error("Please enter PoR amount for collateral");
+        throw new Error("Please enter SRPC amount for collateral");
       }
       if (parseFloat(porCollateral) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to borrow");
       }
       if (parseFloat(dcAmount) > calculateMaxBorrowable()) {
-        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} DC (50% of PoR collateral)`);
+        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)`);
       }
 
       // Check utilization
@@ -17356,10 +17356,10 @@ export default function BorrowForm({
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            Your PoR Balance
+            Your SRPC Balance
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: stevensRed }}>
-            {porBalance} PoR
+            {porBalance} SRPC
           </div>
         </div>
         <div>
@@ -17373,7 +17373,7 @@ export default function BorrowForm({
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* PoR Collateral Input */}
+        {/* SRPC Collateral Input */}
         <label style={{
           display: "block",
           marginBottom: 8,
@@ -17383,7 +17383,7 @@ export default function BorrowForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          PoR Collateral (Required) *
+          SRPC Collateral (Required) *
         </label>
         <div style={{ position: "relative", marginBottom: 16 }}>
           <input
@@ -17393,7 +17393,7 @@ export default function BorrowForm({
             required
             min="0"
             step="0.000001"
-            placeholder="Enter PoR amount for collateral"
+            placeholder="Enter SRPC amount for collateral"
             style={{
               ...inputStyle,
               paddingRight: 80
@@ -17421,7 +17421,7 @@ export default function BorrowForm({
           </button>
         </div>
         <div style={{ fontSize: 11, color: stevensTextGrey, marginBottom: 16 }}>
-          ⚠️ PoR will be locked as collateral. You can borrow up to 50% of your PoR value.
+          ⚠️ SRPC will be locked as collateral. You can borrow up to 50% of your SRPC value.
         </div>
 
         {/* DC Amount Input */}
@@ -17449,7 +17449,7 @@ export default function BorrowForm({
         />
         {porCollateral && parseFloat(porCollateral) > 0 && (
           <div style={{ fontSize: 11, color: "#F59E0B", marginBottom: 16 }}>
-            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} DC (50% of PoR collateral)
+            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)
           </div>
         )}
 
@@ -17631,10 +17631,10 @@ export default function BorrowCard({ borrow, onRepay }) {
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Collateral
+            SRPC Collateral
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: stevensRed }}>
-            {borrow.porCollateral} PoR
+            {borrow.porCollateral} SRPC
           </div>
         </div>
         <div>
@@ -17988,10 +17988,10 @@ export default function LoanCard({ loan, wallet }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Staked
+            SRPC Staked
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: stevensRed }}>
-            {loan.porStaked} PoR
+            {loan.porStaked} SRPC
           </div>
         </div>
         <div>
@@ -18417,13 +18417,13 @@ export default function App() {
 
 ### 2. **Supply (Lend) Tab**
 - **SupplyTab.jsx** - Container for supply functionality
-- **SupplyForm.jsx** - Form to stake PoR and lend DC
+- **SupplyForm.jsx** - Form to stake SRPC and lend DC
 - **MySupplies.jsx** - List of user's active supplies
 - **SupplyCard.jsx** - Individual supply position card
 
 ### 3. **Borrow Tab**
 - **BorrowTab.jsx** - Container for borrow functionality
-- **BorrowForm.jsx** - Form to provide PoR collateral and borrow DC
+- **BorrowForm.jsx** - Form to provide SRPC collateral and borrow DC
 - **MyBorrows.jsx** - List of user's active borrows
 - **BorrowCard.jsx** - Individual borrow position card
 
@@ -18437,7 +18437,7 @@ export default function App() {
 ## Features Implemented
 
 ### Dashboard Metrics
-- PoR-to-DC Ratio (2.5:1 / 250% collateralization)
+- SRPC-to-DC Ratio (2.5:1 / 250% collateralization)
 - Utilization Rate (70% with color-coded gauge)
 - Supply APY (5.5%)
 - Borrow APY (9.1%)
@@ -18446,15 +18446,15 @@ export default function App() {
 - Utilization gauge with safety zones
 
 ### Supply Features
-- PoR staking input (required)
+- SRPC staking input (required)
 - DC lending input with max calculation
 - Current APY display
 - Estimated earnings calculation
 - My Supplies list with withdraw option
 
 ### Borrow Features
-- PoR collateral input (required)
-- DC borrow input with max borrowable calculation (50% of PoR)
+- SRPC collateral input (required)
+- DC borrow input with max borrowable calculation (50% of SRPC)
 - Current borrow APY display
 - Total repayment calculation
 - My Borrows list with repay option
@@ -18477,13 +18477,13 @@ All components are ready for demo and include TODO comments for smart contract i
 
 **User**
 
-for people to lend out, they do not need to stake PoR
+for people to lend out, they do not need to stake SRPC
 
 ---
 
 **Cursor**
 
-Removing the PoR staking requirement for lenders. Updating the components and plan document:
+Removing the SRPC staking requirement for lenders. Updating the components and plan document:
 
 
 ```javascriptreact
@@ -18533,10 +18533,10 @@ export default function SupplyForm({
     try {
       // Validation
       if (!porStaked || parseFloat(porStaked) <= 0) {
-        throw new Error("Please enter PoR amount to stake");
+        throw new Error("Please enter SRPC amount to stake");
       }
       if (parseFloat(porStaked) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to lend");
@@ -18545,7 +18545,7 @@ export default function SupplyForm({
         throw new Error("Insufficient DC balance");
       }
       if (parseFloat(dcAmount) > calculateMaxDc()) {
-        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on PoR staked)`);
+        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on SRPC staked)`);
       }
 
       // TODO: Call contract method
@@ -18598,10 +18598,10 @@ export default function SupplyForm({
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            Your PoR Balance
+            Your SRPC Balance
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: stevensRed }}>
-            {porBalance} PoR
+            {porBalance} SRPC
           </div>
         </div>
         <div>
@@ -18615,7 +18615,7 @@ export default function SupplyForm({
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* PoR Staking Input */}
+        {/* SRPC Staking Input */}
         <label style={{
           display: "block",
           marginBottom: 8,
@@ -18625,7 +18625,7 @@ export default function SupplyForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          PoR to Stake (Required) *
+          SRPC to Stake (Required) *
         </label>
         <div style={{ position: "relative", marginBottom: 16 }}>
           <input
@@ -18635,7 +18635,7 @@ export default function SupplyForm({
             required
             min="0"
             step="0.000001"
-            placeholder="Enter PoR amount to stake"
+            placeholder="Enter SRPC amount to stake"
             style={{
               ...inputStyle,
               paddingRight: 80
@@ -18663,7 +18663,7 @@ export default function SupplyForm({
           </button>
         </div>
         <div style={{ fontSize: 11, color: stevensTextGrey, marginBottom: 16 }}>
-          ⚠️ PoR must be staked to lend Duck Coin. Higher PoR = Higher credibility.
+          ⚠️ SRPC must be staked to lend Duck Coin. Higher SRPC = Higher credibility.
         </div>
 
         {/* DC Amount Input */}
@@ -18716,7 +18716,7 @@ export default function SupplyForm({
         </div>
         {porStaked && parseFloat(porStaked) > 0 && (
           <div style={{ fontSize: 11, color: "#3B82F6", marginBottom: 16 }}>
-            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on PoR staked)
+            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on SRPC staked)
           </div>
         )}
 
@@ -18835,10 +18835,10 @@ export default function SupplyForm({
     try {
       // Validation
       if (!porStaked || parseFloat(porStaked) <= 0) {
-        throw new Error("Please enter PoR amount to stake");
+        throw new Error("Please enter SRPC amount to stake");
       }
       if (parseFloat(porStaked) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to lend");
@@ -18847,7 +18847,7 @@ export default function SupplyForm({
         throw new Error("Insufficient DC balance");
       }
       if (parseFloat(dcAmount) > calculateMaxDc()) {
-        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on PoR staked)`);
+        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on SRPC staked)`);
       }
 
       // TODO: Call contract method
@@ -18954,7 +18954,7 @@ export default function SupplyForm({
         </div>
         {porStaked && parseFloat(porStaked) > 0 && (
           <div style={{ fontSize: 11, color: "#3B82F6", marginBottom: 16 }}>
-            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on PoR staked)
+            💡 Maximum DC you can lend: {calculateMaxDc().toFixed(2)} DC (based on SRPC staked)
           </div>
         )}
 
@@ -19073,10 +19073,10 @@ export default function SupplyForm({
     try {
       // Validation
       if (!porStaked || parseFloat(porStaked) <= 0) {
-        throw new Error("Please enter PoR amount to stake");
+        throw new Error("Please enter SRPC amount to stake");
       }
       if (parseFloat(porStaked) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to lend");
@@ -19085,7 +19085,7 @@ export default function SupplyForm({
         throw new Error("Insufficient DC balance");
       }
       if (parseFloat(dcAmount) > calculateMaxDc()) {
-        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on PoR staked)`);
+        throw new Error(`Maximum DC you can lend is ${calculateMaxDc().toFixed(2)} DC (based on SRPC staked)`);
       }
 
       // TODO: Call contract method
@@ -20039,7 +20039,7 @@ import { cardStyle, stevensRed } from "../../styles/constants";
 
 // Mock data - will be replaced with contract calls
 const MOCK_LENDING_POOL = {
-  totalPoRStaked: "25000",
+  totalSRPCStaked: "25000",
   totalDCSupplied: "10000",
   totalDCBorrowed: "7000",
   utilizationRate: 0.70,
@@ -20062,7 +20062,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
       setLoading(true);
       try {
         // TODO: Fetch from contract
-        // const totalPoR = await lendingContract.getTotalPoRStaked();
+        // const totalSRPC = await lendingContract.getTotalSRPCStaked();
         // const totalDCSupplied = await lendingContract.getTotalDCSupplied();
         // const totalDCBorrowed = await lendingContract.getTotalDCBorrowed();
         // const utilizationRate = await lendingContract.getUtilizationRate();
@@ -20224,7 +20224,7 @@ import { cardStyle, stevensRed } from "../../styles/constants";
 
 // Mock data - will be replaced with contract calls
 const MOCK_LENDING_POOL = {
-  totalPoRStaked: "25000",
+  totalSRPCStaked: "25000",
   totalDCSupplied: "10000",
   totalDCBorrowed: "7000",
   utilizationRate: 0.70,
@@ -20247,7 +20247,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
       setLoading(true);
       try {
         // TODO: Fetch from contract
-        // const totalPoR = await lendingContract.getTotalPoRStaked();
+        // const totalSRPC = await lendingContract.getTotalSRPCStaked();
         // const totalDCSupplied = await lendingContract.getTotalDCSupplied();
         // const totalDCBorrowed = await lendingContract.getTotalDCBorrowed();
         // const utilizationRate = await lendingContract.getUtilizationRate();
@@ -20342,8 +20342,8 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
           icon="📈"
         />
         <MetricCard
-          title="Total PoR Staked"
-          value={`${poolData.totalPoRStaked} PoR`}
+          title="Total SRPC Staked"
+          value={`${poolData.totalSRPCStaked} SRPC`}
           subtitle="As Collateral (Borrowers)"
           color={stevensRed}
           icon="🛡️"
@@ -20417,21 +20417,21 @@ Updating the plan document and LoanCard to reflect this change:
 
 ## Executive Summary
 
-This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (PoR) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
+This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (SRPC) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
 
 ---
 
 ## 1. Core Concept
 
 ### 1.1 Lending Mechanism
-- **Lenders**: Students who lend Duck Coin (no PoR staking required)
-- **Borrowers**: Students who borrow Duck Coin (require PoR collateral)
-- **Collateral**: PoR (Proof of Reputation) - required only for borrowers
+- **Lenders**: Students who lend Duck Coin (no SRPC staking required)
+- **Borrowers**: Students who borrow Duck Coin (require SRPC collateral)
+- **Collateral**: SRPC (Proof of Reputation) - required only for borrowers
 - **Asset**: Duck Coin (DC) - the currency being lent
 
 ### 1.2 Key Principles
-- Lenders can lend DC without staking PoR
-- Borrowers must provide PoR collateral to borrow
+- Lenders can lend DC without staking SRPC
+- Borrowers must provide SRPC collateral to borrow
 - Interest rates adjust dynamically based on market conditions
 - Transparent metrics for monitoring lending health
 
@@ -20441,12 +20441,12 @@ This document outlines the implementation plan for a Peer-to-Peer Lending system
 
 ### 2.1 Primary Metrics
 
-#### **Total Value Locked (TVL) - PoR-to-DC Ratio**
-- **Name**: **PoR Collateralization Ratio** or **Lending Health Ratio**
-- **Formula**: `Total PoR Staked / Total DC Lent`
+#### **Total Value Locked (TVL) - SRPC-to-DC Ratio**
+- **Name**: **SRPC Collateralization Ratio** or **Lending Health Ratio**
+- **Formula**: `Total SRPC Staked / Total DC Lent`
 - **Purpose**: Measures the overall health and security of the lending pool
 - **Display**: 
-  - Ratio (e.g., 2.5:1 means 2.5 PoR staked for every 1 DC lent)
+  - Ratio (e.g., 2.5:1 means 2.5 SRPC staked for every 1 DC lent)
   - Percentage (e.g., 250% collateralization)
 - **Interpretation**:
   - Higher ratio = More secure lending pool
@@ -20508,7 +20508,7 @@ Borrow Interest Rate = Base Rate + (Utilization × Borrow Slope) + Spread
 Lending.jsx (Main Component)
 ├── LendingDashboard.jsx (Top Section - Metrics)
 │   ├── MetricCard.jsx (Reusable metric card)
-│   │   - PoR Collateralization Ratio
+│   │   - SRPC Collateralization Ratio
 │   │   - Total DC Supplied
 │   │   - Total DC Borrowed
 │   │   - Utilization Rate
@@ -20519,8 +20519,8 @@ Lending.jsx (Main Component)
 ├── LendingTabs.jsx (Tab Navigation)
 │   ├── SupplyTab.jsx (Lend DC)
 │   │   ├── SupplyForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Staking Input (required to lend)
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Staking Input (required to lend)
 │   │   │   - DC Amount to Lend Input
 │   │   │   - Expected APY Display
 │   │   │   - Supply Button
@@ -20533,11 +20533,11 @@ Lending.jsx (Main Component)
 │   │
 │   ├── BorrowTab.jsx (Borrow DC)
 │   │   ├── BorrowForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Collateral Input
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Collateral Input
 │   │   │   - DC Amount to Borrow Input
 │   │   │   - Borrow Interest Rate Display
-│   │   │   - Max Borrowable Amount (based on PoR)
+│   │   │   - Max Borrowable Amount (based on SRPC)
 │   │   │   - Borrow Button
 │   │   └── MyBorrows.jsx
 │   │       └── BorrowCard.jsx
@@ -20559,7 +20559,7 @@ Lending.jsx (Main Component)
 │                    LENDING DASHBOARD                         │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ PoR-to-DC    │  │ Utilization  │  │ Supply APY   │      │
+│  │ SRPC-to-DC    │  │ Utilization  │  │ Supply APY   │      │
 │  │ Ratio        │  │ Rate         │  │              │      │
 │  │ 2.5:1 (250%) │  │ 70%          │  │ 5.5%         │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -20584,53 +20584,53 @@ Lending.jsx (Main Component)
 **User Journey:**
 1. User navigates to "Supply" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Supply APY
    - Total DC already supplied (if any)
 3. User inputs:
-   - Amount of PoR to stake (required)
+   - Amount of SRPC to stake (required)
    - Amount of DC to lend
 4. System calculates:
-   - Maximum DC they can lend (based on PoR staked)
+   - Maximum DC they can lend (based on SRPC staked)
    - Expected APY based on current utilization
    - Estimated earnings
 5. User confirms and supplies
-6. PoR is locked, DC is transferred to lending pool
+6. SRPC is locked, DC is transferred to lending pool
 7. User sees their active supply in "My Supplies"
 
 **Validation Rules:**
-- Must stake PoR to lend DC
-- PoR staked must be >= minimum threshold (e.g., 10 PoR)
+- Must stake SRPC to lend DC
+- SRPC staked must be >= minimum threshold (e.g., 10 SRPC)
 - DC amount must be <= available DC balance
-- DC amount must be within limits based on PoR staked (e.g., 1:1 ratio minimum)
+- DC amount must be within limits based on SRPC staked (e.g., 1:1 ratio minimum)
 
 ### 4.2 Borrow Flow
 
 **User Journey:**
 1. User navigates to "Borrow" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Borrow APY
    - Total DC already borrowed (if any)
 3. User inputs:
-   - Amount of PoR to use as collateral
+   - Amount of SRPC to use as collateral
    - Amount of DC to borrow
 4. System calculates:
-   - Maximum borrowable amount (based on PoR collateral)
+   - Maximum borrowable amount (based on SRPC collateral)
    - Borrow interest rate
    - Total repayment amount
    - Repayment schedule
 5. User confirms and borrows
-6. PoR is locked as collateral, DC is transferred to user
+6. SRPC is locked as collateral, DC is transferred to user
 7. User sees their active borrow in "My Borrows"
 
 **Validation Rules:**
-- Must provide PoR collateral to borrow
-- Borrow amount must be within collateral limits (e.g., 50% of PoR value)
+- Must provide SRPC collateral to borrow
+- Borrow amount must be within collateral limits (e.g., 50% of SRPC value)
 - Cannot exceed maximum utilization rate (e.g., 95%)
-- Must have sufficient PoR balance
+- Must have sufficient SRPC balance
 
 ### 4.3 Interest Rate Calculation Display
 
@@ -20655,7 +20655,7 @@ Utilization: 70% (7,000 DC / 10,000 DC)
 ```javascript
 const lendingPool = {
   // Metrics
-  totalPoRStaked: "25000",      // Total PoR locked as collateral
+  totalSRPCStaked: "25000",      // Total SRPC locked as collateral
   totalDCSupplied: "10000",      // Total DC in lending pool
   totalDCBorrowed: "7000",       // Total DC currently borrowed
   utilizationRate: 0.70,          // 70% (borrowed / supplied)
@@ -20682,7 +20682,7 @@ const lendingPool = {
 const userSupply = {
   supplyId: 1,
   lender: "0x1234...5678",
-  porStaked: "100",              // PoR staked
+  porStaked: "100",              // SRPC staked
   dcSupplied: "500",             // DC supplied
   currentAPY: 0.055,             // Current APY
   totalEarned: "25.5",           // Total interest earned
@@ -20697,7 +20697,7 @@ const userSupply = {
 const userBorrow = {
   borrowId: 1,
   borrower: "0xABCD...EFGH",
-  porCollateral: "200",          // PoR used as collateral
+  porCollateral: "200",          // SRPC used as collateral
   dcBorrowed: "100",             // DC borrowed
   currentAPY: 0.091,             // Current borrow APY
   totalOwed: "109.1",            // Principal + interest
@@ -20739,7 +20739,7 @@ const userBorrow = {
 
 ### 6.3 Information Hierarchy
 
-1. **Top Level**: Key metrics (PoR-to-DC Ratio, Utilization, Interest Rates)
+1. **Top Level**: Key metrics (SRPC-to-DC Ratio, Utilization, Interest Rates)
 2. **Second Level**: Action forms (Supply/Borrow)
 3. **Third Level**: User positions (My Supplies/My Borrows)
 4. **Fourth Level**: Market overview (All active loans)
@@ -20751,7 +20751,7 @@ const userBorrow = {
 ### Phase 1: Core Dashboard & Metrics (Week 1)
 - [ ] Create Lending.jsx main component
 - [ ] Create LendingDashboard with metric cards
-- [ ] Implement PoR-to-DC Ratio calculation and display
+- [ ] Implement SRPC-to-DC Ratio calculation and display
 - [ ] Implement Utilization Rate calculation and display
 - [ ] Create interest rate calculation logic
 - [ ] Display Supply and Borrow APY
@@ -20759,7 +20759,7 @@ const userBorrow = {
 
 ### Phase 2: Supply (Lend) Functionality (Week 1-2)
 - [ ] Create SupplyTab component
-- [ ] Create SupplyForm with PoR staking input
+- [ ] Create SupplyForm with SRPC staking input
 - [ ] Create DC lending input
 - [ ] Implement validation logic
 - [ ] Create MySupplies component
@@ -20768,7 +20768,7 @@ const userBorrow = {
 
 ### Phase 3: Borrow Functionality (Week 2)
 - [ ] Create BorrowTab component
-- [ ] Create BorrowForm with PoR collateral input
+- [ ] Create BorrowForm with SRPC collateral input
 - [ ] Create DC borrow input
 - [ ] Implement max borrowable calculation
 - [ ] Create MyBorrows component
@@ -20803,7 +20803,7 @@ const userBorrow = {
 
 ```solidity
 // Lending Pool Metrics
-function getTotalPoRStaked() external view returns (uint256);
+function getTotalSRPCStaked() external view returns (uint256);
 function getTotalDCSupplied() external view returns (uint256);
 function getTotalDCBorrowed() external view returns (uint256);
 function getUtilizationRate() external view returns (uint256); // in basis points
@@ -20833,17 +20833,17 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 - Transparent and predictable
 - Industry-standard approach
 
-### 9.2 PoR as Collateral
-**Decision**: PoR must be staked to lend DC
+### 9.2 SRPC as Collateral
+**Decision**: SRPC must be staked to lend DC
 **Rationale**:
 - Demonstrates lender credibility
 - Reduces risk in the system
-- Creates value for PoR token
+- Creates value for SRPC token
 - Aligns with reputation-based system
 
 ### 9.3 Metrics Naming
 **Decision**: 
-- **PoR Collateralization Ratio** (primary metric)
+- **SRPC Collateralization Ratio** (primary metric)
 - **Utilization Rate** (secondary metric)
 **Rationale**:
 - Clear and descriptive
@@ -20865,8 +20865,8 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 
 ## 11. Questions & Considerations
 
-1. **Minimum PoR Staking**: What's the minimum PoR required to lend?
-2. **Collateral Ratio**: What's the minimum PoR-to-DC ratio required?
+1. **Minimum SRPC Staking**: What's the minimum SRPC required to lend?
+2. **Collateral Ratio**: What's the minimum SRPC-to-DC ratio required?
 3. **Borrow Limits**: Maximum borrowable amount per user?
 4. **Interest Accrual**: How often does interest accrue? (per block, per day?)
 5. **Withdrawal**: Can lenders withdraw before loan term ends?
@@ -20877,7 +20877,7 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 ## Conclusion
 
 This plan provides a comprehensive roadmap for implementing the Lending feature with a focus on:
-- PoR-based credibility system
+- SRPC-based credibility system
 - Dynamic interest rate calculation
 - Clear metrics and monitoring
 - User-friendly interface
@@ -20895,21 +20895,21 @@ This plan provides a comprehensive roadmap for implementing the Lending feature 
 
 ## Executive Summary
 
-This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (PoR) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
+This document outlines the implementation plan for a Peer-to-Peer Lending system where students can lend Duck Coin (DC) to other students. Lenders must stake Proof of Reputation (SRPC) as collateral to demonstrate credibility. The system includes dynamic interest rate calculation based on supply/demand and comprehensive monitoring metrics.
 
 ---
 
 ## 1. Core Concept
 
 ### 1.1 Lending Mechanism
-- **Lenders**: Students who lend Duck Coin (no PoR staking required)
-- **Borrowers**: Students who borrow Duck Coin (require PoR collateral)
-- **Collateral**: PoR (Proof of Reputation) - required only for borrowers
+- **Lenders**: Students who lend Duck Coin (no SRPC staking required)
+- **Borrowers**: Students who borrow Duck Coin (require SRPC collateral)
+- **Collateral**: SRPC (Proof of Reputation) - required only for borrowers
 - **Asset**: Duck Coin (DC) - the currency being lent
 
 ### 1.2 Key Principles
-- Lenders can lend DC without staking PoR
-- Borrowers must provide PoR collateral to borrow
+- Lenders can lend DC without staking SRPC
+- Borrowers must provide SRPC collateral to borrow
 - Interest rates adjust dynamically based on market conditions
 - Transparent metrics for monitoring lending health
 
@@ -20919,16 +20919,16 @@ This document outlines the implementation plan for a Peer-to-Peer Lending system
 
 ### 2.1 Primary Metrics
 
-#### **Total PoR Staked (Borrower Collateral)**
-- **Name**: **Total PoR Staked** or **Borrower Collateral**
-- **Formula**: `Sum of all PoR staked by borrowers as collateral`
+#### **Total SRPC Staked (Borrower Collateral)**
+- **Name**: **Total SRPC Staked** or **Borrower Collateral**
+- **Formula**: `Sum of all SRPC staked by borrowers as collateral`
 - **Purpose**: Measures the total collateral backing borrowed DC
 - **Display**: 
-  - Total PoR amount (e.g., 25,000 PoR)
+  - Total SRPC amount (e.g., 25,000 SRPC)
   - Shows security of the lending pool
 - **Interpretation**:
-  - Higher PoR staked = More secure lending pool
-  - Lower PoR staked = Higher risk (less collateral backing loans)
+  - Higher SRPC staked = More secure lending pool
+  - Lower SRPC staked = Higher risk (less collateral backing loans)
 
 #### **Interest Rate**
 - **Name**: **Lending Interest Rate** or **APY (Annual Percentage Yield)**
@@ -20986,7 +20986,7 @@ Borrow Interest Rate = Base Rate + (Utilization × Borrow Slope) + Spread
 Lending.jsx (Main Component)
 ├── LendingDashboard.jsx (Top Section - Metrics)
 │   ├── MetricCard.jsx (Reusable metric card)
-│   │   - PoR Collateralization Ratio
+│   │   - SRPC Collateralization Ratio
 │   │   - Total DC Supplied
 │   │   - Total DC Borrowed
 │   │   - Utilization Rate
@@ -20997,8 +20997,8 @@ Lending.jsx (Main Component)
 ├── LendingTabs.jsx (Tab Navigation)
 │   ├── SupplyTab.jsx (Lend DC)
 │   │   ├── SupplyForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Staking Input (required to lend)
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Staking Input (required to lend)
 │   │   │   - DC Amount to Lend Input
 │   │   │   - Expected APY Display
 │   │   │   - Supply Button
@@ -21011,11 +21011,11 @@ Lending.jsx (Main Component)
 │   │
 │   ├── BorrowTab.jsx (Borrow DC)
 │   │   ├── BorrowForm.jsx
-│   │   │   - PoR Balance Display
-│   │   │   - PoR Collateral Input
+│   │   │   - SRPC Balance Display
+│   │   │   - SRPC Collateral Input
 │   │   │   - DC Amount to Borrow Input
 │   │   │   - Borrow Interest Rate Display
-│   │   │   - Max Borrowable Amount (based on PoR)
+│   │   │   - Max Borrowable Amount (based on SRPC)
 │   │   │   - Borrow Button
 │   │   └── MyBorrows.jsx
 │   │       └── BorrowCard.jsx
@@ -21037,7 +21037,7 @@ Lending.jsx (Main Component)
 │                    LENDING DASHBOARD                         │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ PoR-to-DC    │  │ Utilization  │  │ Supply APY   │      │
+│  │ SRPC-to-DC    │  │ Utilization  │  │ Supply APY   │      │
 │  │ Ratio        │  │ Rate         │  │              │      │
 │  │ 2.5:1 (250%) │  │ 70%          │  │ 5.5%         │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
@@ -21062,53 +21062,53 @@ Lending.jsx (Main Component)
 **User Journey:**
 1. User navigates to "Supply" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Supply APY
    - Total DC already supplied (if any)
 3. User inputs:
-   - Amount of PoR to stake (required)
+   - Amount of SRPC to stake (required)
    - Amount of DC to lend
 4. System calculates:
-   - Maximum DC they can lend (based on PoR staked)
+   - Maximum DC they can lend (based on SRPC staked)
    - Expected APY based on current utilization
    - Estimated earnings
 5. User confirms and supplies
-6. PoR is locked, DC is transferred to lending pool
+6. SRPC is locked, DC is transferred to lending pool
 7. User sees their active supply in "My Supplies"
 
 **Validation Rules:**
-- Must stake PoR to lend DC
-- PoR staked must be >= minimum threshold (e.g., 10 PoR)
+- Must stake SRPC to lend DC
+- SRPC staked must be >= minimum threshold (e.g., 10 SRPC)
 - DC amount must be <= available DC balance
-- DC amount must be within limits based on PoR staked (e.g., 1:1 ratio minimum)
+- DC amount must be within limits based on SRPC staked (e.g., 1:1 ratio minimum)
 
 ### 4.2 Borrow Flow
 
 **User Journey:**
 1. User navigates to "Borrow" tab
 2. System displays:
-   - Current PoR balance
+   - Current SRPC balance
    - Current DC balance
    - Current Borrow APY
    - Total DC already borrowed (if any)
 3. User inputs:
-   - Amount of PoR to use as collateral
+   - Amount of SRPC to use as collateral
    - Amount of DC to borrow
 4. System calculates:
-   - Maximum borrowable amount (based on PoR collateral)
+   - Maximum borrowable amount (based on SRPC collateral)
    - Borrow interest rate
    - Total repayment amount
    - Repayment schedule
 5. User confirms and borrows
-6. PoR is locked as collateral, DC is transferred to user
+6. SRPC is locked as collateral, DC is transferred to user
 7. User sees their active borrow in "My Borrows"
 
 **Validation Rules:**
-- Must provide PoR collateral to borrow
-- Borrow amount must be within collateral limits (e.g., 50% of PoR value)
+- Must provide SRPC collateral to borrow
+- Borrow amount must be within collateral limits (e.g., 50% of SRPC value)
 - Cannot exceed maximum utilization rate (e.g., 95%)
-- Must have sufficient PoR balance
+- Must have sufficient SRPC balance
 
 ### 4.3 Interest Rate Calculation Display
 
@@ -21133,7 +21133,7 @@ Utilization: 70% (7,000 DC / 10,000 DC)
 ```javascript
 const lendingPool = {
   // Metrics
-  totalPoRStaked: "25000",      // Total PoR locked as collateral
+  totalSRPCStaked: "25000",      // Total SRPC locked as collateral
   totalDCSupplied: "10000",      // Total DC in lending pool
   totalDCBorrowed: "7000",       // Total DC currently borrowed
   utilizationRate: 0.70,          // 70% (borrowed / supplied)
@@ -21160,7 +21160,7 @@ const lendingPool = {
 const userSupply = {
   supplyId: 1,
   lender: "0x1234...5678",
-  porStaked: "100",              // PoR staked
+  porStaked: "100",              // SRPC staked
   dcSupplied: "500",             // DC supplied
   currentAPY: 0.055,             // Current APY
   totalEarned: "25.5",           // Total interest earned
@@ -21175,7 +21175,7 @@ const userSupply = {
 const userBorrow = {
   borrowId: 1,
   borrower: "0xABCD...EFGH",
-  porCollateral: "200",          // PoR used as collateral
+  porCollateral: "200",          // SRPC used as collateral
   dcBorrowed: "100",             // DC borrowed
   currentAPY: 0.091,             // Current borrow APY
   totalOwed: "109.1",            // Principal + interest
@@ -21217,7 +21217,7 @@ const userBorrow = {
 
 ### 6.3 Information Hierarchy
 
-1. **Top Level**: Key metrics (PoR-to-DC Ratio, Utilization, Interest Rates)
+1. **Top Level**: Key metrics (SRPC-to-DC Ratio, Utilization, Interest Rates)
 2. **Second Level**: Action forms (Supply/Borrow)
 3. **Third Level**: User positions (My Supplies/My Borrows)
 4. **Fourth Level**: Market overview (All active loans)
@@ -21229,7 +21229,7 @@ const userBorrow = {
 ### Phase 1: Core Dashboard & Metrics (Week 1)
 - [ ] Create Lending.jsx main component
 - [ ] Create LendingDashboard with metric cards
-- [ ] Implement PoR-to-DC Ratio calculation and display
+- [ ] Implement SRPC-to-DC Ratio calculation and display
 - [ ] Implement Utilization Rate calculation and display
 - [ ] Create interest rate calculation logic
 - [ ] Display Supply and Borrow APY
@@ -21237,7 +21237,7 @@ const userBorrow = {
 
 ### Phase 2: Supply (Lend) Functionality (Week 1-2)
 - [ ] Create SupplyTab component
-- [ ] Create SupplyForm with PoR staking input
+- [ ] Create SupplyForm with SRPC staking input
 - [ ] Create DC lending input
 - [ ] Implement validation logic
 - [ ] Create MySupplies component
@@ -21246,7 +21246,7 @@ const userBorrow = {
 
 ### Phase 3: Borrow Functionality (Week 2)
 - [ ] Create BorrowTab component
-- [ ] Create BorrowForm with PoR collateral input
+- [ ] Create BorrowForm with SRPC collateral input
 - [ ] Create DC borrow input
 - [ ] Implement max borrowable calculation
 - [ ] Create MyBorrows component
@@ -21281,7 +21281,7 @@ const userBorrow = {
 
 ```solidity
 // Lending Pool Metrics
-function getTotalPoRStaked() external view returns (uint256);
+function getTotalSRPCStaked() external view returns (uint256);
 function getTotalDCSupplied() external view returns (uint256);
 function getTotalDCBorrowed() external view returns (uint256);
 function getUtilizationRate() external view returns (uint256); // in basis points
@@ -21311,17 +21311,17 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 - Transparent and predictable
 - Industry-standard approach
 
-### 9.2 PoR as Collateral
-**Decision**: PoR must be staked to lend DC
+### 9.2 SRPC as Collateral
+**Decision**: SRPC must be staked to lend DC
 **Rationale**:
 - Demonstrates lender credibility
 - Reduces risk in the system
-- Creates value for PoR token
+- Creates value for SRPC token
 - Aligns with reputation-based system
 
 ### 9.3 Metrics Naming
 **Decision**: 
-- **PoR Collateralization Ratio** (primary metric)
+- **SRPC Collateralization Ratio** (primary metric)
 - **Utilization Rate** (secondary metric)
 **Rationale**:
 - Clear and descriptive
@@ -21343,8 +21343,8 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 
 ## 11. Questions & Considerations
 
-1. **Minimum PoR Staking**: What's the minimum PoR required to lend?
-2. **Collateral Ratio**: What's the minimum PoR-to-DC ratio required?
+1. **Minimum SRPC Staking**: What's the minimum SRPC required to lend?
+2. **Collateral Ratio**: What's the minimum SRPC-to-DC ratio required?
 3. **Borrow Limits**: Maximum borrowable amount per user?
 4. **Interest Accrual**: How often does interest accrue? (per block, per day?)
 5. **Withdrawal**: Can lenders withdraw before loan term ends?
@@ -21355,7 +21355,7 @@ function getUserBorrows(address user) external view returns (Borrow[] memory);
 ## Conclusion
 
 This plan provides a comprehensive roadmap for implementing the Lending feature with a focus on:
-- PoR-based credibility system
+- SRPC-based credibility system
 - Dynamic interest rate calculation
 - Clear metrics and monitoring
 - User-friendly interface
@@ -21453,10 +21453,10 @@ export default function LoanCard({ loan, wallet }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Collateral
+            SRPC Collateral
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: stevensRed }}>
-            {loan.porStaked} PoR
+            {loan.porStaked} SRPC
           </div>
         </div>
         <div>
@@ -21492,45 +21492,45 @@ export default function LoanCard({ loan, wallet }) {
 
 ```
 
-Removed the PoR staking requirement for lenders. Changes:
+Removed the SRPC staking requirement for lenders. Changes:
 
 ## Changes Made:
 
 ### 1. **SupplyForm.jsx**
-   - Removed PoR staking input field
-   - Removed PoR balance display
-   - Removed PoR-related validation
+   - Removed SRPC staking input field
+   - Removed SRPC balance display
+   - Removed SRPC-related validation
    - Simplified to only require DC amount to lend
-   - Removed max DC calculation based on PoR
+   - Removed max DC calculation based on SRPC
 
 ### 2. **SupplyTab.jsx**
-   - Removed PoR balance fetching
-   - Removed PoR-related props
+   - Removed SRPC balance fetching
+   - Removed SRPC-related props
 
 ### 3. **SupplyCard.jsx**
-   - Removed "PoR Staked" field from display
+   - Removed "SRPC Staked" field from display
    - Shows only DC supplied, APY, and earnings
 
 ### 4. **MySupplies.jsx**
    - Removed `porStaked` from mock data structure
 
 ### 5. **LendingDashboard.jsx**
-   - Removed "PoR-to-DC Ratio" metric card
-   - Added "Total PoR Staked" metric card (showing borrower collateral only)
+   - Removed "SRPC-to-DC Ratio" metric card
+   - Added "Total SRPC Staked" metric card (showing borrower collateral only)
    - Now shows 5 metrics instead of 6
 
 ### 6. **LoanCard.jsx**
-   - Changed "PoR Staked" label to "PoR Collateral" (borrower's collateral)
+   - Changed "SRPC Staked" label to "SRPC Collateral" (borrower's collateral)
 
 ### 7. **LENDING_IMPLEMENTATION_PLAN.md**
-   - Updated to reflect that lenders don't need to stake PoR
+   - Updated to reflect that lenders don't need to stake SRPC
    - Updated metrics description
 
 ## Current Behavior:
 
-- **Lenders**: Can lend DC directly without staking PoR
-- **Borrowers**: Must provide PoR collateral to borrow DC
-- **Metrics**: Dashboard shows total PoR staked by borrowers (not lenders)
+- **Lenders**: Can lend DC directly without staking SRPC
+- **Borrowers**: Must provide SRPC collateral to borrow DC
+- **Metrics**: Dashboard shows total SRPC staked by borrowers (not lenders)
 
 The lending system is now simpler for lenders while maintaining security through borrower collateral requirements.
 
@@ -22859,11 +22859,11 @@ update the readme, using @TASK_LIST_ARCHITECTURE_SUMMARY.md @LENDING_IMPLEMENTAT
 
 1. Proof of Reputation is a on-chain performance metrics for students
 
-2. PoR is earned through tasks, which required duck coin, which is transferrable fungible token.
+2. SRPC is earned through tasks, which required duck coin, which is transferrable fungible token.
 
 3. Duck coin demand comes from the bidding system, and its supply is burned after task complete
 
-4. PoR is also can be used to borrow Duck Coin
+4. SRPC is also can be used to borrow Duck Coin
 
 
 
@@ -22886,7 +22886,7 @@ Creating a whitepaper-style README for the project:
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -22939,20 +22939,20 @@ The Stevens Blockchain ecosystem consists of three primary smart contracts:
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -22965,7 +22965,7 @@ The Stevens Blockchain ecosystem consists of three primary smart contracts:
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -22973,12 +22973,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -22991,7 +22991,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -22999,28 +22999,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -23028,12 +23028,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -23049,7 +23049,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -23063,7 +23063,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -23079,7 +23079,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -23090,12 +23090,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -23115,10 +23115,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -23136,7 +23136,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -23153,7 +23153,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -23168,15 +23168,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -23208,12 +23208,12 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system
 - Task assignment and completion
 - Dispute handling
-- PoR transfer coordination
+- SRPC transfer coordination
 
 #### **LendingPool.sol** (Planned)
 - Peer-to-peer lending
 - Dynamic interest rate calculation
-- PoR collateral management
+- SRPC collateral management
 - Utilization tracking
 
 ### 6.2 Frontend Architecture
@@ -23243,14 +23243,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -23258,16 +23258,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -23283,12 +23283,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -23335,7 +23335,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -23352,7 +23352,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -23429,7 +23429,7 @@ Created a whitepaper-style README for the Stevens Blockchain project. It include
 
 ### 2. **System Architecture**
    - Smart contract structure
-   - Token types (DC and PoR)
+   - Token types (DC and SRPC)
    - Component relationships
 
 ### 3. **Token Economics**
@@ -23438,7 +23438,7 @@ Created a whitepaper-style README for the Stevens Blockchain project. It include
 
 ### 4. **Core Features**
    - Task Management System (with live bidding)
-   - Lending System (PoR as collateral)
+   - Lending System (SRPC as collateral)
    - Exchange Platform
 
 ### 5. **Economic Model Analysis**
@@ -23459,10 +23459,10 @@ Created a whitepaper-style README for the Stevens Blockchain project. It include
 
 ## Highlights:
 
-- **PoR as on-chain performance metric**: Non-transferable ERC721 representing academic reputation
+- **SRPC as on-chain performance metric**: Non-transferable ERC721 representing academic reputation
 - **DC earned through tasks requiring Duck Coin**: Bidding system creates demand
 - **DC supply burned after completion**: Deflationary model explained
-- **PoR used to borrow Duck Coin**: Lending system with PoR collateral detailed
+- **SRPC used to borrow Duck Coin**: Lending system with SRPC collateral detailed
 
 The whitepaper is structured for both technical and non-technical readers, covering the economic model, technical architecture, and practical applications of the system.
 
@@ -23528,7 +23528,7 @@ Updating the architecture diagram in the README to include TaskManager, Lending,
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -23579,7 +23579,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │ • Task Creation │ │
 │     │ • Live Bidding  │ │
 │     │ • DC Staking    │ │
-│     │ • PoR Rewards   │ │
+│     │ • SRPC Rewards   │ │
 │     └─────────────────┘ │
 │                         │
 │     ┌─────────────────┐ │
@@ -23587,7 +23587,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │     .sol        │ │
 │     │                 │ │
 │     │ • P2P Lending  │ │
-│     │ • PoR Collateral│ │
+│     │ • SRPC Collateral│ │
 │     │ • Interest Rates│ │
 │     └─────────────────┘ │
 │                         │
@@ -23614,20 +23614,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -23640,7 +23640,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -23648,12 +23648,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -23666,7 +23666,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -23674,28 +23674,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -23703,12 +23703,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -23724,7 +23724,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -23738,7 +23738,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -23754,7 +23754,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -23765,12 +23765,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -23790,10 +23790,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -23811,7 +23811,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -23828,7 +23828,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -23843,15 +23843,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -23883,12 +23883,12 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system
 - Task assignment and completion
 - Dispute handling
-- PoR transfer coordination
+- SRPC transfer coordination
 
 #### **LendingPool.sol** (Planned)
 - Peer-to-peer lending
 - Dynamic interest rate calculation
-- PoR collateral management
+- SRPC collateral management
 - Utilization tracking
 
 ### 6.2 Frontend Architecture
@@ -23918,14 +23918,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -23933,16 +23933,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -23958,12 +23958,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -24010,7 +24010,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -24027,7 +24027,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -24099,7 +24099,7 @@ For technical support, deployment guides, and setup instructions, refer to the p
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -24150,7 +24150,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │ • Task Creation │ │
 │     │ • Live Bidding  │ │
 │     │ • DC Staking    │ │
-│     │ • PoR Rewards   │ │
+│     │ • SRPC Rewards   │ │
 │     └─────────────────┘ │
 │                         │
 │     ┌─────────────────┐ │
@@ -24158,7 +24158,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │     .sol        │ │
 │     │                 │ │
 │     │ • P2P Lending  │ │
-│     │ • PoR Collateral│ │
+│     │ • SRPC Collateral│ │
 │     │ • Interest Rates│ │
 │     └─────────────────┘ │
 │                         │
@@ -24185,20 +24185,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -24211,7 +24211,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -24219,12 +24219,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -24237,7 +24237,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -24245,28 +24245,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -24274,12 +24274,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -24295,7 +24295,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -24309,7 +24309,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -24325,7 +24325,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -24336,12 +24336,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -24361,10 +24361,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -24382,7 +24382,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -24399,7 +24399,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -24414,15 +24414,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -24457,14 +24457,14 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination
+- SRPC transfer coordination
 - DC staking and burning on completion
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
 
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
@@ -24509,14 +24509,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -24524,16 +24524,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -24549,12 +24549,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -24601,7 +24601,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -24618,7 +24618,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -24693,7 +24693,7 @@ Updating the architecture diagram to match the requested format:
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -24744,7 +24744,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │ • Task Creation │ │
 │     │ • Live Bidding  │ │
 │     │ • DC Staking    │ │
-│     │ • PoR Rewards   │ │
+│     │ • SRPC Rewards   │ │
 │     └─────────────────┘ │
 │                         │
 │     ┌─────────────────┐ │
@@ -24752,7 +24752,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │     .sol        │ │
 │     │                 │ │
 │     │ • P2P Lending  │ │
-│     │ • PoR Collateral│ │
+│     │ • SRPC Collateral│ │
 │     │ • Interest Rates│ │
 │     └─────────────────┘ │
 │                         │
@@ -24779,20 +24779,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -24805,7 +24805,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -24813,12 +24813,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -24831,7 +24831,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -24839,28 +24839,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -24868,12 +24868,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -24889,7 +24889,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -24903,7 +24903,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -24919,7 +24919,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -24930,12 +24930,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -24955,10 +24955,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -24976,7 +24976,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -24993,7 +24993,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -25008,15 +25008,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -25051,14 +25051,14 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination
+- SRPC transfer coordination
 - DC staking and burning on completion
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
 
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
@@ -25103,14 +25103,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -25118,16 +25118,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -25143,12 +25143,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -25195,7 +25195,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -25212,7 +25212,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -25301,7 +25301,7 @@ Reading the relevant section to update it correctly:
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -25352,7 +25352,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │ • Task Creation │ │
 │     │ • Live Bidding  │ │
 │     │ • DC Staking    │ │
-│     │ • PoR Rewards   │ │
+│     │ • SRPC Rewards   │ │
 │     └─────────────────┘ │
 │                         │
 │     ┌─────────────────┐ │
@@ -25360,7 +25360,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │     │     .sol        │ │
 │     │                 │ │
 │     │ • P2P Lending  │ │
-│     │ • PoR Collateral│ │
+│     │ • SRPC Collateral│ │
 │     │ • Interest Rates│ │
 │     └─────────────────┘ │
 │                         │
@@ -25387,20 +25387,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -25413,7 +25413,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -25421,12 +25421,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -25439,7 +25439,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -25447,28 +25447,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -25476,12 +25476,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -25497,7 +25497,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -25511,7 +25511,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -25527,7 +25527,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -25538,12 +25538,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -25563,10 +25563,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -25591,7 +25591,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -25608,7 +25608,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -25623,15 +25623,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -25666,14 +25666,14 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination
+- SRPC transfer coordination
 - DC staking and burning on completion
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
 
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
@@ -25718,14 +25718,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -25733,16 +25733,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -25758,12 +25758,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -25810,7 +25810,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -25827,7 +25827,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -25902,11 +25902,11 @@ Updated the README with the complete architecture diagram. Changes:
    - Task Creation
    - Live Bidding
    - DC Staking
-   - PoR Rewards
+   - SRPC Rewards
 
 2. **Added LendingPool.sol** — Shown under DuckCoin with:
    - P2P Lending
-   - PoR Collateral
+   - SRPC Collateral
    - Interest Rates
 
 3. **Added Exchange contracts** — Shown under DuckCoin with:
@@ -25928,7 +25928,7 @@ task manager in not under DUck coin,
 
 
 
-it is somehow parallel, the Duck coin, and PoR, 
+it is somehow parallel, the Duck coin, and SRPC, 
 
 
 
@@ -25936,7 +25936,7 @@ scrutinize the whole files,
 
 
 
-draw that diagram containing terms like Student manager(white list), duck coin, PoR, Task manager, lending, AMM, 
+draw that diagram containing terms like Student manager(white list), duck coin, SRPC, Task manager, lending, AMM, 
 
 ---
 
@@ -25953,7 +25953,7 @@ Updating the architecture diagram to reflect the correct relationships:
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -26012,16 +26012,16 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │             │ │          │ │          │ │          │
 │ • Task      │ │ • P2P    │ │ • Token  │ │ • Order  │
 │   Creation  │ │   Lending│ │   Swaps  │ │   Book   │
-│ • Live      │ │ • PoR    │ │ • Liquidity│ │ • Central│
+│ • Live      │ │ • SRPC    │ │ • Liquidity│ │ • Central│
 │   Bidding   │ │   Collateral│ • AMM   │ │   Exchange│
 │ • DC Staking│ │ • Interest│ │   Formula│ │          │
-│ • PoR       │ │   Rates  │ │          │ │          │
+│ • SRPC       │ │   Rates  │ │          │ │          │
 │   Rewards   │ │          │ │          │ │          │
 │             │ │          │ │          │ │          │
 │ Dependencies│ │ Dependencies│ Dependencies│ Dependencies│
 │ • StudentMgmt│ │ • StudentMgmt│ • StudentMgmt│ • StudentMgmt│
 │ • DuckCoin  │ │ • DuckCoin  │ • DuckCoin  │ • DuckCoin  │
-│ • PoR       │ │ • PoR       │ • PoR       │ • PoR       │
+│ • SRPC       │ │ • SRPC       │ • SRPC       │ • SRPC       │
 └─────────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -26032,20 +26032,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -26058,7 +26058,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -26066,12 +26066,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -26084,7 +26084,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -26092,28 +26092,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -26121,12 +26121,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -26142,7 +26142,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -26156,7 +26156,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -26172,7 +26172,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -26183,12 +26183,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -26208,10 +26208,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -26236,7 +26236,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -26253,7 +26253,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -26268,15 +26268,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -26311,14 +26311,14 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination
+- SRPC transfer coordination
 - DC staking and burning on completion
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
 
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - Dependencies: StudentManagement, DuckCoin, ProveOfReputation
@@ -26363,14 +26363,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -26378,16 +26378,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -26403,12 +26403,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -26455,7 +26455,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -26472,7 +26472,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -26553,7 +26553,7 @@ For technical support, deployment guides, and setup instructions, refer to the p
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination (via StudentManagement)
+- SRPC transfer coordination (via StudentManagement)
 - DC staking and burning on completion
 - **Dependencies**: 
   - StudentManagement (whitelist checks, role verification)
@@ -26563,7 +26563,7 @@ For technical support, deployment guides, and setup instructions, refer to the p
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - **Dependencies**:
@@ -26573,7 +26573,7 @@ For technical support, deployment guides, and setup instructions, refer to the p
 
 #### **AMM.sol (DEX - Decentralized Exchange)**
 - Automated Market Maker
-- Token swap functionality (DC ↔ PoR)
+- Token swap functionality (DC ↔ SRPC)
 - Liquidity pool management
 - Constant product formula (x * y = k)
 - Price discovery mechanism
@@ -26601,7 +26601,7 @@ Reading the current state and updating it:
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -26660,16 +26660,16 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │             │ │          │ │          │ │          │
 │ • Task      │ │ • P2P    │ │ • Token  │ │ • Order  │
 │   Creation  │ │   Lending│ │   Swaps  │ │   Book   │
-│ • Live      │ │ • PoR    │ │ • Liquidity│ │ • Central│
+│ • Live      │ │ • SRPC    │ │ • Liquidity│ │ • Central│
 │   Bidding   │ │   Collateral│ • AMM   │ │   Exchange│
 │ • DC Staking│ │ • Interest│ │   Formula│ │          │
-│ • PoR       │ │   Rates  │ │          │ │          │
+│ • SRPC       │ │   Rates  │ │          │ │          │
 │   Rewards   │ │          │ │          │ │          │
 │             │ │          │ │          │ │          │
 │ Dependencies│ │ Dependencies│ Dependencies│ Dependencies│
 │ • StudentMgmt│ │ • StudentMgmt│ • StudentMgmt│ • StudentMgmt│
 │ • DuckCoin  │ │ • DuckCoin  │ • DuckCoin  │ • DuckCoin  │
-│ • PoR       │ │ • PoR       │ • PoR       │ • PoR       │
+│ • SRPC       │ │ • SRPC       │ • SRPC       │ • SRPC       │
 └─────────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -26680,20 +26680,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -26706,7 +26706,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -26714,12 +26714,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -26732,7 +26732,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -26740,28 +26740,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -26769,12 +26769,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -26790,7 +26790,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -26804,7 +26804,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -26820,7 +26820,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -26831,12 +26831,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -26856,10 +26856,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -26884,7 +26884,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -26901,7 +26901,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -26916,15 +26916,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -26959,7 +26959,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination (via StudentManagement)
+- SRPC transfer coordination (via StudentManagement)
 - DC staking and burning on completion
 - **Dependencies**: 
   - StudentManagement (whitelist checks, role verification)
@@ -26969,7 +26969,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - **Dependencies**:
@@ -26979,7 +26979,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 
 #### **AMM.sol (DEX - Decentralized Exchange)**
 - Automated Market Maker
-- Token swap functionality (DC ↔ PoR)
+- Token swap functionality (DC ↔ SRPC)
 - Liquidity pool management
 - Constant product formula (x * y = k)
 - Price discovery mechanism
@@ -27025,14 +27025,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -27040,16 +27040,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -27065,12 +27065,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -27117,7 +27117,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -27134,7 +27134,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -27217,7 +27217,7 @@ Fixing the ProveOfReputation description to reflect that minting goes through St
 
 ## Abstract
 
-Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (PoR)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
+Stevens Blockchain (SBC) is an innovative blockchain-based platform designed to gamify academic performance, facilitate peer-to-peer task management, and create a sustainable token economy within educational institutions. The system introduces **Proof of Reputation (SRPC)** as an on-chain, non-transferable performance metric that students earn through completing tasks, and **Duck Coin (DC)** as a transferable fungible token that powers the task economy through a bidding mechanism. This whitepaper outlines the architecture, tokenomics, and economic model of the Stevens Blockchain ecosystem.
 
 ---
 
@@ -27276,16 +27276,16 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 │             │ │          │ │          │ │          │
 │ • Task      │ │ • P2P    │ │ • Token  │ │ • Order  │
 │   Creation  │ │   Lending│ │   Swaps  │ │   Book   │
-│ • Live      │ │ • PoR    │ │ • Liquidity│ │ • Central│
+│ • Live      │ │ • SRPC    │ │ • Liquidity│ │ • Central│
 │   Bidding   │ │   Collateral│ • AMM   │ │   Exchange│
 │ • DC Staking│ │ • Interest│ │   Formula│ │          │
-│ • PoR       │ │   Rates  │ │          │ │          │
+│ • SRPC       │ │   Rates  │ │          │ │          │
 │   Rewards   │ │          │ │          │ │          │
 │             │ │          │ │          │ │          │
 │ Dependencies│ │ Dependencies│ Dependencies│ Dependencies│
 │ • StudentMgmt│ │ • StudentMgmt│ • StudentMgmt│ • StudentMgmt│
 │ • DuckCoin  │ │ • DuckCoin  │ • DuckCoin  │ • DuckCoin  │
-│ • PoR       │ │ • PoR       │ • PoR       │ • PoR       │
+│ • SRPC       │ │ • SRPC       │ • SRPC       │ • SRPC       │
 └─────────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -27296,20 +27296,20 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 - **Purpose**: Medium of exchange for task bidding and rewards
 - **Supply Model**: Deflationary (burned after task completion)
 - **Use Cases**:
-  - Bidding on Proof of Reputation (PoR) tasks
+  - Bidding on Proof of Reputation (SRPC) tasks
   - Task rewards (for Duck Coin tasks)
   - Lending and borrowing
   - Exchange transactions
 
-#### **Proof of Reputation (PoR)** - ERC721 Non-Fungible Token
+#### **Proof of Reputation (SRPC)** - ERC721 Non-Fungible Token
 - **Type**: Non-transferable, on-chain performance metric
 - **Purpose**: Quantified academic reputation and credibility
 - **Earning Mechanism**: Awarded upon task completion
 - **Use Cases**:
   - Credit score indicator
   - Collateral for borrowing Duck Coin
-  - Access control (professors have higher PoR)
-  - Task creation eligibility (PoR tasks require professor status)
+  - Access control (professors have higher SRPC)
+  - Task creation eligibility (SRPC tasks require professor status)
 
 ---
 
@@ -27322,7 +27322,7 @@ The Stevens Blockchain ecosystem consists of multiple smart contracts working to
 Duck Coin follows a **deflationary model** where tokens are burned after task completion:
 
 1. **Initial Distribution**: Admin mints Duck Coin to whitelisted students
-2. **Task Bidding**: Students stake Duck Coin to bid on PoR tasks
+2. **Task Bidding**: Students stake Duck Coin to bid on SRPC tasks
 3. **Task Completion**: Staked Duck Coin is **burned** (removed from supply)
 4. **Result**: Decreasing supply creates scarcity and value
 
@@ -27330,12 +27330,12 @@ Duck Coin follows a **deflationary model** where tokens are burned after task co
 
 Duck Coin demand is primarily driven by:
 
-- **Task Bidding System**: Students compete by bidding Duck Coin on PoR-rewarded tasks
+- **Task Bidding System**: Students compete by bidding Duck Coin on SRPC-rewarded tasks
   - Higher bids = Higher chance of task assignment
   - Bidding creates immediate demand for Duck Coin
   - Live auction mechanism with 24-hour acceptance deadlines
 
-- **Lending Market**: Students borrow Duck Coin using PoR as collateral
+- **Lending Market**: Students borrow Duck Coin using SRPC as collateral
   - Borrowers need Duck Coin for bidding or other purposes
   - Creates sustained demand for the token
 
@@ -27348,7 +27348,7 @@ Duck Coin demand is primarily driven by:
 ```
 Student receives DC
     ↓
-Student bids DC on PoR task
+Student bids DC on SRPC task
     ↓
 Task assigned (DC staked)
     ↓
@@ -27356,28 +27356,28 @@ Task completed
     ↓
 DC burned (supply decreases)
     ↓
-PoR awarded to task taker
+SRPC awarded to task taker
 ```
 
 **Key Insight**: The burning mechanism ensures that Duck Coin maintains value through scarcity, while the bidding system creates continuous demand.
 
-### 3.2 Proof of Reputation (PoR) Economics
+### 3.2 Proof of Reputation (SRPC) Economics
 
 #### **Earning Mechanism**
 
 Proof of Reputation is earned exclusively through task completion:
 
-1. **Task Creation**: Professors create tasks with PoR rewards
+1. **Task Creation**: Professors create tasks with SRPC rewards
 2. **Bidding Phase**: Students bid Duck Coin to compete for task assignment
 3. **Task Assignment**: Highest bidder wins (Duck Coin staked)
 4. **Task Completion**: 
-   - PoR transferred to task taker
+   - SRPC transferred to task taker
    - Staked Duck Coin burned
-   - Creator's PoR locked during task (if PoR reward)
+   - Creator's SRPC locked during task (if SRPC reward)
 
 #### **Non-Transferability**
 
-PoR is **non-transferable** by design:
+SRPC is **non-transferable** by design:
 - Prevents reputation trading
 - Ensures reputation reflects actual performance
 - Creates genuine value through earned achievement
@@ -27385,12 +27385,12 @@ PoR is **non-transferable** by design:
 
 #### **Value Proposition**
 
-PoR serves multiple functions:
+SRPC serves multiple functions:
 
 1. **Performance Metric**: On-chain record of academic achievements
-2. **Credit Score**: Higher PoR = Higher credibility
+2. **Credit Score**: Higher SRPC = Higher credibility
 3. **Collateral Asset**: Can be used to borrow Duck Coin
-4. **Access Control**: Determines eligibility for certain actions (e.g., creating PoR tasks)
+4. **Access Control**: Determines eligibility for certain actions (e.g., creating SRPC tasks)
 
 ---
 
@@ -27406,7 +27406,7 @@ PoR serves multiple functions:
    - Assignment: Direct assignment (no bidding)
 
 2. **Proof of Reputation Tasks**
-   - Reward: PoR
+   - Reward: SRPC
    - Can be created by: Professors only
    - Assignment: Live bidding system with Duck Coin
 
@@ -27420,7 +27420,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 #### **Live Bidding Mechanism**
 
-For PoR tasks, a competitive bidding system operates:
+For SRPC tasks, a competitive bidding system operates:
 
 - **Bidding Process**:
   1. Students place bids using Duck Coin
@@ -27436,7 +27436,7 @@ For PoR tasks, a competitive bidding system operates:
 
 - **Completion**:
   - Staked Duck Coin is **burned** (deflationary)
-  - PoR transferred to task taker
+  - SRPC transferred to task taker
   - Reputation earned on-chain
 
 ### 4.2 Lending System
@@ -27447,12 +27447,12 @@ Students can lend and borrow Duck Coin within the platform:
 
 **Lenders**:
 - Lend Duck Coin to earn interest
-- No PoR staking required
+- No SRPC staking required
 - Earn APY based on utilization rate
 
 **Borrowers**:
-- Borrow Duck Coin using PoR as collateral
-- Must stake PoR (typically 50% collateralization ratio)
+- Borrow Duck Coin using SRPC as collateral
+- Must stake SRPC (typically 50% collateralization ratio)
 - Pay interest based on dynamic rates
 
 #### **Interest Rate Model**
@@ -27472,10 +27472,10 @@ Borrow APY = Base Rate + (Utilization × Borrow Slope) + Spread
 - High utilization = Higher rates (incentivizes lending)
 - Transparent and predictable
 
-#### **PoR as Collateral**
+#### **SRPC as Collateral**
 
-- PoR serves as the primary collateral asset
-- Higher PoR = Higher borrowing capacity
+- SRPC serves as the primary collateral asset
+- Higher SRPC = Higher borrowing capacity
 - Creates utility for earned reputation
 - Links academic performance to financial access
 
@@ -27500,7 +27500,7 @@ The platform includes exchange functionality with two mechanisms:
 ### 5.1 Deflationary Pressure
 
 **Duck Coin Burning Mechanism**:
-- Every completed PoR task burns the staked Duck Coin
+- Every completed SRPC task burns the staked Duck Coin
 - Creates permanent supply reduction
 - Scarcity increases over time
 - Value preservation through deflation
@@ -27517,7 +27517,7 @@ Remaining Supply: S_remaining = S₀ - S_burned
 ### 5.2 Demand Drivers
 
 1. **Bidding Demand**: 
-   - Number of active PoR tasks
+   - Number of active SRPC tasks
    - Competition intensity
    - Task reward values
 
@@ -27532,15 +27532,15 @@ Remaining Supply: S_remaining = S₀ - S_burned
 
 ### 5.3 Reputation Economy
 
-**PoR Value Creation**:
+**SRPC Value Creation**:
 - Earned through demonstrated performance
 - Non-transferable ensures authenticity
 - Used as collateral creates financial utility
-- Higher PoR = Better access and terms
+- Higher SRPC = Better access and terms
 
 **Reputation Accumulation**:
 ```
-PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disputes)
+SRPC Balance = Σ(SRPC_rewarded from completed tasks) - Σ(SRPC_slashed from disputes)
 ```
 
 ---
@@ -27576,7 +27576,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 - Live bidding system with Duck Coin
 - Task assignment and completion
 - Dispute handling and resolution
-- PoR transfer coordination (via StudentManagement)
+- SRPC transfer coordination (via StudentManagement)
 - DC staking and burning on completion
 - **Dependencies**: 
   - StudentManagement (whitelist checks, role verification)
@@ -27586,7 +27586,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 #### **LendingPool.sol**
 - Peer-to-peer lending platform
 - Dynamic interest rate calculation (utilization-based)
-- PoR collateral management for borrowers
+- SRPC collateral management for borrowers
 - Supply and borrow tracking
 - Utilization rate monitoring
 - **Dependencies**:
@@ -27596,7 +27596,7 @@ PoR Balance = Σ(PoR_rewarded from completed tasks) - Σ(PoR_slashed from disput
 
 #### **AMM.sol (DEX - Decentralized Exchange)**
 - Automated Market Maker
-- Token swap functionality (DC ↔ PoR)
+- Token swap functionality (DC ↔ SRPC)
 - Liquidity pool management
 - Constant product formula (x * y = k)
 - Price discovery mechanism
@@ -27642,14 +27642,14 @@ App.jsx
 
 ### 7.1 Academic Performance Tracking
 
-- **On-Chain Reputation**: PoR provides immutable record of achievements
+- **On-Chain Reputation**: SRPC provides immutable record of achievements
 - **Transparency**: All task completions visible on blockchain
 - **Credibility**: Non-transferable nature ensures authenticity
-- **Credit Score**: PoR balance serves as academic credit indicator
+- **Credit Score**: SRPC balance serves as academic credit indicator
 
 ### 7.2 Task Marketplace
 
-- **Task Creation**: Professors create PoR-rewarded tasks
+- **Task Creation**: Professors create SRPC-rewarded tasks
 - **Competitive Bidding**: Students compete with Duck Coin bids
 - **Fair Assignment**: Highest bidder wins (with time constraints)
 - **Completion Tracking**: All tasks tracked on-chain
@@ -27657,16 +27657,16 @@ App.jsx
 ### 7.3 Financial Services
 
 - **Lending**: Earn interest on Duck Coin
-- **Borrowing**: Use PoR as collateral to borrow Duck Coin
+- **Borrowing**: Use SRPC as collateral to borrow Duck Coin
 - **Exchange**: Swap tokens through AMM or SHIFT
-- **Reputation-Based Access**: Higher PoR = Better financial terms
+- **Reputation-Based Access**: Higher SRPC = Better financial terms
 
 ### 7.4 Gamification
 
-- **Achievement System**: PoR accumulation as achievement metric
+- **Achievement System**: SRPC accumulation as achievement metric
 - **Competition**: Bidding creates competitive environment
-- **Rewards**: Both DC and PoR rewards incentivize participation
-- **Status**: Higher PoR = Higher status in ecosystem
+- **Rewards**: Both DC and SRPC rewards incentivize participation
+- **Status**: Higher SRPC = Higher status in ecosystem
 
 ---
 
@@ -27682,12 +27682,12 @@ App.jsx
 
 - **Reporting Mechanism**: Task takers can report disputes
 - **Admin Resolution**: Manual review and resolution
-- **PoR Slashing**: Creator's PoR can be slashed if at fault
+- **SRPC Slashing**: Creator's SRPC can be slashed if at fault
 - **Refund Mechanisms**: Fair handling of disputed tasks
 
 ### 8.3 Economic Security
 
-- **Collateral Requirements**: Borrowers must provide PoR collateral
+- **Collateral Requirements**: Borrowers must provide SRPC collateral
 - **Utilization Limits**: Maximum borrowing to prevent over-leverage
 - **Interest Rate Caps**: Dynamic rates prevent extreme scenarios
 - **Burning Verification**: All burns are on-chain and verifiable
@@ -27734,7 +27734,7 @@ App.jsx
 | Demand Driver | Bidding system, borrowing needs |
 | Value Mechanism | Scarcity through burning |
 
-### 10.2 Proof of Reputation (PoR)
+### 10.2 Proof of Reputation (SRPC)
 
 | Property | Value |
 |----------|-------|
@@ -27751,7 +27751,7 @@ App.jsx
 
 Stevens Blockchain represents a novel approach to academic performance tracking and incentivization through blockchain technology. By combining:
 
-- **Non-transferable reputation** (PoR) as an authentic performance metric
+- **Non-transferable reputation** (SRPC) as an authentic performance metric
 - **Deflationary token economics** (DC) through burning mechanisms
 - **Competitive bidding** to create demand
 - **Reputation-based financial services** to create utility
@@ -27827,19 +27827,19 @@ Updated the architecture diagram in the README. Changes:
    - Manages student whitelist
    - Coordinates token operations
 
-2. **DuckCoin & PoR** — Parallel base tokens
+2. **DuckCoin & SRPC** — Parallel base tokens
    - Both referenced by StudentManagement
    - Both can be minted/burned via StudentManagement
    - Base infrastructure layer
 
 3. **Application Contracts** — Parallel to each other (not under DuckCoin)
-   - **TaskManager** — Uses StudentManagement, DuckCoin, PoR
-   - **LendingPool** — Uses StudentManagement, DuckCoin, PoR
-   - **AMM (DEX)** — Uses StudentManagement, DuckCoin, PoR
-   - **SHIFT (CEX)** — Uses StudentManagement, DuckCoin, PoR
+   - **TaskManager** — Uses StudentManagement, DuckCoin, SRPC
+   - **LendingPool** — Uses StudentManagement, DuckCoin, SRPC
+   - **AMM (DEX)** — Uses StudentManagement, DuckCoin, SRPC
+   - **SHIFT (CEX)** — Uses StudentManagement, DuckCoin, SRPC
 
 The diagram shows:
-- TaskManager is parallel to DuckCoin and PoR, not nested under it
+- TaskManager is parallel to DuckCoin and SRPC, not nested under it
 - All application contracts depend on the same base infrastructure
 - Clear dependency relationships with arrows showing connections
 - Each contract's dependencies are listed
@@ -28653,9 +28653,9 @@ contract StudentManagement is Ownable {
     /**
      * @dev Mint Prove of Reputation tokens to a whitelisted student
      * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint
+     * @param amount The amount of SRPC tokens to mint
      */
-    function mintPoR(address to, uint256 amount) external onlyOwner {
+    function mintSRPC(address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
         proveOfReputation.mint(to, amount);
         emit NFTMinted(to, amount);
@@ -28664,17 +28664,17 @@ contract StudentManagement is Ownable {
     /**
      * @dev Burn Prove of Reputation tokens from a student
      * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn
+     * @param amount The amount of SRPC tokens to burn
      */
-    function burnPoR(address from, uint256 amount) external onlyOwner {
+    function burnSRPC(address from, uint256 amount) external onlyOwner {
         proveOfReputation.burn(from, amount);
         emit NFTBurned(from, amount);
     }
 
     /**
-     * @dev Legacy function name for backward compatibility (calls mintPoR)
+     * @dev Legacy function name for backward compatibility (calls mintSRPC)
      * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint (previously tokenId)
+     * @param amount The amount of SRPC tokens to mint (previously tokenId)
      */
     function mintNFT(address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
@@ -28683,9 +28683,9 @@ contract StudentManagement is Ownable {
     }
 
     /**
-     * @dev Legacy function name for backward compatibility (calls burnPoR)
+     * @dev Legacy function name for backward compatibility (calls burnSRPC)
      * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn (previously tokenId)
+     * @param amount The amount of SRPC tokens to burn (previously tokenId)
      */
     function burnNFT(address from, uint256 amount) external onlyOwner {
         proveOfReputation.burn(from, amount);
@@ -28908,9 +28908,9 @@ contract StudentManagement is Ownable {
     /**
      * @dev Mint Prove of Reputation tokens to a whitelisted student
      * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint
+     * @param amount The amount of SRPC tokens to mint
      */
-    function mintPoR(address to, uint256 amount) external onlyOwner {
+    function mintSRPC(address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
         proveOfReputation.mint(to, amount);
         emit NFTMinted(to, amount);
@@ -28919,17 +28919,17 @@ contract StudentManagement is Ownable {
     /**
      * @dev Burn Prove of Reputation tokens from a student
      * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn
+     * @param amount The amount of SRPC tokens to burn
      */
-    function burnPoR(address from, uint256 amount) external onlyOwner {
+    function burnSRPC(address from, uint256 amount) external onlyOwner {
         proveOfReputation.burn(from, amount);
         emit NFTBurned(from, amount);
     }
 
     /**
-     * @dev Legacy function name for backward compatibility (calls mintPoR)
+     * @dev Legacy function name for backward compatibility (calls mintSRPC)
      * @param to The address to mint tokens to
-     * @param amount The amount of PoR tokens to mint (previously tokenId)
+     * @param amount The amount of SRPC tokens to mint (previously tokenId)
      */
     function mintNFT(address to, uint256 amount) external onlyOwner {
         require(students[to].isWhitelisted, "Recipient not whitelisted");
@@ -28938,9 +28938,9 @@ contract StudentManagement is Ownable {
     }
 
     /**
-     * @dev Legacy function name for backward compatibility (calls burnPoR)
+     * @dev Legacy function name for backward compatibility (calls burnSRPC)
      * @param from The address to burn tokens from
-     * @param amount The amount of PoR tokens to burn (previously tokenId)
+     * @param amount The amount of SRPC tokens to burn (previously tokenId)
      */
     function burnNFT(address from, uint256 amount) external onlyOwner {
         proveOfReputation.burn(from, amount);
@@ -29185,11 +29185,11 @@ contract StudentManagement is Ownable {
     /**
      * @dev Legacy function names for backward compatibility
      */
-    function mintPoR(address to, uint256 amount) external onlyOwner {
+    function mintSRPC(address to, uint256 amount) external onlyOwner {
         mintSRPC(to, amount);
     }
 
-    function burnPoR(address from, uint256 amount) external onlyOwner {
+    function burnSRPC(address from, uint256 amount) external onlyOwner {
         burnSRPC(from, amount);
     }
 
@@ -31130,8 +31130,8 @@ The system is now split into **4 separate smart contracts** for better modularit
 - `mintDuckCoin()` → calls `mintSBC()`
 - `burnDuckCoin()` → calls `burnSBC()`
 - `transferDuckCoin()` → calls `transferSBC()`
-- `mintPoR()` / `mintNFT()` → calls `mintSRPC()`
-- `burnPoR()` / `burnNFT()` → calls `burnSRPC()`
+- `mintSRPC()` / `mintNFT()` → calls `mintSRPC()`
+- `burnSRPC()` / `burnNFT()` → calls `burnSRPC()`
 
 ### 2. StevensBananaCoin.sol (SBC)
 
@@ -31279,10 +31279,10 @@ Checking for linting errors in the updated files:
 
 ### Remaining work
 
-Many frontend components still reference old token names (DC, PoR, DuckCoin). These need updates:
+Many frontend components still reference old token names (DC, SRPC, DuckCoin). These need updates:
 
-- **TaskList components**: Update references from "DuckCoin"/"DC" to "SBC", and "PoR" to "SRPC"
-- **Lending components**: Update references from "DC" to "SBC" and "PoR" to "SRPC"
+- **TaskList components**: Update references from "DuckCoin"/"DC" to "SBC", and "SRPC" to "SRPC"
+- **Lending components**: Update references from "DC" to "SBC" and "SRPC" to "SRPC"
 - **Exchange components**: Update references from "DC" to "SBC"
 - **Contract config**: Update `config.js` to include SDC_ADDRESS and rename DUCK_COIN_ADDRESS to SBC_ADDRESS, PROVE_OF_REPUTATION_ADDRESS to SRPC_ADDRESS
 - **useContract hook**: Update to return `sbcContract`, `sdcContract`, `srpcContract` instead of `duckCoinContract`, `nftContract`

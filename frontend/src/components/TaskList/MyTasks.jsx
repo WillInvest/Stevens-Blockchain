@@ -9,7 +9,7 @@ const MOCK_MY_TASKS = [
     creator: "0x1234...5678", // User's address (as creator)
     description: "Develop a smart contract for decentralized voting system",
     fileHash: "QmXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "10",
     assignedTo: null,
     bidAmount: "50",
@@ -33,7 +33,7 @@ const MOCK_MY_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x1234...5678", // User's address (as assigned taker)
     bidAmount: "75",

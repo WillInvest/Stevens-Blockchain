@@ -214,3 +214,6 @@ VITE_RPC_URL=http://localhost:8545
 - [ ] `ecosystem.config.js` uses relative paths (not hardcoded)
 - [ ] `package-lock.json` is gitignored (if using pnpm)
 
+
+
+

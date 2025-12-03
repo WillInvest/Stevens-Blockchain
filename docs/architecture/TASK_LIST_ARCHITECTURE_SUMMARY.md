@@ -10,7 +10,7 @@
 │  (Single Contract - Recommended Approach)                 │
 ├─────────────────────────────────────────────────────────────┤
 │  • Task Creation & Management                               │
-│  • Live Bidding System (PoR tasks only)                   │
+│  • Live Bidding System (SRPC tasks only)                   │
 │  • Task Assignment & Completion                           │
 │  • Dispute Handling                                         │
 │  • Credit Score Queries                                     │
@@ -18,7 +18,7 @@
            │              │              │
            ▼              ▼              ▼
     ┌──────────┐   ┌──────────┐   ┌──────────┐
-    │StudentMgmt│   │DuckCoin  │   │   PoR    │
+    │StudentMgmt│   │DuckCoin  │   │   SRPC    │
     │  .sol    │   │  .sol    │   │  .sol    │
     └──────────┘   └──────────┘   └──────────┘
 ```
@@ -57,7 +57,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 **Task:**
 - taskId, creator, description, fileHash
-- rewardType (DuckCoin | PoR), rewardAmount
+- rewardType (DuckCoin | SRPC), rewardAmount
 - assignedTo, bidAmount, status
 - timestamps (created, assigned, completed)
 - bidDeadline (24 hours from last bid - resets on new bid)
@@ -75,7 +75,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 | Action                    | Professor        | Student          | Admin |
 |---------------------------|------------------|------------------|-------|
-| Create PoR Task           | ✅               | ❌               | ✅     |
+| Create SRPC Task           | ✅               | ❌               | ✅     |
 | Create DC Task            | ✅               | ✅               | ✅     |
 | Place Bid (Live Auction) | ✅               | ✅               | ❌     |
 | Accept Current Bid        | ✅ (own task)    | ❌               | ❌     |
@@ -85,7 +85,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 ### Color Coding
 
-- **PoR Tasks:** Gold/Amber (#FFD700 / #FFA500) - High Priority
+- **SRPC Tasks:** Gold/Amber (#FFD700 / #FFA500) - High Priority
 - **Duck Coin Tasks:** Standard (White/Light Gray)
 - **Status Badges:**
   - Unassigned: Blue
@@ -95,10 +95,10 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 
 ### Credit Score System
 
-- **Display:** PoR balance of task creator
-- **Professors:** Show "Professor" badge + PoR amount
-- **Students:** Show PoR amount only
-- **Slashing:** Admin can slash PoR on dispute resolution if creator at fault
+- **Display:** SRPC balance of task creator
+- **Professors:** Show "Professor" badge + SRPC amount
+- **Students:** Show SRPC amount only
+- **Slashing:** Admin can slash SRPC on dispute resolution if creator at fault
 
 ### File Upload Strategy
 
@@ -131,7 +131,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 ## Critical Decisions Made
 
 1. ✅ **Single Contract** (not Factory) - Simpler, more efficient
-2. ✅ **Explicit Professor Role** - More flexible than PoR threshold
+2. ✅ **Explicit Professor Role** - More flexible than SRPC threshold
 3. ✅ **IPFS for Files** - Decentralized, cost-effective
 4. ✅ **Manual Dispute Resolution** - Admin resolves (can automate later)
 5. ✅ **Automatic Bid Refunds** - Refund all except accepted bid
@@ -141,7 +141,7 @@ CREATE → UNASSIGNED → (LIVE BIDDING) → ONGOING → COMPLETED
 ## Next Steps
 
 1. Review this plan
-2. Decide on PoR transfer mechanism (recommend: add taskManager role)
+2. Decide on SRPC transfer mechanism (recommend: add taskManager role)
 3. Start Phase 1: Core Smart Contract implementation
 4. Set up IPFS integration for file uploads
 5. Begin frontend component structure

@@ -34,7 +34,7 @@ export default function BorrowForm({
 
   const calculateMaxBorrowable = () => {
     if (!porCollateral || parseFloat(porCollateral) <= 0) return 0;
-    // 50% collateralization ratio (can borrow up to 50% of PoR value)
+    // 50% collateralization ratio (can borrow up to 50% of SRPC value)
     return parseFloat(porCollateral) * 0.5;
   };
 
@@ -54,16 +54,16 @@ export default function BorrowForm({
     try {
       // Validation
       if (!porCollateral || parseFloat(porCollateral) <= 0) {
-        throw new Error("Please enter PoR amount for collateral");
+        throw new Error("Please enter SRPC amount for collateral");
       }
       if (parseFloat(porCollateral) > parseFloat(porBalance)) {
-        throw new Error("Insufficient PoR balance");
+        throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
         throw new Error("Please enter DC amount to borrow");
       }
       if (parseFloat(dcAmount) > calculateMaxBorrowable()) {
-        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} DC (50% of PoR collateral)`);
+        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)`);
       }
 
       // Check utilization
@@ -123,10 +123,10 @@ export default function BorrowForm({
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            Your PoR Balance
+            Your SRPC Balance
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: stevensRed }}>
-            {porBalance} PoR
+            {porBalance} SRPC
           </div>
         </div>
         <div>
@@ -140,7 +140,7 @@ export default function BorrowForm({
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* PoR Collateral Input */}
+        {/* SRPC Collateral Input */}
         <label style={{
           display: "block",
           marginBottom: 8,
@@ -150,7 +150,7 @@ export default function BorrowForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          PoR Collateral (Required) *
+          SRPC Collateral (Required) *
         </label>
         <div style={{ position: "relative", marginBottom: 16 }}>
           <input
@@ -160,7 +160,7 @@ export default function BorrowForm({
             required
             min="0"
             step="0.000001"
-            placeholder="Enter PoR amount for collateral"
+            placeholder="Enter SRPC amount for collateral"
             style={{
               ...inputStyle,
               paddingRight: 80
@@ -188,7 +188,7 @@ export default function BorrowForm({
           </button>
         </div>
         <div style={{ fontSize: 11, color: stevensTextGrey, marginBottom: 16 }}>
-          ⚠️ PoR will be locked as collateral. You can borrow up to 50% of your PoR value.
+          ⚠️ SRPC will be locked as collateral. You can borrow up to 50% of your SRPC value.
         </div>
 
         {/* DC Amount Input */}
@@ -216,7 +216,7 @@ export default function BorrowForm({
         />
         {porCollateral && parseFloat(porCollateral) > 0 && (
           <div style={{ fontSize: 11, color: "#F59E0B", marginBottom: 16 }}>
-            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} DC (50% of PoR collateral)
+            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)
           </div>
         )}
 

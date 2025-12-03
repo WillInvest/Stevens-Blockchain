@@ -223,14 +223,6 @@ contract StudentManagement is Ownable {
     /**
      * @dev Legacy function names for backward compatibility
      */
-    function mintPoR(address to, uint256 amount) external onlyOwner {
-        this.mintSRPC(to, amount);
-    }
-
-    function burnPoR(address from, uint256 amount) external onlyOwner {
-        this.burnSRPC(from, amount);
-    }
-
     function mintNFT(address to, uint256 amount) external onlyOwner {
         this.mintSRPC(to, amount);
     }

@@ -51,7 +51,7 @@ export default function TaskCard({
   };
 
   const getRewardTypeColor = (rewardType) => {
-    return rewardType === "PoR" ? "#FFD700" : "#FFFFFF";
+    return rewardType === "SRPC" ? "#FFD700" : "#FFFFFF";
   };
 
   const handlePlaceBid = () => {
@@ -78,19 +78,19 @@ export default function TaskCard({
 
   if (!task) return null;
 
-  const isPoRTask = task.rewardType === "PoR";
-  const cardBackground = isPoRTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for PoR tasks
+  const isSRPCTask = task.rewardType === "SRPC";
+  const cardBackground = isSRPCTask ? "#FFF8DC" : "#FFFFFF"; // Gold tint for SRPC tasks
 
   return (
     <>
       <div style={{
         ...cardStyle,
         background: cardBackground,
-        border: isPoRTask ? `2px solid #FFD700` : cardStyle.border,
+        border: isSRPCTask ? `2px solid #FFD700` : cardStyle.border,
         position: "relative"
       }}>
-        {/* PoR Badge */}
-        {isPoRTask && (
+        {/* SRPC Badge */}
+        {isSRPCTask && (
           <div style={{
             position: "absolute",
             top: 12,
@@ -104,7 +104,7 @@ export default function TaskCard({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            PoR Task
+            SRPC Task
           </div>
         )}
 
@@ -174,14 +174,14 @@ export default function TaskCard({
               {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
             </div>
           </div>
-          {/* Credit Score - Hide for all PoR tasks */}
-          {!isPoRTask && (
+          {/* Credit Score - Hide for all SRPC tasks */}
+          {!isSRPCTask && (
             <div>
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-                {task.creatorCreditScore} PoR
+                {task.creatorCreditScore} SRPC
               </div>
             </div>
           )}
@@ -190,7 +190,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "PoR" ? "PoR" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -206,8 +206,8 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Current Bid (PoR tasks only) */}
-        {isPoRTask && task.status === "Unassigned" && (
+        {/* Current Bid (SRPC tasks only) */}
+        {isSRPCTask && task.status === "Unassigned" && (
           <div style={{
             marginBottom: 16,
             padding: 12,
@@ -321,7 +321,7 @@ export default function TaskCard({
           gap: 8,
           flexWrap: "wrap"
         }}>
-          {task.status === "Unassigned" && isPoRTask && !isCreator && (
+          {task.status === "Unassigned" && isSRPCTask && !isCreator && (
             <button
               onClick={handlePlaceBid}
               style={{
@@ -340,7 +340,7 @@ export default function TaskCard({
               Place Bid
             </button>
           )}
-          {task.status === "Unassigned" && isPoRTask && isCreator && task.currentBid && (
+          {task.status === "Unassigned" && isSRPCTask && isCreator && task.currentBid && (
             <button
               onClick={handleAcceptBid}
               disabled={timeRemaining === "Deadline Passed"}

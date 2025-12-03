@@ -9,7 +9,7 @@ const MOCK_ONGOING_TASKS = [
     creator: "0x5555...6666",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
-    rewardType: "PoR",
+    rewardType: "SRPC",
     rewardAmount: "15",
     assignedTo: "0x7777...8888",
     bidAmount: "75",

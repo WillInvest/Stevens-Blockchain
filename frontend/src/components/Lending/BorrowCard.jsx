@@ -19,10 +19,10 @@ export default function BorrowCard({ borrow, onRepay }) {
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Collateral
+            SRPC Collateral
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: stevensRed }}>
-            {borrow.porCollateral} PoR
+            {borrow.porCollateral} SRPC
           </div>
         </div>
         <div>

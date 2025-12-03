@@ -82,10 +82,10 @@ export default function LoanCard({ loan, wallet }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            PoR Collateral
+            SRPC Collateral
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: stevensRed }}>
-            {loan.porStaked} PoR
+            {loan.porStaked} SRPC
           </div>
         </div>
         <div>

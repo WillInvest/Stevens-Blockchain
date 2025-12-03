@@ -65,8 +65,8 @@ The system is now split into **4 separate smart contracts** for better modularit
 - `mintDuckCoin()` → calls `mintSBC()`
 - `burnDuckCoin()` → calls `burnSBC()`
 - `transferDuckCoin()` → calls `transferSBC()`
-- `mintPoR()` / `mintNFT()` → calls `mintSRPC()`
-- `burnPoR()` / `burnNFT()` → calls `burnSRPC()`
+- `mintSRPC()` / `mintNFT()` → calls `mintSRPC()`
+- `burnSRPC()` / `burnNFT()` → calls `burnSRPC()`
 
 ### 2. StevensBananaCoin.sol (SBC)
 

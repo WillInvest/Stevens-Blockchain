@@ -59,8 +59,8 @@ export default function CreateTask({
         throw new Error("You can select up to 3 additional categories (4 total including subject)");
       }
 
-      // TODO: Check if user is professor (for PoR tasks)
-      // TODO: Check PoR balance (for PoR tasks)
+      // TODO: Check if user is professor (for SRPC tasks)
+      // TODO: Check SRPC balance (for SRPC tasks)
       // TODO: Call contract method
       // await taskManagerContract.createTask(description, fileHash, rewardType, rewardAmount);
 
@@ -273,15 +273,15 @@ export default function CreateTask({
             }}>
               <input
                 type="radio"
-                value="PoR"
-                checked={rewardType === "PoR"}
+                value="SRPC"
+                checked={rewardType === "SRPC"}
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              <span style={{ color: "#333333" }}>Proof of Reputation (PoR)</span>
+              <span style={{ color: "#333333" }}>Proof of Reputation (SRPC)</span>
             </label>
           </div>
-          {rewardType === "PoR" && (
+          {rewardType === "SRPC" && (
             <div style={{
               padding: 12,
               background: "#FFF8DC",
@@ -290,7 +290,7 @@ export default function CreateTask({
               fontSize: 12,
               color: "#856404"
             }}>
-              ⚠️ Only professors can create PoR reward tasks. You must have sufficient PoR balance.
+              ⚠️ Only professors can create SRPC reward tasks. You must have sufficient SRPC balance.
             </div>
           )}
 
@@ -414,7 +414,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "PoR" ? "PoR" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
           />
 
           {/* Error Message */}
