@@ -6,11 +6,12 @@ import { cardStyle, stevensTextGrey } from "../../styles/constants";
 const MOCK_ONGOING_TASKS = [
   {
     taskId: 4,
-    creator: "0x5555...6666",
+    creator: "0xIvanBakrac...6666",
+    creatorName: "Ivan Bakrac",
     description: "Implement automated testing suite for smart contracts",
     fileHash: "QmZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZzZz",
     rewardType: "SRPC",
-    rewardAmount: "15",
+    rewardAmount: "10",
     assignedTo: "0x7777...8888",
     bidAmount: "75",
     status: "Ongoing",
@@ -21,17 +22,18 @@ const MOCK_ONGOING_TASKS = [
     hasDispute: false,
     currentBid: null,
     creatorCreditScore: "120",
-    takerStudentId: "12345",
+    takerStudentId: "20027138",
     subject: "Software Development",
     categories: ["Testing", "Quality Assurance"]
   },
   {
     taskId: 5,
-    creator: "0x9999...AAAA",
+    creator: "0xShaheerSidd...AAAA",
+    creatorName: "Shaheer Sidd",
     description: "Design and implement user authentication system",
     fileHash: "",
     rewardType: "DuckCoin",
-    rewardAmount: "150",
+    rewardAmount: "50",
     assignedTo: "0xBBBB...CCCC",
     bidAmount: "0",
     status: "Ongoing",
@@ -42,7 +44,7 @@ const MOCK_ONGOING_TASKS = [
     hasDispute: false,
     currentBid: null,
     creatorCreditScore: "90",
-    takerStudentId: "67890",
+    takerStudentId: "20012345",
     subject: "Cybersecurity",
     categories: ["Web Development"]
   }

@@ -156,23 +156,29 @@ export default function TaskCard({
           </p>
         </div>
 
-        {/* Task Details Grid */}
+        {/* Task Details Row */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 12,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 24,
           marginBottom: 16,
           padding: 12,
           background: "#F8F9FA",
-          borderRadius: 6
+          borderRadius: 6,
+          alignItems: "flex-start"
         }}>
           <div>
             <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
               Creator:
             </span>
-            <div style={{ fontSize: 13, fontFamily: "monospace", marginTop: 4 }}>
-              {task.creator?.slice(0, 6)}...{task.creator?.slice(-4)}
+            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: stevensTextGrey }}>
+              {task.creatorName || (task.creator ? `${task.creator.slice(0, 6)}...${task.creator.slice(-4)}` : "Unknown")}
             </div>
+            {task.creator && (
+              <div style={{ fontSize: 11, fontFamily: "monospace", color: stevensTextGrey, marginTop: 2 }}>
+                {task.creator.slice(0, 6)}...{task.creator.slice(-4)}
+              </div>
+            )}
           </div>
           {/* Credit Score - Hide for all SRPC tasks */}
           {!isSRPCTask && (
@@ -180,7 +186,7 @@ export default function TaskCard({
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Credit Score:
               </span>
-              <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: stevensTextGrey }}>
                 {task.creatorCreditScore} SRPC
               </div>
             </div>
@@ -189,7 +195,7 @@ export default function TaskCard({
             <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
               Reward Amount:
             </span>
-            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: stevensTextGrey }}>
               {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "SBC"}
             </div>
           </div>
@@ -199,7 +205,7 @@ export default function TaskCard({
               <span style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600 }}>
                 Taker Student ID:
               </span>
-              <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: stevensTextGrey }}>
                 {task.takerStudentId || "N/A"}
               </div>
             </div>
