@@ -42,10 +42,10 @@ export default function SupplyForm({
       try {
       // Validation
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
-        throw new Error("Please enter DC amount to lend");
+        throw new Error("Please enter SBC amount to lend");
       }
       if (parseFloat(dcAmount) > parseFloat(dcBalance)) {
-        throw new Error("Insufficient DC balance");
+        throw new Error("Insufficient SBC balance");
       }
 
       // TODO: Call contract method
@@ -81,7 +81,7 @@ export default function SupplyForm({
         textTransform: "uppercase",
         letterSpacing: "0.5px"
       }}>
-        💚 Supply (Lend) Duck Coin
+        💚 Supply (Lend) SBC
       </h3>
 
       {/* Balance Display */}
@@ -92,15 +92,15 @@ export default function SupplyForm({
         borderRadius: 6
       }}>
         <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-          Your DC Balance
+          Your SBC Balance
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, color: "#3B82F6" }}>
-          {dcBalance} DC
+          {dcBalance} SBC
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* DC Amount Input */}
+        {/* SBC Amount Input */}
         <label style={{
           display: "block",
           marginTop: 16,
@@ -111,7 +111,7 @@ export default function SupplyForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          Duck Coin Amount to Lend *
+          SBC Amount to Lend *
         </label>
         <div style={{ position: "relative", marginBottom: 8 }}>
           <input
@@ -121,7 +121,7 @@ export default function SupplyForm({
             required
             min="0"
             step="0.000001"
-            placeholder="Enter DC amount to lend"
+            placeholder="Enter SBC amount to lend"
             style={{
               ...inputStyle,
               paddingRight: 80
@@ -176,7 +176,7 @@ export default function SupplyForm({
               color: "#1E40AF",
               marginTop: 8
             }}>
-              Estimated Annual Earnings: {calculateEstimatedEarnings()} DC
+              Estimated Annual Earnings: {calculateEstimatedEarnings()} SBC
             </div>
           )}
         </div>
@@ -207,7 +207,7 @@ export default function SupplyForm({
             cursor: loading ? "not-allowed" : "pointer"
           }}
         >
-          {loading ? "Supplying..." : "Supply Duck Coin"}
+          {loading ? "Supplying..." : "Supply SBC"}
         </button>
       </form>
     </div>

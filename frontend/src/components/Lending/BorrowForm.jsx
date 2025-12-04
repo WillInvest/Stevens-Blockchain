@@ -60,10 +60,10 @@ export default function BorrowForm({
         throw new Error("Insufficient SRPC balance");
       }
       if (!dcAmount || parseFloat(dcAmount) <= 0) {
-        throw new Error("Please enter DC amount to borrow");
+        throw new Error("Please enter SBC amount to borrow");
       }
       if (parseFloat(dcAmount) > calculateMaxBorrowable()) {
-        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)`);
+        throw new Error(`Maximum borrowable amount is ${calculateMaxBorrowable().toFixed(2)} SBC (50% of SRPC collateral)`);
       }
 
       // Check utilization
@@ -108,7 +108,7 @@ export default function BorrowForm({
         textTransform: "uppercase",
         letterSpacing: "0.5px"
       }}>
-        🟠 Borrow Duck Coin
+        🟠 Borrow SBC
       </h3>
 
       {/* Balance Display */}
@@ -131,10 +131,10 @@ export default function BorrowForm({
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            Your DC Balance
+            Your SBC Balance
           </div>
           <div style={{ fontSize: 20, fontWeight: 700, color: "#3B82F6" }}>
-            {dcBalance} DC
+            {dcBalance} SBC
           </div>
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function BorrowForm({
           ⚠️ SRPC will be locked as collateral. You can borrow up to 50% of your SRPC value.
         </div>
 
-        {/* DC Amount Input */}
+        {/* SBC Amount Input */}
         <label style={{
           display: "block",
           marginTop: 16,
@@ -202,7 +202,7 @@ export default function BorrowForm({
           textTransform: "uppercase",
           letterSpacing: "0.5px"
         }}>
-          Duck Coin Amount to Borrow *
+          SBC Amount to Borrow *
         </label>
         <input
           type="number"
@@ -211,12 +211,12 @@ export default function BorrowForm({
           required
           min="0"
           step="0.000001"
-          placeholder="Enter DC amount to borrow"
+          placeholder="Enter SBC amount to borrow"
           style={inputStyle}
         />
         {porCollateral && parseFloat(porCollateral) > 0 && (
           <div style={{ fontSize: 11, color: "#F59E0B", marginBottom: 16 }}>
-            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} DC (50% of SRPC collateral)
+            💡 Maximum borrowable: {calculateMaxBorrowable().toFixed(2)} SBC (50% of SRPC collateral)
           </div>
         )}
 
@@ -247,7 +247,7 @@ export default function BorrowForm({
               color: "#856404",
               marginTop: 8
             }}>
-              Total Repayment (1 year): {calculateTotalRepayment()} DC
+              Total Repayment (1 year): {calculateTotalRepayment()} SBC
             </div>
           )}
         </div>
@@ -279,7 +279,7 @@ export default function BorrowForm({
             cursor: loading ? "not-allowed" : "pointer"
           }}
         >
-          {loading ? "Borrowing..." : "Borrow Duck Coin"}
+          {loading ? "Borrowing..." : "Borrow SBC"}
         </button>
       </form>
     </div>

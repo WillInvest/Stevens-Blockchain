@@ -42,7 +42,7 @@ export default function BorrowTab({ wallet, duckCoinContract, nftContract }) {
           textAlign: "center",
           color: stevensTextGrey
         }}>
-          Please connect your wallet to borrow Duck Coin
+          Please connect your wallet to borrow SBC
         </div>
       ) : (
         <>

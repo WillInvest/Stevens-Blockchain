@@ -19,10 +19,10 @@ export default function SupplyCard({ supply, onWithdraw }) {
       }}>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            DC Supplied
+            SBC Supplied
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#3B82F6" }}>
-            {supply.dcSupplied} DC
+            {supply.dcSupplied} SBC
           </div>
         </div>
         <div>
@@ -38,7 +38,7 @@ export default function SupplyCard({ supply, onWithdraw }) {
             Total Earned
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#10B981" }}>
-            {supply.totalEarned} DC
+            {supply.totalEarned} SBC
           </div>
         </div>
       </div>

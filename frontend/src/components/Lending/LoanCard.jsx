@@ -90,10 +90,10 @@ export default function LoanCard({ loan, wallet }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            DC Amount
+            SBC Amount
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#3B82F6" }}>
-            {loan.dcAmount} DC
+            {loan.dcAmount} SBC
           </div>
         </div>
         <div>

@@ -89,7 +89,7 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
         <MetricCard
           title="Utilization Rate"
           value={`${utilizationPercentage}%`}
-          subtitle={`${poolData.totalDCBorrowed} / ${poolData.totalDCSupplied} DC`}
+          subtitle={`${poolData.totalDCBorrowed} / ${poolData.totalDCSupplied} SBC`}
           color={getUtilizationColor()}
           icon="📊"
         />
@@ -108,15 +108,15 @@ export default function LendingDashboard({ wallet, duckCoinContract, nftContract
           icon="🟠"
         />
         <MetricCard
-          title="Total DC Supplied"
-          value={`${poolData.totalDCSupplied} DC`}
+          title="Total SBC Supplied"
+          value={`${poolData.totalDCSupplied} SBC`}
           subtitle="In Lending Pool"
           color="#3B82F6"
           icon="💰"
         />
         <MetricCard
-          title="Total DC Borrowed"
-          value={`${poolData.totalDCBorrowed} DC`}
+          title="Total SBC Borrowed"
+          value={`${poolData.totalDCBorrowed} SBC`}
           subtitle="Currently Borrowed"
           color="#F59E0B"
           icon="📈"

@@ -38,7 +38,7 @@ export default function SupplyTab({ wallet, duckCoinContract, nftContract }) {
           textAlign: "center",
           color: stevensTextGrey
         }}>
-          Please connect your wallet to lend Duck Coin
+          Please connect your wallet to lend SBC
         </div>
       ) : (
         <>

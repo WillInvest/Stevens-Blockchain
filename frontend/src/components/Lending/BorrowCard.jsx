@@ -27,10 +27,10 @@ export default function BorrowCard({ borrow, onRepay }) {
         </div>
         <div>
           <div style={{ fontSize: 11, color: stevensTextGrey, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
-            DC Borrowed
+            SBC Borrowed
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#F59E0B" }}>
-            {borrow.dcBorrowed} DC
+            {borrow.dcBorrowed} SBC
           </div>
         </div>
         <div>
@@ -46,7 +46,7 @@ export default function BorrowCard({ borrow, onRepay }) {
             Total Owed
           </div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#EF4444" }}>
-            {borrow.totalOwed} DC
+            {borrow.totalOwed} SBC
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function BorrowCard({ borrow, onRepay }) {
         fontSize: 12,
         color: "#991B1B"
       }}>
-        Interest Accrued: {borrow.interestAccrued} DC
+        Interest Accrued: {borrow.interestAccrued} SBC
       </div>
 
       <div style={{
