@@ -506,8 +506,8 @@ export default function ABSPool({
               </p>
             </div>
 
-            {/* Summary Statistics */}
-            {absSeries.length > 0 && (
+            {/* Summary Statistics - Current Series Only */}
+            {absSeries.length > 0 && absSeries[0] && (
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -523,7 +523,7 @@ export default function ABSPool({
                 }}>
                   <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 8 }}>Total Available</div>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>
-                    {absSeries.reduce((sum, s) => sum + s.senior.available + s.mezzanine.available + s.equity.available, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
+                    {(absSeries[0].senior.available + absSeries[0].mezzanine.available + absSeries[0].equity.available).toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
                     Across all series
@@ -538,7 +538,7 @@ export default function ABSPool({
                 }}>
                   <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 8 }}>Active Series</div>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>
-                    {absSeries.filter(s => s.status === "Active").length}
+                    {absSeries[0].status === "Active" ? 1 : 0}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
                     Available for investment
@@ -553,7 +553,7 @@ export default function ABSPool({
                 }}>
                   <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 8 }}>Total Students</div>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>
-                    {absSeries.reduce((sum, s) => sum + s.studentCount, 0).toLocaleString('en-US')}
+                    {absSeries[0].studentCount.toLocaleString('en-US')}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
                     Underlying receivables
@@ -568,7 +568,7 @@ export default function ABSPool({
                 }}>
                   <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 8 }}>Total Pool Value</div>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>
-                    {absSeries.reduce((sum, s) => sum + s.totalPoolValue, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
+                    {absSeries[0].totalPoolValue.toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
                     All series combined
@@ -1109,15 +1109,6 @@ export default function ABSPool({
                               Reputation score
                             </div>
                           </div>
-                          <div>
-                            <div style={{ fontSize: 11, color: stevensTextGrey, marginBottom: 4 }}>Market Demand</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: stevensRed }}>
-                              {series.demand.toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
-                            </div>
-                            <div style={{ fontSize: 11, color: stevensTextGrey, marginTop: 2 }}>
-                              Based on students & SRPC
-                            </div>
-                          </div>
                         </div>
 
                         {/* Repayment Status - Only show for past/matured series */}
@@ -1621,22 +1612,6 @@ export default function ABSPool({
                     </div>
                   </div>
 
-                  {/* Market Demand */}
-                  <div style={{
-                    padding: 20,
-                    background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-                    borderRadius: 12,
-                    color: "white",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-                  }}>
-                    <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 8 }}>Market Demand</div>
-                    <div style={{ fontSize: 28, fontWeight: 700 }}>
-                      {absSeries[0].demand.toLocaleString('en-US', { maximumFractionDigits: 0 })} SDC
-                    </div>
-                    <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
-                      Based on students & SRPC
-                    </div>
-                  </div>
                 </div>
 
                 {/* Tranche Status */}

@@ -152,7 +152,7 @@ export default function UnassignedTasks({
         fontSize: 12,
         color: "#1E40AF"
       }}>
-        💡 <strong>Live Bidding:</strong> For SRPC tasks, you can place bids with Duck Coin. 
+        💡 <strong>Live Bidding:</strong> For SRPC tasks, you can place bids with SBC. 
         The highest bidder wins when the creator accepts. Each new bid resets the 24-hour acceptance deadline.
       </div>
 

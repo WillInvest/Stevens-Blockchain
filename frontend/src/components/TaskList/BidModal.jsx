@@ -38,10 +38,10 @@ export default function BidModal({
         throw new Error("Bid amount must be greater than 0");
       }
       if (bidValue <= currentBidValue) {
-        throw new Error(`Bid must be higher than current bid (${currentBidValue} DC)`);
+        throw new Error(`Bid must be higher than current bid (${currentBidValue} SBC)`);
       }
       if (parseFloat(duckCoinBalance) < bidValue) {
-        throw new Error("Insufficient Duck Coin balance");
+        throw new Error("Insufficient SBC balance");
       }
 
       // TODO: Call contract method
@@ -167,7 +167,7 @@ export default function BidModal({
             fontWeight: 700,
             color: stevensRed
           }}>
-            {currentBid ? `${currentBid.amount} DC` : "No bids yet"}
+            {currentBid ? `${currentBid.amount} SBC` : "No bids yet"}
           </div>
           {currentBid && (
             <div style={{
@@ -188,8 +188,8 @@ export default function BidModal({
           borderRadius: 6,
           fontSize: 12
         }}>
-          <span style={{ color: stevensTextGrey }}>Your Duck Coin Balance: </span>
-          <span style={{ fontWeight: 600 }}>{duckCoinBalance} DC</span>
+          <span style={{ color: stevensTextGrey }}>Your SBC Balance: </span>
+          <span style={{ fontWeight: 600 }}>{duckCoinBalance} SBC</span>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -203,7 +203,7 @@ export default function BidModal({
             textTransform: "uppercase",
             letterSpacing: "0.5px"
           }}>
-            Your Bid Amount (DC) *
+            Your Bid Amount (SBC) *
           </label>
           <input
             type="number"
@@ -213,14 +213,14 @@ export default function BidModal({
             min={minBid}
             step="0.000001"
             style={inputStyle}
-            placeholder={`Minimum: ${minBid} DC`}
+            placeholder={`Minimum: ${minBid} SBC`}
           />
           <div style={{
             fontSize: 11,
             color: stevensTextGrey,
             marginTop: 4
           }}>
-            Minimum bid: {minBid} DC
+            Minimum bid: {minBid} SBC
           </div>
 
           {/* Info Note */}

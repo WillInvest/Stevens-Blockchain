@@ -260,7 +260,7 @@ export default function CreateTask({
                 onChange={(e) => setRewardType(e.target.value)}
                 style={{ cursor: "pointer" }}
               />
-              <span style={{ color: "#333333" }}>Duck Coin</span>
+              <span style={{ color: "#333333" }}>SBC</span>
             </label>
             <label style={{
               display: "flex",
@@ -414,7 +414,7 @@ export default function CreateTask({
             min="0.000001"
             step="0.000001"
             style={inputStyle}
-            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "Duck Coin"}`}
+            placeholder={`Enter amount in ${rewardType === "SRPC" ? "SRPC" : "SBC"}`}
           />
 
           {/* Error Message */}

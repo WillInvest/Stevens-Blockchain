@@ -190,7 +190,7 @@ export default function TaskCard({
               Reward Amount:
             </span>
             <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "DC"}
+              {task.rewardAmount} {task.rewardType === "SRPC" ? "SRPC" : "SBC"}
             </div>
           </div>
           {/* Taker Student ID - Only for ongoing tasks */}
@@ -225,7 +225,7 @@ export default function TaskCard({
                 Current Highest Bid:
               </span>
               <span style={{ fontSize: 16, fontWeight: 700, color: stevensRed }}>
-                {task.currentBid ? `${task.currentBid.amount} DC` : "No bids yet"}
+                {task.currentBid ? `${task.currentBid.amount} SBC` : "No bids yet"}
               </span>
             </div>
             {task.currentBid && (
