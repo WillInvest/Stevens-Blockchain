@@ -1,9 +1,9 @@
 import { useState } from "react";
-import AMM from "./AMM";
+import AMMExchange from "../AMM/AMMExchange";
 import SHIFT from "./SHIFT";
 import { stevensRed } from "../../styles/constants";
 
-export default function Exchange({ contract, duckCoinContract, nftContract }) {
+export default function Exchange({ contract, duckCoinContract, nftContract, sdcContract, sbcContract, wallet, ammAddress }) {
   const [activeSubTab, setActiveSubTab] = useState("amm");
 
   return (
@@ -57,7 +57,12 @@ export default function Exchange({ contract, duckCoinContract, nftContract }) {
       {/* Subtab Content */}
       <div>
         {activeSubTab === "amm" && (
-          <AMM contract={contract} duckCoinContract={duckCoinContract} nftContract={nftContract} />
+          <AMMExchange 
+            wallet={wallet}
+            ammAddress={ammAddress}
+            sdcContract={sdcContract}
+            sbcContract={sbcContract || duckCoinContract}
+          />
         )}
         {activeSubTab === "shift" && (
           <SHIFT contract={contract} duckCoinContract={duckCoinContract} nftContract={nftContract} />

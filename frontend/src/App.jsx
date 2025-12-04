@@ -9,6 +9,7 @@ import TransactionInfo from "./components/Utils/TransactionInfo";
 import AvailableAddresses from "./components/Utils/AvailableAddresses";
 import ABSPool from "./components/ABSPool/ABSPool";
 import { stevensRed, stevensDarkGrey, stevensLightGrey, buttonStyle } from "./styles/constants";
+import { AMM_ADDRESS } from "./contracts/config";
 
 export default function App() {
   const { 
@@ -340,6 +341,10 @@ export default function App() {
                       contract={contract}
                       duckCoinContract={duckCoinContract}
                       nftContract={nftContract}
+                      sdcContract={sdcContract}
+                      sbcContract={duckCoinContract}
+                      wallet={wallet}
+                      ammAddress={AMM_ADDRESS}
                     />
                   )}
                   {activeTab === "lending" && (

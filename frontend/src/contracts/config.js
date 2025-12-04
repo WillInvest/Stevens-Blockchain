@@ -7,6 +7,9 @@ export const SRPC_ADDRESS = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
 // New contract addresses
 export const STUDENT_MANAGEMENT_ADDRESS = "0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9";
 
+// AMM Contract Address (update after deployment)
+export const AMM_ADDRESS = ""; // Set this after deploying the AMM contract
+
 // Legacy names for backward compatibility
 export const DUCK_COIN_ADDRESS = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
 export const PROVE_OF_REPUTATION_ADDRESS = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
