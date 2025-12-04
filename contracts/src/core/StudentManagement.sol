@@ -5,6 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import "../tokens/StevensBananaCoin.sol";
 import "../tokens/StevensDuckCoin.sol";
 import "../tokens/StevensReputationProofCoin.sol";
+import "./TuitionReceivable.sol";
 
 /**
  * @title StudentManagement
@@ -28,6 +29,9 @@ contract StudentManagement is Ownable {
     StevensBananaCoin public stevensBananaCoin;  // SBC - The Fuel
     StevensDuckCoin public stevensDuckCoin;      // SDC - Stevens Cash
     StevensReputationProofCoin public stevensReputationProofCoin;  // SRPC - The Demand Engine
+    
+    // Tuition management
+    TuitionReceivable public tuitionReceivable;
 
     // Events
     event StudentAdded(address indexed wallet, string name, uint256 indexed studentId);
@@ -40,15 +44,29 @@ contract StudentManagement is Ownable {
     event SDCTransferred(address indexed from, address indexed to, uint256 amount);
     event SRPCMinted(address indexed to, uint256 amount);
     event SRPCBurned(address indexed from, uint256 amount);
+    
+    // Tuition events
+    event TuitionReceivableUpdated(address indexed oldAddress, address indexed newAddress);
+    event TuitionObligationCreatedViaManagement(
+        uint256 indexed obligationId,
+        address indexed studentWallet,
+        uint256 indexed studentId,
+        uint256 totalAmount,
+        uint256 dueDate
+    );
 
     constructor(
         address _sbcAddress,
         address _sdcAddress,
-        address _srpcAddress
+        address _srpcAddress,
+        address _tuitionReceivableAddress
     ) Ownable(msg.sender) {
         stevensBananaCoin = StevensBananaCoin(_sbcAddress);
         stevensDuckCoin = StevensDuckCoin(_sdcAddress);
         stevensReputationProofCoin = StevensReputationProofCoin(_srpcAddress);
+        if (_tuitionReceivableAddress != address(0)) {
+            tuitionReceivable = TuitionReceivable(_tuitionReceivableAddress);
+        }
     }
 
     /**
@@ -255,6 +273,125 @@ contract StudentManagement is Ownable {
         stevensBananaCoin = StevensBananaCoin(_sbcAddress);
         stevensDuckCoin = StevensDuckCoin(_sdcAddress);
         stevensReputationProofCoin = StevensReputationProofCoin(_srpcAddress);
+    }
+    
+    /**
+     * @dev Set the TuitionReceivable contract address
+     */
+    function setTuitionReceivable(address _tuitionReceivableAddress) external onlyOwner {
+        address oldAddress = address(tuitionReceivable);
+        tuitionReceivable = TuitionReceivable(_tuitionReceivableAddress);
+        emit TuitionReceivableUpdated(oldAddress, _tuitionReceivableAddress);
+    }
+    
+    // ============ TUITION MANAGEMENT FUNCTIONS ============
+    
+    /**
+     * @dev Create a tuition obligation for a student
+     * @param studentId Student's ID
+     * @param totalAmount Total tuition amount in SDC wei
+     * @param dueDate Unix timestamp when payment is due
+     * @param description Description of the obligation (e.g., "Fall 2024 Tuition")
+     * @return obligationId The ID of the created obligation
+     */
+    function createTuitionObligation(
+        uint256 studentId,
+        uint256 totalAmount,
+        uint256 dueDate,
+        string memory description
+    ) external onlyOwner returns (uint256) {
+        address studentWallet = idToWallet[studentId];
+        require(studentWallet != address(0), "Student does not exist");
+        require(students[studentWallet].isWhitelisted, "Student not whitelisted");
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        
+        uint256 obligationId = tuitionReceivable.createObligation(
+            studentWallet,
+            studentId,
+            totalAmount,
+            dueDate,
+            description
+        );
+        
+        emit TuitionObligationCreatedViaManagement(
+            obligationId,
+            studentWallet,
+            studentId,
+            totalAmount,
+            dueDate
+        );
+        
+        return obligationId;
+    }
+    
+    /**
+     * @dev Update a tuition obligation
+     * @param obligationId The ID of the obligation to update
+     * @param newTotalAmount New total amount (0 to keep unchanged)
+     * @param newDueDate New due date (0 to keep unchanged)
+     */
+    function updateTuitionObligation(
+        uint256 obligationId,
+        uint256 newTotalAmount,
+        uint256 newDueDate
+    ) external onlyOwner {
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        tuitionReceivable.updateObligation(obligationId, newTotalAmount, newDueDate);
+    }
+    
+    /**
+     * @dev Get tuition obligations for a student by student ID
+     * @param studentId Student's ID
+     * @return obligationIds Array of obligation IDs
+     * @return obligationList Array of obligation structs
+     */
+    function getStudentTuitionObligations(uint256 studentId)
+        external
+        view
+        returns (uint256[] memory obligationIds, TuitionReceivable.TuitionObligation[] memory obligationList)
+    {
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        return tuitionReceivable.getStudentObligationsById(studentId);
+    }
+    
+    /**
+     * @dev Get tuition obligations for a student by wallet address
+     * @param studentWallet Student's wallet address
+     * @return obligationIds Array of obligation IDs
+     * @return obligationList Array of obligation structs
+     */
+    function getStudentTuitionObligationsByWallet(address studentWallet)
+        external
+        view
+        returns (uint256[] memory obligationIds, TuitionReceivable.TuitionObligation[] memory obligationList)
+    {
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        return tuitionReceivable.getStudentObligations(studentWallet);
+    }
+    
+    /**
+     * @dev Get total outstanding tuition balance for a student
+     * @param studentId Student's ID
+     * @return totalOutstanding Total unpaid amount across all obligations
+     */
+    function getStudentTotalOutstandingTuition(uint256 studentId)
+        external
+        view
+        returns (uint256 totalOutstanding)
+    {
+        address studentWallet = idToWallet[studentId];
+        require(studentWallet != address(0), "Student does not exist");
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        return tuitionReceivable.getTotalOutstanding(studentWallet);
+    }
+    
+    /**
+     * @dev Mark tuition obligations as overdue
+     * @param obligationIds Array of obligation IDs to check
+     */
+    function markTuitionOverdue(uint256[] calldata obligationIds) external onlyOwner {
+        require(address(tuitionReceivable) != address(0), "TuitionReceivable not set");
+        tuitionReceivable.markOverdue(obligationIds);
     }
 }
 

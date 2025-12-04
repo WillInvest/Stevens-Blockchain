@@ -24,7 +24,8 @@ contract SBCTest is Test {
         studentManagement = new StudentManagement(
             address(sbc),
             address(sdc),
-            address(srpc)
+            address(srpc),
+            address(0) // TuitionReceivable address (set later if needed)
         );
         
         // Link tokens to StudentManagement

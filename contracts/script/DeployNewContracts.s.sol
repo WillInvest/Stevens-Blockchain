@@ -36,7 +36,8 @@ contract DeployNewContracts is Script {
         StudentManagement studentManagement = new StudentManagement(
             address(sbc),
             address(sdc),
-            address(srpc)
+            address(srpc),
+            address(0) // TuitionReceivable address (set later if needed)
         );
         console.log("StudentManagement deployed to:", address(studentManagement));
 
