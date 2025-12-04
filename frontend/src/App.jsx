@@ -7,6 +7,7 @@ import TaskList from "./components/TaskList/TaskList";
 import StudentInfo from "./components/Utils/StudentInfo";
 import TransactionInfo from "./components/Utils/TransactionInfo";
 import AvailableAddresses from "./components/Utils/AvailableAddresses";
+import ABSPool from "./components/ABSPool/ABSPool";
 import { stevensRed, stevensDarkGrey, stevensLightGrey, buttonStyle } from "./styles/constants";
 
 export default function App() {
@@ -285,6 +286,7 @@ export default function App() {
                     { id: "lending", label: "💰 Lending", icon: "💰" },
                     { id: "taskList", label: "📋 Task List", icon: "📋" },
                     { id: "studentInfo", label: "👥 Student Info", icon: "👥" },
+                    { id: "absPool", label: "🏦 ABS", icon: "🏦" },
                     { id: "transactionInfo", label: "📊 Transaction Info", icon: "📊" },
                     { id: "available", label: "📇 Available Addresses", icon: "📇" }
                   ].map(tab => (
@@ -360,6 +362,14 @@ export default function App() {
                   )}
                   {activeTab === "studentInfo" && (
                     <StudentInfo 
+                      contract={studentManagementContract || contract}
+                      sbcContract={duckCoinContract}
+                      sdcContract={sdcContract}
+                      srpcContract={nftContract}
+                    />
+                  )}
+                  {activeTab === "absPool" && (
+                    <ABSPool 
                       contract={studentManagementContract || contract}
                       sbcContract={duckCoinContract}
                       sdcContract={sdcContract}

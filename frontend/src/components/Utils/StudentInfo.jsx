@@ -201,11 +201,44 @@ export default function StudentInfo({ contract, sbcContract, sdcContract, srpcCo
             console.warn(`Could not fetch SRPC balance for ${s.wallet}:`, err);
           }
         }
+        
+        // Get Tuition Outstanding
+        let tuitionOutstanding = BigInt(0);
+        let tuitionError = false;
+        let tuitionNotSet = false;
+        
+        if (contract && contract.getStudentTotalOutstandingTuition) {
+          try {
+            // First check if TuitionReceivable is set
+            if (contract.tuitionReceivable) {
+              const tuitionReceivableAddress = await contract.tuitionReceivable();
+              if (!tuitionReceivableAddress || tuitionReceivableAddress === ethers.ZeroAddress) {
+                tuitionNotSet = true;
+              } else {
+                // TuitionReceivable is set, try to get outstanding amount
+                tuitionOutstanding = await contract.getStudentTotalOutstandingTuition(s.studentId);
+              }
+            } else {
+              // Fallback: try to call the function directly
+              tuitionOutstanding = await contract.getStudentTotalOutstandingTuition(s.studentId);
+            }
+          } catch (err) {
+            // TuitionReceivable might not be set yet, or student might not have obligations
+            console.warn(`Could not fetch tuition outstanding for student ${s.studentId}:`, err);
+            // Check if error is because TuitionReceivable is not set
+            if (err.message && err.message.includes("TuitionReceivable not set")) {
+              tuitionNotSet = true;
+            } else {
+              tuitionError = true;
+            }
+          }
+        }
 
         // Format balances to show reasonable decimals (max 6 decimal places)
         const formattedSbcBalance = parseFloat(ethers.formatEther(sbcBalance)).toFixed(6).replace(/\.?0+$/, '');
         const formattedSdcBalance = parseFloat(ethers.formatEther(sdcBalance)).toFixed(6).replace(/\.?0+$/, '');
         const formattedSrpcBalance = parseFloat(ethers.formatEther(srpcBalance)).toFixed(6).replace(/\.?0+$/, '');
+        const formattedTuitionOutstanding = parseFloat(ethers.formatEther(tuitionOutstanding)).toFixed(2).replace(/\.?0+$/, '');
 
         return {
           name: s.name,
@@ -213,7 +246,10 @@ export default function StudentInfo({ contract, sbcContract, sdcContract, srpcCo
           wallet: s.wallet,
           sbcBalance: formattedSbcBalance,
           sdcBalance: formattedSdcBalance,
-          srpcBalance: formattedSrpcBalance
+          srpcBalance: formattedSrpcBalance,
+          tuitionOutstanding: formattedTuitionOutstanding,
+          tuitionError: tuitionError,
+          tuitionNotSet: tuitionNotSet
         };
       })
     );
@@ -519,6 +555,7 @@ export default function StudentInfo({ contract, sbcContract, sdcContract, srpcCo
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>ID</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Name</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Wallet</th>
+                        <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>Tuition Receivable</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SDC</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SBC</th>
                         <th style={{ padding: 12, textAlign: "left", color: "white", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.5px" }}>SRPC</th>
@@ -538,6 +575,9 @@ export default function StudentInfo({ contract, sbcContract, sdcContract, srpcCo
                           <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey }}>{s.id}</td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensDarkGrey, fontWeight: 500 }}>{s.name}</td>
                           <td style={{ padding: 12, fontSize: 12, color: stevensTextGrey, fontFamily: "monospace", wordBreak: "break-all" }}>{s.wallet}</td>
+                          <td style={{ padding: 12, fontSize: 14, color: s.tuitionNotSet ? stevensTextGrey : (s.tuitionError ? stevensTextGrey : (s.tuitionOutstanding === "0" ? "#28a745" : stevensRed)), fontWeight: 600 }}>
+                            {s.tuitionNotSet ? "Not Set" : (s.tuitionError ? "N/A" : (s.tuitionOutstanding === "0" ? "Paid" : `${s.tuitionOutstanding} SDC`))}
+                          </td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.sdcBalance} SDC</td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.sbcBalance} SBC</td>
                           <td style={{ padding: 12, fontSize: 14, color: stevensRed, fontWeight: 600 }}>{s.srpcBalance} SRPC</td>
